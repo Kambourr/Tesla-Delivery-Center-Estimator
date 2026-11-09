@@ -50,9 +50,12 @@ def user_data_dir() -> Path:
     Does not create the directory. Apple Silicon and Intel Macs share the
     macOS path; the ``.app`` build is what is Apple Silicon specific.
     """
-    if sys.platform == "darwin":
+    # A local str keeps mypy from constant-folding sys.platform. On a Mac
+    # runner that fold marks the Windows and Linux returns unreachable.
+    platform = sys.platform
+    if platform == "darwin":
         return Path.home() / "Library" / "Application Support" / _MACOS_DIR_NAME
-    if sys.platform == "win32":
+    if platform == "win32":
         local = os.environ.get("LOCALAPPDATA", "").strip()
         if local:
             return Path(local) / _WINDOWS_DIR_NAME

@@ -1,0 +1,73 @@
+{
+  "source": "HUD-USPS ZIP Code Crosswalk (ZIP-County and ZIP-CBSA) with Census ZIP-ZCTA",
+  "documentation_url": "https://www.huduser.gov/portal/datasets/usps_crosswalk.html",
+  "notes": [
+    "Demo slice for 94401-94404. No network fetch.",
+    "County 06081 is San Mateo County, California.",
+    "HUD's ZIP-CBSA column stores the metropolitan division code when OMB splits the metro. For these ZIPs that code is 41884, San Francisco-San Mateo-Redwood City, CA. The parent CBSA is 41860, San Francisco-Oakland-Fremont, CA. GeoContext.cbsa uses the HUD column (41884).",
+    "tot_ratio is 1 because each of these ZIPs sits entirely inside that county and division. This slice is not a copy of a quarterly address-count file.",
+    "ZCTA equals the ZIP. Census 2020 ZCTAs 94401, 94402, 94403, and 94404 are those codes. HUD does not publish ZCTAs."
+  ],
+  "rows": [
+    {
+      "zip": "94401",
+      "zcta": "94401",
+      "county_fips": "06081",
+      "county_name": "San Mateo County",
+      "cbsa": "41884",
+      "cbsa_name": "San Francisco-San Mateo-Redwood City, CA",
+      "parent_cbsa": "41860",
+      "parent_cbsa_name": "San Francisco-Oakland-Fremont, CA",
+      "state": "CA",
+      "res_ratio": 1.0,
+      "bus_ratio": 1.0,
+      "oth_ratio": 1.0,
+      "tot_ratio": 1.0
+    },
+    {
+      "zip": "94402",
+      "zcta": "94402",
+      "county_fips": "06081",
+      "county_name": "San Mateo County",
+      "cbsa": "41884",
+      "cbsa_name": "San Francisco-San Mateo-Redwood City, CA",
+      "parent_cbsa": "41860",
+      "parent_cbsa_name": "San Francisco-Oakland-Fremont, CA",
+      "state": "CA",
+      "res_ratio": 1.0,
+      "bus_ratio": 1.0,
+      "oth_ratio": 1.0,
+      "tot_ratio": 1.0
+    },
+    {
+      "zip": "94403",
+      "zcta": "94403",
+      "county_fips": "06081",
+      "county_name": "San Mateo County",
+      "cbsa": "41884",
+      "cbsa_name": "San Francisco-San Mateo-Redwood City, CA",
+      "parent_cbsa": "41860",
+      "parent_cbsa_name": "San Francisco-Oakland-Fremont, CA",
+      "state": "CA",
+      "res_ratio": 1.0,
+      "bus_ratio": 1.0,
+      "oth_ratio": 1.0,
+      "tot_ratio": 1.0
+    },
+    {
+      "zip": "94404",
+      "zcta": "94404",
+      "county_fips": "06081",
+      "county_name": "San Mateo County",
+      "cbsa": "41884",
+      "cbsa_name": "San Francisco-San Mateo-Redwood City, CA",
+      "parent_cbsa": "41860",
+      "parent_cbsa_name": "San Francisco-Oakland-Fremont, CA",
+      "state": "CA",
+      "res_ratio": 1.0,
+      "bus_ratio": 1.0,
+      "oth_ratio": 1.0,
+      "tot_ratio": 1.0
+    }
+  ]
+}

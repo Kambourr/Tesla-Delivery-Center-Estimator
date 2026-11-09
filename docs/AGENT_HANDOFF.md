@@ -1,6 +1,8 @@
-# Agent Handoff — M0 is the bootstrap; next work is M1
+# Agent Handoff — M1 is in; next work is M2
 
-M0 (repository skeleton, no product logic) is the open pull request. Start **M1** from `main` after that PR merges. Do not merge unless Jacob asks.
+M1 (SQLite schema, app-data paths, and local ZIP resolution) is implemented. Read `docs/STATUS.md` before writing code. Start **M2** from `main` after the M1 pull request merges. Do not merge unless Jacob asks.
+
+The M1 notes below are the record of that milestone. Do not rebuild them.
 
 ## Locked decisions
 
@@ -22,7 +24,7 @@ M0 (repository skeleton, no product logic) is the open pull request. Start **M1*
 - `docs/DATA_DICTIONARY.md`
 - `docs/OPEN_QUESTIONS.md` (do not reopen locked items)
 
-## M1 task
+## M1 record (done)
 
 1. Keep `src/dce` importable. `python -m dce --help` must keep working.
 2. Implement `storage/schema.sql`, `storage/connection.py`, `storage/migrate.py`, and `storage/repository.py` for the DATA_DICTIONARY tables (at least `source_registry`, `zcta_acs`, `oews_wage`, `ev_zip`, `utility_rate`, `rent_default`, `extract_cache`). Creating the database is idempotent. SQL stays in `storage`.

@@ -1,12 +1,12 @@
 # Status
 
 **As of:** 2026-11-09
-**Phase:** M1 SQLite schema, config paths, and local ZIP resolution. Pull request not merged.
+**Phase:** M1 SQLite schema, config paths, and local ZIP resolution. Pull request: https://github.com/Kambourr/Tesla-Delivery-Center-Estimator/pull/2 — not merged.
 
 | Milestone | Status |
 |---|---|
 | M0 Repo bootstrap | Done. Merged as #1 (`8fb16ee`) |
-| M1 SQLite + ZIP stub | Implemented on `cursor/m1-sqlite-zip-resolve-f2f9`. Not merged |
+| M1 SQLite + ZIP stub | Implemented on `cursor/m1-sqlite-zip-resolve-f2f9`. Pull request: https://github.com/Kambourr/Tesla-Delivery-Center-Estimator/pull/2 — not merged |
 | M2 Public loaders | Not started |
 | M3 Cost/demand model | Not started |
 | M4 Scenarios + robustness | Not started |

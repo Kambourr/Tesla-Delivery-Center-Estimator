@@ -138,7 +138,7 @@ class InputProvenance:
     """Where one number that entered the estimate came from.
 
     ``geography_level`` is ``zip``, ``zcta``, ``county``, ``cbsa``, ``state``,
-    ``national``, or ``demo``. ``fallback`` is true when a documented
+    ``national``, ``utility``, or ``demo``. ``fallback`` is true when a documented
     substitute was used (national wage, residential rent proxy, a reference
     value for a suppressed ACS field, the non-California Tesla allocation).
     ``value`` is the number the model saw, before scenario shocks.

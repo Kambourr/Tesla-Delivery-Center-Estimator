@@ -37,11 +37,12 @@ set, a fresh `error` row are left in place. Anything else is estimated
 again.
 
 `inputs_hash` covers `MODEL_VERSION`, `data/defaults/assumptions.yaml`,
-`data/demo/san_mateo/operating_inputs.json` (the utility-rate fallback),
-and these seed files: `coverage.json`, `zev_zip_sales.csv`,
-`zev_county_sales.csv`, `zcta_acs_2024.csv`, `zcta_centroid_2024.csv`,
-`zip_crosswalk.csv`, `oews_metro_2025.csv`, `rent_cbsa.csv`,
-`rent_model_coeffs.json`.
+`data/demo/san_mateo/operating_inputs.json`, and these seed files:
+`coverage.json`, `zev_zip_sales.csv`, `zev_county_sales.csv`,
+`zcta_acs_2024.csv`, `zcta_centroid_2024.csv`, `zip_crosswalk.csv`,
+`oews_metro_2025.csv`, `rent_cbsa.csv`, `rent_model_coeffs.json`,
+`electricity_commercial.csv`, `county_utility.csv`,
+`property_tax_commercial.csv`, `bea_rpp_2024.csv`.
 
 ## Read API
 
@@ -73,8 +74,8 @@ then sets:
 | `inputs_hash` | `inputs_hash()` |
 | `provenance` | One object per resolved input. The map ignores this list. |
 
-`scenarios.base` uses the ZIP's own rent, wage, and the PG&E B-10 fallback
-rates, the same prices as the headline `estimate(zip)`. Its standalone NPV
+`scenarios.base` uses the ZIP's own rent, wage, electricity, NNN load, and
+fit-out index, the same prices as the headline `estimate(zip)`. Its standalone NPV
 matches the headline within a dollar. Scenario cards do not repeat the
 yearly tables. Those 11 rows (year 0 through year 10) are on
 `dcf.standalone.years` and `dcf.incremental.years`.
@@ -83,8 +84,9 @@ yearly tables. Those 11 rows (year 0 through year 10) are on
 `geography_level`, `geography_id`, `fallback`, `detail`. `value` is the
 number before scenario shocks, or `null` when the field is missing.
 `geography_level` is `zip`, `zcta`, `county`, `cbsa`, `state`, `national`,
-or `demo`. Names: `rent_psf_month`, `wage_annual`, `energy_rate_kwh`,
-`demand_rate_kw`, `population`, `households`, `median_hh_income`,
+`utility`, or `demo`. Names: `rent_psf_month`, `wage_annual`, `energy_rate_kwh`,
+`demand_rate_kw`, `property_tax_rate`, `opex_load`, `fitout_index`,
+`status_quo_rent_psf_month`, `population`, `households`, `median_hh_income`,
 `median_gross_rent`, `median_home_value`, `vehicles_available`,
 `mean_commute`, `zip_origin_deliveries`, `handover_factor`,
 `demand_annualization`, `catchment_deliveries`.
@@ -105,7 +107,7 @@ has no deliveries, so cost per delivery is undefined.
   "zip_code": "96799",
   "status": "error",
   "reason": "EstimateDataError: ZIP 96799 has no deliveries inside the 60-mile catchment, so cost per delivery is undefined.",
-  "model_version": "2026.11.4-rent-ladder",
+  "model_version": "2026.11.5-local-costs",
   "inputs_hash": "<sha256>",
   "computed_at": "2026-11-09T00:00:00+00:00"
 }

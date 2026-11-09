@@ -19,6 +19,15 @@ Add files here only when a milestone curates them.
 - `zcta_acs_2024.csv`: ACS 2024 5-year ZCTA population, households, income,
   median gross rent, home value, and vehicles. Mean commute is blank.
 - `oews_metro_2025.csv`: May 2025 OEWS wages from the BLS API.
+- `bea_rpp_2024.csv`: BEA 2024 goods and all-items regional price parities.
+  Fit-out uses goods divided by the U.S. goods parity.
+- `electricity_commercial.csv` and `county_utility.csv`: commercial
+  electricity. Utility tariff, then EIA-861 utility average, then EIA
+  Table 5.6.A state, then the U.S. total. PG&E B-10 is the tariff row for
+  utility `14328`.
+- `property_tax_commercial.csv`: Lincoln Institute / MCFE commercial
+  effective rates, taxes paid in 2024. County, then state rural or state
+  urban, then the 53-city average.
 - `zev_zip_sales.csv` and `zev_county_sales.csv`: newest year of the CEC
   New ZEV Sales workbook.
 - `coverage.json`: row counts from the build.
@@ -54,7 +63,9 @@ not download listing-site HTML into this folder.
 | ZIP to county, CBSA, and ZCTA | Census 2020 ZCTA-county relationship, July 2023 CBSA list 1, HRSA 2025 ZIP-to-ZCTA workbook | US government work. The HUD API remains available when `HUD_TOKEN` is set. It is not the shipped file |
 | ZIP adjustment | ACS income, density, and median home value (`B25077`) | US Census Bureau. Public domain |
 | Calibration check | GSA Lease Inventory (`Current Annual Rent` / rentable square feet) | GSA open file. Mostly office leases, so it calibrates; it is not industrial truth |
-| Weak last resort | HUD Small Area FMR or Zillow ZORI, times a commercial-to-residential ratio | Only the low-confidence tier. Check Zillow research terms before redistributing a derived table |
+| Commercial property tax | Lincoln Institute / MCFE 50-State study, taxes paid in 2024 | Transcribed effective rate and a citation. The PDF is not stored |
+| Goods price parity | BEA Regional Price Parities, 2024 | US government work. Fit-out index only |
+| Commercial electricity | EIA-861, EIA Electric Power Monthly Table 5.6.A, PG&E Schedule B-10 | US government work, plus the published tariff. No runtime download |
 
 Census, BLS, HUD, EIA, and GSA products are US government works. Broker
 market reports are copyrighted. Store the headline figure and a citation,

@@ -2,13 +2,15 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
+
 import pytest
 import yaml
 
 from dce.config import assumptions_path
 from dce.model.assumptions import parse_assumptions
 from dce.model.costs import build_cost_inputs
-from dce.model.dcf import run_dcf_views
+from dce.model.dcf import build_dcf_inputs, run_dcf_views
 from dce.model.types import Scenario
 from dce.orchestrator import EstimateDataError, estimate
 
@@ -27,6 +29,8 @@ def _research_views(
     *,
     rent: float = RENT,
     wage_annual: float | None = None,
+    opex_load: float | None = None,
+    fitout_index: float = 1.0,
 ) -> tuple[float, float | None, float | None, float | None, float]:
     raw = yaml.safe_load(assumptions_path().read_text(encoding="utf-8"))
     assert isinstance(raw, dict)
@@ -44,8 +48,14 @@ def _research_views(
         energy_rate_kwh=ENERGY,
         demand_rate_kw=DEMAND_RATE,
         annual_deliveries=steady,
+        opex_load=opex_load,
+        fitout_index=fitout_index,
     )
-    views = run_dcf_views(costs, assumptions, steady_deliveries=steady, scenario=scenario)
+    dcf = replace(
+        build_dcf_inputs(assumptions),
+        fitout_psf=assumptions.capex.fitout_psf * fitout_index,
+    )
+    views = run_dcf_views(costs, assumptions, steady_deliveries=steady, scenario=scenario, dcf=dcf)
     standalone = views.standalone
     return (
         standalone.npv,
@@ -95,7 +105,6 @@ def test_estimate_94402_matches_research_adjusted_for_gravity_volume(
     assert taken == pytest.approx(gravity, abs=1)
 
     assert [driver.name for driver in result.drivers] == ["labor", "lease", "capex"]
-    assert result.cost_per_delivery == pytest.approx(605.25, abs=0.05)
     assert result.dcf.standalone.discount_rate == pytest.approx(0.136)
     assert result.map_path is None
 
@@ -111,6 +120,8 @@ def test_estimate_94402_matches_research_adjusted_for_gravity_volume(
     rent_row = by_name["rent_psf_month"]
     rent = rent_row.value
     wage = by_name["wage_annual"].value
+    energy = by_name["energy_rate_kwh"]
+    tax = by_name["property_tax_rate"]
     assert rent == pytest.approx(2.14)
     assert rent_row.source == "cbsa_raw"
     assert rent_row.geography_level == "cbsa"
@@ -118,17 +129,21 @@ def test_estimate_94402_matches_research_adjusted_for_gravity_volume(
     assert rent_row.fallback is False
     assert "Kidder" in rent_row.detail
     assert wage == pytest.approx(75730)
+    assert energy.source == "pge_pdf"
+    assert energy.fallback is False
+    assert energy.value == pytest.approx(0.2875)
+    assert tax.fallback is True
+    assert "Los Angeles" in tax.detail
+    assert "not a studied county" in tax.detail
     assert rent is not None and wage is not None
+    opex = by_name["opex_load"].value
+    fitout = by_name["fitout_index"].value
+    assert opex is not None and fitout is not None
     adjusted_npv, adjusted_irr, adjusted_payback, adjusted_disc, adjusted_incremental = (
-        _research_views(gravity, rent=rent, wage_annual=wage)
+        _research_views(gravity, rent=rent, wage_annual=wage, opex_load=opex, fitout_index=fitout)
     )
     standalone = result.dcf.standalone
     incremental = result.dcf.incremental
-    assert standalone.npv == pytest.approx(11.304e6, abs=1.0e4)
-    assert standalone.irr == pytest.approx(0.735, abs=0.002)
-    assert standalone.simple_payback_years == pytest.approx(1.497, abs=0.01)
-    assert standalone.discounted_payback_years == pytest.approx(1.758, abs=0.01)
-    assert incremental.npv == pytest.approx(-3.221e6, abs=1.0e4)
     assert standalone.npv == pytest.approx(adjusted_npv, abs=1.0)
     assert standalone.irr == pytest.approx(adjusted_irr, abs=1e-9)
     assert standalone.simple_payback_years == pytest.approx(adjusted_payback, abs=1e-9)
@@ -142,7 +157,9 @@ def test_estimate_94402_matches_research_adjusted_for_gravity_volume(
     # headline, $2.14. The 4,400-delivery reconstruction above is the
     # published-model lock.
     assert len(standalone.years) == 11
-    assert standalone.years[0].capex == pytest.approx(3_780_000)
+    assert standalone.years[0].capex == pytest.approx(
+        100.0 * fitout * 25_000.0 * 1.20 + 780_000.0, abs=1
+    )
 
 
 def test_rent_override_is_optional_and_checked() -> None:

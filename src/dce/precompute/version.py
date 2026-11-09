@@ -3,7 +3,7 @@
 A row is stale when either value differs from the process that is about to
 read or write it. The version is a code constant. The hash covers the public
 files that change a number: assumptions, the operating-rate demo, and the
-seed extracts the catchment reads.
+seed extracts the catchment, electricity, property tax, and price index read.
 """
 
 from __future__ import annotations
@@ -13,7 +13,7 @@ from pathlib import Path
 
 from dce.config import assumptions_path, bundled_seed_dir, demo_data_dir
 
-MODEL_VERSION = "2026.11.4-rent-ladder"
+MODEL_VERSION = "2026.11.5-local-costs"
 
 _HASH_FILES = (
     "coverage.json",
@@ -25,6 +25,10 @@ _HASH_FILES = (
     "oews_metro_2025.csv",
     "rent_cbsa.csv",
     "rent_model_coeffs.json",
+    "electricity_commercial.csv",
+    "county_utility.csv",
+    "property_tax_commercial.csv",
+    "bea_rpp_2024.csv",
 )
 
 _CACHE: dict[str, str] = {}

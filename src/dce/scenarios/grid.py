@@ -251,15 +251,21 @@ def run_scenario(
     catchment: CatchmentSummary | None = None,
     provenance: tuple[InputProvenance, ...] = (),
     nearby_centers: tuple[NearbyCenter, ...] = (),
+    dcf: DcfInputs | None = None,
 ) -> ScenarioResult:
-    """Evaluate one scenario the way ``estimate(zip)`` evaluates its baseline."""
+    """Evaluate one scenario the way ``estimate(zip)`` evaluates its baseline.
+
+    ``dcf`` is the resolved base (local fit-out and status-quo rent). It
+    defaults to the assumptions table. Scenario shocks are applied on top.
+    """
     a = parse_assumptions(assumptions)
     steady = v.non_negative("steady_deliveries", steady_deliveries)
     scenario = named.scenario
     shocked = apply_delivery_shock(steady, scenario)
     year1 = costs_at(costs, a, shocked)
     components = annualized_components(year1, scenario)
-    dcf = apply_dcf_shocks(build_dcf_inputs(a), named.dcf)
+    base_dcf = build_dcf_inputs(a) if dcf is None else dcf
+    resolved = apply_dcf_shocks(base_dcf, named.dcf)
     result = EstimateResult(
         geo=geo,
         scenario=scenario,
@@ -270,7 +276,7 @@ def run_scenario(
         drivers=top_drivers(components),
         map_path=None,
         catchment=catchment,
-        dcf=run_dcf_views(year1, a, steady_deliveries=steady, scenario=scenario, dcf=dcf),
+        dcf=run_dcf_views(year1, a, steady_deliveries=steady, scenario=scenario, dcf=resolved),
         provenance=provenance,
         nearby_centers=nearby_centers,
     )
@@ -287,8 +293,12 @@ def run_scenario_grid(
     catchment: CatchmentSummary | None = None,
     provenance: tuple[InputProvenance, ...] = (),
     nearby_centers: tuple[NearbyCenter, ...] = (),
+    dcf: DcfInputs | None = None,
 ) -> list[ScenarioResult]:
-    """Evaluate every scenario in order. Scenario ids must be unique."""
+    """Evaluate every scenario in order. Scenario ids must be unique.
+
+    ``dcf`` is forwarded to each scenario. ``None`` uses the assumptions table.
+    """
     ids = [named.scenario_id for named in scenarios]
     duplicates = sorted({sid for sid in ids if ids.count(sid) > 1})
     if duplicates:
@@ -304,6 +314,7 @@ def run_scenario_grid(
             catchment=catchment,
             provenance=provenance,
             nearby_centers=nearby_centers,
+            dcf=dcf,
         )
         for named in scenarios
     ]

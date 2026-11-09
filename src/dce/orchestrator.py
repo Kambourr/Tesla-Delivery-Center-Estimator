@@ -22,8 +22,11 @@ California origin demand is the CEC ZIP battery-electric count times the
 county Tesla share, annualized when the seed year is short a quarter, then
 times the base handover factor 1.10. Other states split the Cox/KBB 2025
 US Tesla total, minus the 2025 California CEC total, by ACS households and
-income. Utility rates stay the San Mateo PG&E B-10 figures until a rate
-loader exists. Every resolved input is on ``EstimateResult.provenance``.
+income. Electricity is the utility tariff, then the EIA-861 utility average,
+then the state price, then the U.S. price. PG&E territory keeps
+Schedule B-10. Commercial property tax shifts the NNN load. Fit-out
+uses the BEA goods price parity. Every resolved input is on
+``EstimateResult.provenance``.
 
 There is no network call and no prompt. ``overrides`` may carry
 ``rent_psf_month``. Do not import ``dce.extract.pdf_llm``.
@@ -34,15 +37,17 @@ from __future__ import annotations
 import math
 import sqlite3
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 
 import yaml
 
 from dce.config import assumptions_path, user_data_dir
 from dce.data.catchment_demand import delivery_center_sites
+from dce.data.electricity import ElectricityResolution
 from dce.data.ingest.bls_oews import OEWS_SOC_AUTO_TECH
 from dce.data.ingest.zev_sales import INCOME_ELASTICITY, INCOME_REFERENCE
+from dce.data.local_costs import LocalPrices, resolve_local_prices
 from dce.data.national_demand import (
     CA_TESLA_SALES_2025,
     US_TESLA_SALES_2025,
@@ -50,6 +55,7 @@ from dce.data.national_demand import (
     build_national_demand,
 )
 from dce.data.operating_inputs import OperatingInputs, load_san_mateo_operating_inputs
+from dce.data.property_tax import PropertyTaxResolution
 from dce.data.zip_local import ZipLocalData, load_zip_local
 from dce.data.zip_seed import load_zip_seed
 from dce.geo.catchment import (
@@ -65,6 +71,7 @@ from dce.geo.catchment import (
 from dce.geo.resolve import resolve_zip
 from dce.model.assumptions import ModelAssumptions, parse_assumptions
 from dce.model.costs import CostInputs, build_cost_inputs
+from dce.model.dcf import DcfInputs, build_dcf_inputs
 from dce.model.types import (
     CatchmentCaseSummary,
     CatchmentSummary,
@@ -107,6 +114,7 @@ class PreparedEstimate:
     provenance: tuple[InputProvenance, ...]
     nearby_centers: tuple[NearbyCenter, ...]
     scenario: Scenario
+    dcf: DcfInputs
 
 
 @dataclass(frozen=True)
@@ -202,6 +210,7 @@ def evaluate_zip(
         catchment=prepared.catchment,
         provenance=prepared.provenance,
         nearby_centers=prepared.nearby_centers,
+        dcf=prepared.dcf,
     )
     scenarios = {row.scenario_id: row.result for row in results}
     bars = dcf_tornado(
@@ -210,6 +219,7 @@ def evaluate_zip(
             assumptions=prepared.assumptions,
             steady_deliveries=prepared.steady,
             scenario=prepared.scenario,
+            dcf=prepared.dcf,
         )
     )
     return ZipEvaluation(base=scenarios["base"], scenarios=scenarios, tornado=tuple(bars))
@@ -225,6 +235,7 @@ def _run(prepared: PreparedEstimate, named: NamedScenario) -> EstimateResult:
         catchment=prepared.catchment,
         provenance=prepared.provenance,
         nearby_centers=prepared.nearby_centers,
+        dcf=prepared.dcf,
     ).result
 
 
@@ -255,21 +266,28 @@ def _prepare(
         )
     rent, rent_row = _rent(local, overrides)
     wage, wage_row = _wage(local, bundle.assumptions)
-    utilities = bundle.utilities
+    prices = resolve_local_prices(geo, bundle.assumptions, rent)
     costs = build_cost_inputs(
         bundle.assumptions,
         rent_psf_month=rent,
         wage_annual=wage,
-        energy_rate_kwh=utilities.energy_rate_kwh,
-        demand_rate_kw=utilities.demand_rate_kw,
+        energy_rate_kwh=prices.electricity.energy_rate_kwh,
+        demand_rate_kw=prices.electricity.demand_rate_kw,
         annual_deliveries=steady,
+        opex_load=prices.opex_load,
+        fitout_index=prices.fitout_index,
+    )
+    dcf = replace(
+        build_dcf_inputs(bundle.assumptions),
+        fitout_psf=bundle.assumptions.capex.fitout_psf * prices.fitout_index,
+        status_quo_rent_psf_month=prices.status_quo_rent_psf_month,
     )
     catchment = _summarize(features)
     nearby = _nearby(bundle.centers, place.lat, place.lon, catchment)
     provenance = _provenance(
         local,
         bundle.demand,
-        utilities,
+        prices,
         rent_row,
         wage_row,
         steady,
@@ -283,6 +301,7 @@ def _prepare(
         provenance=provenance,
         nearby_centers=nearby,
         scenario=_baseline_scenario(bundle.assumptions),
+        dcf=dcf,
     )
 
 
@@ -501,7 +520,7 @@ def _wage(local: ZipLocalData, assumptions: ModelAssumptions) -> tuple[float, In
 def _provenance(
     local: ZipLocalData,
     demand: NationalDemand,
-    utilities: OperatingInputs,
+    prices: LocalPrices,
     rent_row: InputProvenance,
     wage_row: InputProvenance,
     steady: float,
@@ -512,8 +531,43 @@ def _provenance(
     rows = [
         rent_row,
         wage_row,
-        _utility("energy_rate_kwh", utilities.energy_rate_kwh, "usd_per_kwh", utilities),
-        _utility("demand_rate_kw", utilities.demand_rate_kw, "usd_per_kw_per_month", utilities),
+        *_power_rows(local, prices.electricity),
+        _tax_row(local, prices.property_tax),
+        _number_row(
+            "opex_load",
+            prices.opex_load,
+            "fraction",
+            "lincoln_nnn",
+            *_tax_geography(local, prices.property_tax),
+            "NNN load after replacing the 1.1% reference tax with the local effective rate. "
+            "Insurance and CAM stay inside the 15% base.",
+        ),
+        _number_row(
+            "fitout_index",
+            prices.fitout_index,
+            "index",
+            "bea_rpp_goods_2024",
+            prices.price_index.tier if prices.price_index.tier != "metro" else "cbsa",
+            prices.price_index.geography_id,
+            prices.price_index.tier != "metro",
+            (
+                f"BEA 2024 goods RPP {prices.price_index.rpp_goods:.3f} for "
+                f"{prices.price_index.name}, divided by the U.S. goods RPP. "
+                f"{prices.price_index.citation}"
+            ),
+        ),
+        _number_row(
+            "status_quo_rent_psf_month",
+            prices.status_quo_rent_psf_month,
+            "usd_per_sf_per_month",
+            "kidder_ratio",
+            "zip",
+            local.geo.zip_code,
+            False,
+            "This ZIP's rent times $1.74 / $2.14, the Kidder Mathews ratio of South "
+            "San Francisco asking rent to the San Mateo asking rent. At $2.14 the "
+            "status-quo rent is the assumptions value.",
+        ),
         _acs(local, "population", local.population, "people"),
         _acs(local, "households", local.households, "households"),
         _acs(local, "median_hh_income", local.median_hh_income, "usd_per_year"),
@@ -530,6 +584,119 @@ def _provenance(
         *_demand_provenance(local, demand, state, own, steady),
     ]
     return tuple(rows)
+
+
+def _power_rows(
+    local: ZipLocalData, power: ElectricityResolution
+) -> tuple[InputProvenance, InputProvenance]:
+    fallback = power.tier in {"state", "national"}
+    if power.tier in {"utility_tariff", "utility_average"}:
+        level = "utility"
+        geo_id = power.utility_id
+    elif power.tier == "state":
+        level = "state"
+        geo_id = local.geo.state
+    else:
+        level = "national"
+        geo_id = "US"
+    demand_note = (
+        "Demand is a separate monthly charge."
+        if not power.demand_embedded
+        else "Demand is already inside the $/kWh average, so the demand charge is 0."
+    )
+    detail = (
+        f"{power.citation} Tier {power.tier}, schedule {power.schedule or 'average'}, "
+        f"as_of {power.as_of}. {demand_note}"
+    )
+    return (
+        _number_row(
+            "energy_rate_kwh",
+            power.energy_rate_kwh,
+            "usd_per_kwh",
+            power.source,
+            level,
+            geo_id,
+            fallback,
+            detail,
+        ),
+        _number_row(
+            "demand_rate_kw",
+            power.demand_rate_kw,
+            "usd_per_kw_per_month",
+            power.source,
+            level,
+            geo_id,
+            fallback or power.demand_embedded,
+            detail,
+        ),
+    )
+
+
+def _tax_geography(local: ZipLocalData, tax: PropertyTaxResolution) -> tuple[str, str, bool]:
+    if tax.tier == "county":
+        return "county", tax.county_fips or local.geo.county_fips, False
+    if tax.tier == "national":
+        return "national", "US", True
+    return "state", local.geo.state, True
+
+
+def _tax_row(local: ZipLocalData, tax: PropertyTaxResolution) -> InputProvenance:
+    percent = tax.effective_rate * 100.0
+    level, geo_id, fallback = _tax_geography(local, tax)
+    if tax.tier == "county":
+        why = (
+            f"{tax.place} is the Lincoln Institute studied place in county {geo_id}. "
+            "The study publishes that city, not a separate rate for every city in the county."
+        )
+    elif tax.tier == "state_rural":
+        why = (
+            f"County {local.geo.county_fips} is outside every metro and is not a studied county. "
+            f"{local.geo.state}'s rural rate is {tax.place}."
+        )
+    elif tax.tier == "state_urban":
+        why = (
+            f"County {local.geo.county_fips} is not a studied county. "
+            f"{local.geo.state}'s urban rate is {tax.place}, the largest city in the study. "
+            "Illinois uses Aurora rather than Chicago, and New York uses Buffalo rather than "
+            "New York City, because those two cities are their own county rows."
+        )
+    else:
+        why = "The state has no studied row. The 53-city average is used."
+    return _number_row(
+        "property_tax_rate",
+        tax.effective_rate,
+        "fraction_of_value",
+        "lincoln_mcfe_2024",
+        level,
+        geo_id,
+        fallback,
+        (
+            f"{tax.citation} Place {tax.place}, {percent:.3f}%. {why} "
+            "The rate is the tax on a $1 million commercial building plus $200,000 of fixtures."
+        ),
+    )
+
+
+def _number_row(
+    name: str,
+    value: float,
+    unit: str,
+    source: str,
+    level: str,
+    geo_id: str,
+    fallback: bool,
+    detail: str,
+) -> InputProvenance:
+    return InputProvenance(
+        name=name,
+        value=value,
+        unit=unit,
+        source=source,
+        geography_level=level,
+        geography_id=geo_id,
+        fallback=fallback,
+        detail=detail,
+    )
 
 
 def _demand_provenance(
@@ -624,23 +791,6 @@ def _demand_provenance(
             origin_fallback,
             "Huff gravity, beta 2, straight-line miles times 1.25, 60-mile cap, "
             "net of the US Find Us delivery list. This is the unshocked steady volume.",
-        ),
-    )
-
-
-def _utility(name: str, value: float, unit: str, utilities: OperatingInputs) -> InputProvenance:
-    return InputProvenance(
-        name=name,
-        value=value,
-        unit=unit,
-        source="pge_schedule_b10",
-        geography_level="demo",
-        geography_id="san_mateo",
-        fallback=True,
-        detail=(
-            f"{utilities.energy_citation} as_of {utilities.as_of}. "
-            "No ZIP utility-rate loader is wired, so every ZIP uses this published "
-            "PG&E B-10 figure."
         ),
     )
 

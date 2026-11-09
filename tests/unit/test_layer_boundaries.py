@@ -90,12 +90,35 @@ def test_zip_resolve_does_not_use_sql_or_network() -> None:
 
 def test_m2_loaders_do_not_open_sqlite_or_import_storage() -> None:
     banned = ("sqlite3", "dce.storage", "dce.model", "dce.extract")
-    loaders = ("census_acs.py", "bls_oews.py", "ca_ev.py")
+    loaders = (
+        "census_acs.py",
+        "bls_oews.py",
+        "ca_ev.py",
+        "delivery_centers.py",
+        "zev_sales.py",
+        "zcta_gazetteer.py",
+    )
     ingest = SRC / "data" / "ingest"
     for name in loaders:
         for module in _imported_modules(ingest / name):
             hit = _hits(module, banned)
             assert hit is None, f"data/ingest/{name} imports {module}"
+
+
+def test_catchment_does_not_use_sql_network_or_files() -> None:
+    banned = (
+        "sqlite3",
+        "requests",
+        "urllib",
+        "httpx",
+        "http.client",
+        "dce.storage",
+        "dce.data",
+        "pathlib",
+    )
+    for module in _imported_modules(SRC / "geo" / "catchment.py"):
+        hit = _hits(module, banned)
+        assert hit is None, f"geo/catchment.py imports {module}"
 
 
 def test_pdf_llm_stays_inside_extract() -> None:

@@ -11,6 +11,11 @@ M0 ships no rows. Add files here only when a milestone curates them.
 - A HUD ZIP to CBSA crosswalk large enough for offline demo ZIPs, later a
   national extract if redistribution terms allow it.
 - Optional San Mateo demo slices that are too small for `data/demo/`.
+- `tesla_delivery_centers_2026-11-08.csv`: the Bay Area Tesla delivery
+  centers from the 2026-11-08 Find Us list used by the catchment research,
+  plus the North San Jose hub (`location_type` `hub`, not on that list).
+  `lat`/`lon` are Census 2024 Gazetteer ZCTA internal points for the center
+  ZIP. The loader does not fetch tesla.com.
 
 The app reads these through `dce.data.rent_defaults.read_rent_seed` and
 `dce.storage`. Refresh scripts may update a user database later. They must

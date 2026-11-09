@@ -76,13 +76,16 @@ def request_bytes(
     body: bytes | None = None,
     headers: dict[str, str] | None = None,
     timeout: float = 60.0,
+    max_bytes: int = _MAX_BYTES,
 ) -> bytes:
     """Fetch one allowlisted URL. Raises :class:`IngestError` on failure.
 
-    The response body is capped at 5 MiB. OEWS and ACS calls are small JSON.
-    The California fuel-type loader uses the datastore SQL API so it does not
-    download the multi-megabyte CSV.
+    The default cap is 5 MiB, which covers OEWS and ACS JSON. The California
+    fuel-type loader uses the datastore SQL API so it does not download the
+    multi-megabyte CSV. Callers that need a larger public file (the CEC ZEV
+    workbook is about 6 MiB) pass ``max_bytes``.
     """
+    cap = _require_max_bytes(max_bytes)
     _require_allowed(url)
     request_headers = {
         "User-Agent": _USER_AGENT,
@@ -94,16 +97,16 @@ def request_bytes(
     opener = build_opener(_RejectRedirects())
     try:
         with opener.open(request, timeout=timeout) as response:
-            payload = response.read(_MAX_BYTES + 1)
+            payload = response.read(cap + 1)
     except HTTPError as exc:
-        exc.read(_MAX_BYTES)
+        exc.read(cap)
         raise IngestError(
             f"{urlparse(url).hostname} returned HTTP {exc.code} for {redact_url(url)}."
         ) from exc
     except URLError as exc:
         raise IngestError(f"Could not reach {urlparse(url).hostname}.") from exc
-    if len(payload) > _MAX_BYTES:
-        raise IngestError(f"{urlparse(url).hostname} response exceeded {_MAX_BYTES} bytes.")
+    if len(payload) > cap:
+        raise IngestError(f"{urlparse(url).hostname} response exceeded {cap} bytes.")
     return bytes(payload)
 
 
@@ -114,9 +117,17 @@ def request_json(
     body: bytes | None = None,
     headers: dict[str, str] | None = None,
     timeout: float = 60.0,
+    max_bytes: int = _MAX_BYTES,
 ) -> object:
     """Fetch one allowlisted URL and parse the body as JSON."""
-    raw = request_bytes(url, method=method, body=body, headers=headers, timeout=timeout)
+    raw = request_bytes(
+        url,
+        method=method,
+        body=body,
+        headers=headers,
+        timeout=timeout,
+        max_bytes=max_bytes,
+    )
     try:
         parsed: object = json.loads(raw.decode("utf-8-sig"))
     except (UnicodeDecodeError, json.JSONDecodeError) as exc:
@@ -128,6 +139,12 @@ def encode_query(params: dict[str, str]) -> str:
     """Encode a query string, keeping colons so Census ``for=`` matches the docs."""
     parts = [f"{quote(key, safe='')}={quote(value, safe=':')}" for key, value in params.items()]
     return "&".join(parts)
+
+
+def _require_max_bytes(max_bytes: int) -> int:
+    if isinstance(max_bytes, bool) or not isinstance(max_bytes, int) or max_bytes <= 0:
+        raise IngestError(f"max_bytes must be a positive integer, got {max_bytes!r}.")
+    return max_bytes
 
 
 def _require_allowed(url: str) -> None:

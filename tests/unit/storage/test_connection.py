@@ -48,7 +48,7 @@ def test_get_connection_is_idempotent(tmp_path: Path) -> None:
         versions = second.execute(
             "SELECT version FROM schema_migrations ORDER BY version"
         ).fetchall()
-        assert versions == [(1,), (2,)]
+        assert versions == [(1,), (2,), (3,)]
     finally:
         second.close()
 

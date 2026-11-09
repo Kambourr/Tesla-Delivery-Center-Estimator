@@ -71,14 +71,67 @@ All sources below were URL-checked as of 2026-11-08 (America/Los_Angeles). **PUB
 - **Key:** Free HUD User token.
 - **Refresh:** Quarterly. Stale > 2 quarters.
 
-### 7. Electricity — EIA + OpenEI + PG&E (demo)
+### 7. Electricity — utility, then state, then national
 
-- **EIA retail sales (commercial $/kWh by state):** https://www.eia.gov/opendata/ — `electricity/retail-sales` (API key free)
-- **OpenEI URDB:** https://openei.org/services/doc/rest/util_rates/?version=4 · https://api.openei.org/utility_rates
-- **PG&E tariff book:** https://www.pge.com/tariffs/en.html
-  - B-10: https://www.pge.com/tariffs/assets/pdf/tariffbook/ELEC_SCHEDS_B-10.pdf
-  - B-19: https://www.pge.com/tariffs/assets/pdf/tariffbook/ELEC_SCHEDS_B-19.pdf
-- **Refresh:** EIA monthly; PG&E on advice-letter cadence — mark PDF `as_of` from advice header. Stale: EIA > 6 months; tariff PDF > 12 months or superseded schedule.
+`estimate` reads `data/seed/electricity_commercial.csv` and `data/seed/county_utility.csv`. It does not call the network. A curator refreshes the files with `scripts/build_local_cost_seeds.py` after downloading the workbooks. `dce.data.ingest.eia_rates.fetch_state_commercial_rate` can download Table 5.6.A (allowlisted `eia.gov`). `dce.data.ingest.openei_urdb.fetch_urdb_rate` can download one approved schedule when `OPENEI_API_KEY` is set. Neither function runs inside `estimate`.
+
+Fallback, first hit wins:
+
+1. **Utility tariff.** The county's utility has a `pge_pdf` or `openei` row. PG&E (EIA utility `14328`) keeps Schedule B-10: $0.2875/kWh and $20.50/kW-month, effective 2026-03-01. https://www.pge.com/tariffs/assets/pdf/tariffbook/ELEC_SCHEDS_B-10.pdf
+2. **Utility average.** That utility's EIA-861 2024 commercial revenue divided by bundled plus delivery megawatthours. `demand_rate_kw` is 0. The average is revenue per kWh, so demand charges, customer charges, and riders are already in it. Adding a demand charge on top would count them twice. https://www.eia.gov/electricity/data/eia861/
+3. **State.** EIA Electric Power Monthly Table 5.6.A, commercial, August 2026 (cents per kWh, stored as $/kWh). Demand is 0 for the same reason. https://www.eia.gov/electricity/monthly/epm_table_grapher.php?t=epmt_5_6_a
+4. **National.** The U.S. total on that table, $0.1447/kWh. Demand is 0.
+
+The county's utility is the EIA-861 service-territory utility with the largest commercial megawatthours (bundled plus delivery, not energy-only, so choice kWh are not counted twice). A tie goes to the lower utility id. A county name that matches two census counties, or an EIA county that does not match the crosswalk, is left unassigned and the state price is used (30 unmatched and 6 ambiguous on this build). A large investor-owned utility can outrank a local cooperative under the megawatthour rule. Washakie County, Wyoming, resolves to PacifiCorp on that rule.
+
+OpenEI is a parser for a future tariff row. A tariff replaces the utility average. It is not stacked on the average.
+
+### 7b. Commercial property tax
+
+`data/seed/property_tax_commercial.csv`. Lincoln Institute and Minnesota Center for Fiscal Excellence, 50-State Property Tax Comparison Study, taxes paid in 2024, published July 2025. The rate is the tax bill on a $1 million commercial building plus $200,000 of fixtures, as a fraction of that $1.2 million. The national row is the study's 53-city average, 1.755%. https://www.lincolninst.edu/publications/other/50-state-property-tax-comparison-study-2024/
+
+The study PDF is not in git. The rates were transcribed from Appendix Tables 3a, 3b, and 3c. `lincolninst.edu` is not on the runtime allowlist.
+
+Fallback, first hit wins:
+
+1. **County.** The ZIP's county is one of the studied cities or the studied rural municipality.
+2. **State rural.** The county is outside every metro and micro area (`cbsa` is empty) and is not itself a studied county. The rung is that state's rural place.
+3. **State urban.** Any other county. The rung is the largest city, except Illinois (Aurora, not Chicago) and New York (Buffalo, not New York City). Chicago and New York City are county rows.
+4. **National.** 1.755%.
+
+`property_tax.included_in_nnn` stays true. The local rate does not add a second tax line. It shifts `opex_load`:
+
+`opex_load = 0.15 + assessed_value_psf × (local_rate − 0.011) / rent_psf_year`
+
+`assessed_value_psf` stays 250. At the reference rate 1.1% the load stays 0.15. A zero rent is not shifted. The result is never negative. Insurance and CAM stay inside the 15% base. No public commercial-insurance index is applied.
+
+### 9. Build / fit-out cost index
+
+RSMeans and ENR city cost indexes are proprietary and are not copied. Fit-out uses the BEA 2024 goods regional price parity divided by the U.S. goods parity (99.567), so a national ZIP stays at 1 and the $100 per square foot assumption stays the national baseline. `data/seed/bea_rpp_2024.csv`. Released 2026-02-19. https://www.bea.gov/data/prices-inflation/regional-price-parities-state-and-metro-area
+
+`bea.gov` is a curator host. It is not on the runtime allowlist.
+
+The all-items parity is stored and not applied. Housing rents dominate it, and rent is already its own input. The utilities parity is not applied either, because electricity is an EIA price. A metropolitan division uses the parent CBSA (the same map as OEWS: `41884` → `41860`, `35614` → `35620`, `33124` → `33100`). An empty CBSA uses the state. Equipment stays the national catalog price. Only fit-out is indexed.
+
+### 9b. What stays national
+
+These inputs are still one number for every ZIP. A public regional series was not applied, for the reason in the last column.
+
+| Input | Value | Why it stays national |
+|---|---|---|
+| Delivery fee | $1,390 | Tesla posts one fee. There is no public ZIP fee schedule. |
+| Inbound freight | $150 | The assumptions file's carrier-minimum figure. No public lane index is in the seed. Distance is not invented. |
+| Other opex | 8% of lease + labor | The base is already local once rent and wages are local. Scaling it again by a price parity would count the same difference twice. |
+| State income tax and depreciation | California 8.84%, California nonconformity | The DCF is Tesla's consolidated return, not a site-level return. |
+| Overtime multiplier | 1.5 | FLSA, not a California-only rule. |
+| Equipment capex | assumptions catalog | No public equipment price index. Fit-out carries the regional index. |
+| Building size, kWh per square foot, peak kW, staffing, WACC | assumptions file | Operating assumptions, not a Bay Area price. |
+| Insurance and CAM | inside the 15% NNN load | The tax slice of that load moves with section 7b. No separate public insurance index. |
+| Delivery volume outside California | Cox/KBB residual, by ZIP | `estimate` allocates the national Tesla total minus California. It does not hold every ZIP at 4,500. |
+| Wage | OEWS SOC 49-3023 | The metro mean when the parent CBSA publishes it, otherwise the national row. The delivery-role mix is not substituted for that series. |
+| Rent | `resolve_rent` ladder | An observed industrial seed is used as published. The ACS factor is not applied on top of it. 94402 stays the Kidder Mathews $2.14. |
+
+`MODEL_VERSION` is `2026.11.5-local-costs` (`dce.precompute.version`). A precomputed row is stale when its stored model version or inputs hash differs. The hash covers the electricity, property-tax, and price-index seeds. `assumptions_version` stays `2026.11.2`. The golden cost fixtures do not move, because `build_cost_inputs` keeps the assumptions values when the new arguments are omitted.
 
 ### 8. Automatic commercial rent (ZERO manual input)
 
@@ -165,11 +218,6 @@ rent_resolved_cache (
 
 **Refresh cadence:** Broker seed quarterly (manual curator script, not runtime scrape); GSA monthly; ACS annual; HUD FMR annual; ZORI monthly if used. Stale thresholds: broker > 2 quarters → aging; > 4 → stale; GSA > 90 days → aging.
 
-### 9. Build / fit-out cost proxies
-
-- Public RSMeans-style indexes or municipal permit valuation averages, stored as assumption defaults (not typed on every run).
-- Teardown articles: a single unit cost may be entered as an optional advanced assumption; **do not** commit copyrighted teardown text or tables to the repo.
-
 ### 10. Existing US Tesla delivery centers (catchment competitors)
 
 **Output:** `data/seed/tesla_delivery_centers_us_2026-11-08.csv`, built by `scripts/build_us_delivery_centers.py`. `dce.data.ingest.delivery_centers.load_us_delivery_centers` returns every row. `load_delivery_centers` returns only the ten Bay Area research rows (`dce_research_20261108`), because the M3.5a 94402 goldens were calibrated on those nine delivery centers. With the national list, Stockton, Seaside, and Sacramento fall inside the 60-mile cap and move 94402 gravity from 5,522.8 to 5,483.3 deliveries a year. `as_of` is `2026-11-08` on every row. The loader never uses the network. Only the build script does, and only when a curator runs it.
@@ -212,7 +260,7 @@ Downstream code may filter on `confidence` (for example, keep `high` and `medium
 
 Accessed **2026-11-09**. Counts are `data/seed/coverage.json`. The Python API is `docs/contracts/zip_data.md`. Rebuild with `make zip-inputs` and `make zcta-boundaries`. Those targets are not part of `make check`. Tests use fixtures and the committed extracts. They do not download.
 
-The runtime allowlist is unchanged: `census.gov`, `bls.gov`, `huduser.gov`, `eia.gov`, `openei.org`, `energy.ca.gov`, `data.ca.gov`, `pge.com`. `data.hrsa.gov` is a curator host only (`scripts/build_zip_inputs.py`). It is not added to `dce.data.ingest.http`.
+The runtime allowlist is unchanged: `census.gov`, `bls.gov`, `huduser.gov`, `eia.gov`, `openei.org`, `energy.ca.gov`, `data.ca.gov`, `pge.com`. `data.hrsa.gov`, `bea.gov`, and `lincolninst.edu` are curator hosts only. They are not added to `dce.data.ingest.http`. `estimate` reads the committed CSVs.
 
 | Input | File in `data/seed/` | Source | URL | Licence |
 |---|---|---|---|---|
@@ -222,6 +270,9 @@ The runtime allowlist is unchanged: `census.gov`, `bls.gov`, `huduser.gov`, `eia
 | Households, population, income, rent, home value, vehicles | `zcta_acs_2024.csv` | ACS 2024 5-year table-based summary files, ZCTA rows (`GEO_ID` prefix `860Z200US`). No API key. Summary column `B01003_E001` is API `B01003_001E` | https://www2.census.gov/programs-surveys/acs/summary_file/2024/table-based-SF/data/5YRData/ | Public domain. `as_of` `2024-12-31` |
 | Metro wages | `oews_metro_2025.csv` (403 rows) | BLS OEWS via `https://api.bls.gov/publicAPI/v2/timeseries/data/` (v1 when `BLS_API_KEY` is unset). May 2025. SOC `49-3023` mean and median for 392 of 393 metropolitan parent CBSAs. Guayama, PR (`25020`) returned no annual series. Delivery SOCs for the nation (`00000`) and for `41860`. The `www.bls.gov` bulk zip answered HTTP 403 from this environment, so the seed is the API extract. `parse_oews_bulk_csv` can read a curator CSV later | https://www.bls.gov/oes/tables.htm | Public domain. `as_of` `2025-05-01`. All 37 divisions map to the parent CBSA before the lookup |
 | Industrial rent | `rent_cbsa.csv`, `rent_model_coeffs.json` | One cited Kidder Mathews headline. Coefficients are the shipped `acs_rent_v1` defaults, not a GSA fit | https://kidder.com/market-reports/peninsula-industrial-market-report/ | Headline figure and citation only. No PDF in git |
+| Commercial electricity | `electricity_commercial.csv`, `county_utility.csv` | EIA-861 2024 utility averages, EIA Table 5.6.A August 2026 state and US prices, PG&E B-10 for utility 14328 | https://www.eia.gov/electricity/data/eia861/ and https://www.eia.gov/electricity/monthly/xls/table_5_06_a.xlsx | US government work, plus the published PG&E schedule. `as_of` 2024-12-31 (861), 2026-08-31 (EPM), 2026-03-01 (B-10) |
+| Commercial property tax | `property_tax_commercial.csv` | Lincoln Institute / MCFE 50-State study, taxes paid in 2024, $1 million building + $200,000 fixtures | https://www.lincolninst.edu/publications/other/50-state-property-tax-comparison-study-2024/ | Transcribed rates and a citation. The PDF is not in git. `as_of` 2024-12-31 |
+| Goods price parity | `bea_rpp_2024.csv` | BEA Regional Price Parities, 2024, goods and all-items. Fit-out uses goods / U.S. goods | https://www.bea.gov/data/prices-inflation/regional-price-parities-state-and-metro-area | US government work. `as_of` 2024-12-31. Released 2026-02-19 |
 | California ZEV sales | `zev_zip_sales.csv`, `zev_county_sales.csv` | CEC New ZEV Sales workbook, newest year in the file (2026): 7,953 ZIP rows, 4,082 county rows | https://www.energy.ca.gov/files/zev-and-infrastructure-stats-data (file used: https://www.energy.ca.gov/filebrowser/download/10036?fid=10036) | California Energy Commission open data. Outside California, `ev_proxy` is `acs_national_fallback`. No invented state Tesla total |
 | HUD ZIP API | not the shipped crosswalk | `https://www.huduser.gov/hudapi/public/usps` type 2 and type 3. The docs page returned an HTTP 202 WAF challenge on this date, so the parser follows the published `data.results[].geoid` / `tot_ratio` / `state` shape and was not verified live | https://www.huduser.gov/portal/datasets/usps_crosswalk.html | US government work. Needs `HUD_TOKEN`. Missing token raises before any socket |
 

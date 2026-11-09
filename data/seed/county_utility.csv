@@ -1,0 +1,3100 @@
+county_fips,utility_id,utility_name,commercial_mwh
+01001,195,Alabama Power Co,13336758
+01003,195,Alabama Power Co,13336758
+01005,195,Alabama Power Co,13336758
+01007,195,Alabama Power Co,13336758
+01009,195,Alabama Power Co,13336758
+01011,195,Alabama Power Co,13336758
+01013,195,Alabama Power Co,13336758
+01015,195,Alabama Power Co,13336758
+01017,195,Alabama Power Co,13336758
+01019,195,Alabama Power Co,13336758
+01021,195,Alabama Power Co,13336758
+01023,195,Alabama Power Co,13336758
+01025,195,Alabama Power Co,13336758
+01027,195,Alabama Power Co,13336758
+01029,195,Alabama Power Co,13336758
+01031,195,Alabama Power Co,13336758
+01033,6717,Franklin Electric Coop - (AL),188087
+01035,195,Alabama Power Co,13336758
+01037,195,Alabama Power Co,13336758
+01039,195,Alabama Power Co,13336758
+01041,195,Alabama Power Co,13336758
+01043,195,Alabama Power Co,13336758
+01045,195,Alabama Power Co,13336758
+01047,195,Alabama Power Co,13336758
+01049,16629,Sand Mountain Electric Coop,179227
+01051,195,Alabama Power Co,13336758
+01053,195,Alabama Power Co,13336758
+01055,195,Alabama Power Co,13336758
+01057,195,Alabama Power Co,13336758
+01059,195,Alabama Power Co,13336758
+01061,195,Alabama Power Co,13336758
+01063,195,Alabama Power Co,13336758
+01065,195,Alabama Power Co,13336758
+01067,195,Alabama Power Co,13336758
+01069,195,Alabama Power Co,13336758
+01071,16629,Sand Mountain Electric Coop,179227
+01073,195,Alabama Power Co,13336758
+01075,195,Alabama Power Co,13336758
+01077,6422,City of Florence - (AL),431864
+01079,195,Alabama Power Co,13336758
+01081,195,Alabama Power Co,13336758
+01083,944,City of Athens - (AL),407747
+01085,195,Alabama Power Co,13336758
+01087,195,Alabama Power Co,13336758
+01089,9094,City of Huntsville - (AL),2168220
+01091,195,Alabama Power Co,13336758
+01093,195,Alabama Power Co,13336758
+01095,195,Alabama Power Co,13336758
+01097,195,Alabama Power Co,13336758
+01099,195,Alabama Power Co,13336758
+01101,195,Alabama Power Co,13336758
+01103,9739,Joe Wheeler Elec Member Corp,326951
+01105,195,Alabama Power Co,13336758
+01107,195,Alabama Power Co,13336758
+01109,5204,Dixie Electric Coop - (AL),187587
+01111,195,Alabama Power Co,13336758
+01113,195,Alabama Power Co,13336758
+01115,195,Alabama Power Co,13336758
+01117,195,Alabama Power Co,13336758
+01119,195,Alabama Power Co,13336758
+01121,195,Alabama Power Co,13336758
+01123,195,Alabama Power Co,13336758
+01125,195,Alabama Power Co,13336758
+01127,195,Alabama Power Co,13336758
+01129,195,Alabama Power Co,13336758
+01131,195,Alabama Power Co,13336758
+01133,195,Alabama Power Co,13336758
+02020,3522,Chugach Electric Assn Inc,1242359
+02050,221,"Alaska Village Elec Coop, Inc",81597
+02068,7353,Golden Valley Elec Assn Inc,118991
+02070,221,"Alaska Village Elec Coop, Inc",81597
+02090,7353,Golden Valley Elec Assn Inc,118991
+02100,219,Alaska Power and Telephone Co,50720
+02110,213,Alaska Electric Light & Power Co.,126119
+02122,3522,Chugach Electric Assn Inc,1242359
+02130,10210,Ketchikan Public Utilities,76702
+02150,221,"Alaska Village Elec Coop, Inc",81597
+02158,221,"Alaska Village Elec Coop, Inc",81597
+02170,11824,Matanuska Electric Assn Inc,321388
+02180,221,"Alaska Village Elec Coop, Inc",81597
+02185,19277,TDX North Slope Generating Co,47662
+02188,221,"Alaska Village Elec Coop, Inc",81597
+02240,7353,Golden Valley Elec Assn Inc,118991
+02282,221,"Alaska Village Elec Coop, Inc",81597
+02290,7353,Golden Valley Elec Assn Inc,118991
+04001,803,Arizona Public Service Co,16070942
+04003,803,Arizona Public Service Co,16070942
+04005,803,Arizona Public Service Co,16070942
+04007,803,Arizona Public Service Co,16070942
+04009,803,Arizona Public Service Co,16070942
+04011,803,Arizona Public Service Co,16070942
+04012,17609,Southern California Edison Co,48211694
+04013,803,Arizona Public Service Co,16070942
+04015,803,Arizona Public Service Co,16070942
+04017,803,Arizona Public Service Co,16070942
+04019,803,Arizona Public Service Co,16070942
+04021,803,Arizona Public Service Co,16070942
+04023,803,Arizona Public Service Co,16070942
+04025,803,Arizona Public Service Co,16070942
+04027,803,Arizona Public Service Co,16070942
+05001,814,Entergy Arkansas LLC,5782256
+05003,814,Entergy Arkansas LLC,5782256
+05005,814,Entergy Arkansas LLC,5782256
+05007,17698,Southwestern Electric Power Co,5535619
+05009,814,Entergy Arkansas LLC,5782256
+05011,814,Entergy Arkansas LLC,5782256
+05013,814,Entergy Arkansas LLC,5782256
+05015,814,Entergy Arkansas LLC,5782256
+05017,814,Entergy Arkansas LLC,5782256
+05019,814,Entergy Arkansas LLC,5782256
+05021,814,Entergy Arkansas LLC,5782256
+05023,814,Entergy Arkansas LLC,5782256
+05025,814,Entergy Arkansas LLC,5782256
+05027,814,Entergy Arkansas LLC,5782256
+05029,814,Entergy Arkansas LLC,5782256
+05031,814,Entergy Arkansas LLC,5782256
+05033,14063,Oklahoma Gas & Electric Co,13595741
+05035,814,Entergy Arkansas LLC,5782256
+05037,814,Entergy Arkansas LLC,5782256
+05039,814,Entergy Arkansas LLC,5782256
+05041,814,Entergy Arkansas LLC,5782256
+05043,814,Entergy Arkansas LLC,5782256
+05045,814,Entergy Arkansas LLC,5782256
+05047,14063,Oklahoma Gas & Electric Co,13595741
+05049,814,Entergy Arkansas LLC,5782256
+05051,814,Entergy Arkansas LLC,5782256
+05053,814,Entergy Arkansas LLC,5782256
+05055,814,Entergy Arkansas LLC,5782256
+05057,814,Entergy Arkansas LLC,5782256
+05059,814,Entergy Arkansas LLC,5782256
+05061,17698,Southwestern Electric Power Co,5535619
+05063,814,Entergy Arkansas LLC,5782256
+05065,814,Entergy Arkansas LLC,5782256
+05067,814,Entergy Arkansas LLC,5782256
+05069,814,Entergy Arkansas LLC,5782256
+05071,14063,Oklahoma Gas & Electric Co,13595741
+05073,814,Entergy Arkansas LLC,5782256
+05075,814,Entergy Arkansas LLC,5782256
+05077,814,Entergy Arkansas LLC,5782256
+05079,814,Entergy Arkansas LLC,5782256
+05081,17698,Southwestern Electric Power Co,5535619
+05083,14063,Oklahoma Gas & Electric Co,13595741
+05085,814,Entergy Arkansas LLC,5782256
+05087,3093,Carroll Electric Coop Corp - (AR),469710
+05089,814,Entergy Arkansas LLC,5782256
+05091,814,Entergy Arkansas LLC,5782256
+05093,814,Entergy Arkansas LLC,5782256
+05095,814,Entergy Arkansas LLC,5782256
+05097,814,Entergy Arkansas LLC,5782256
+05099,814,Entergy Arkansas LLC,5782256
+05101,814,Entergy Arkansas LLC,5782256
+05103,814,Entergy Arkansas LLC,5782256
+05105,814,Entergy Arkansas LLC,5782256
+05107,814,Entergy Arkansas LLC,5782256
+05109,814,Entergy Arkansas LLC,5782256
+05111,814,Entergy Arkansas LLC,5782256
+05113,17698,Southwestern Electric Power Co,5535619
+05115,814,Entergy Arkansas LLC,5782256
+05117,814,Entergy Arkansas LLC,5782256
+05119,814,Entergy Arkansas LLC,5782256
+05121,814,Entergy Arkansas LLC,5782256
+05123,814,Entergy Arkansas LLC,5782256
+05125,814,Entergy Arkansas LLC,5782256
+05127,14063,Oklahoma Gas & Electric Co,13595741
+05129,814,Entergy Arkansas LLC,5782256
+05131,14063,Oklahoma Gas & Electric Co,13595741
+05133,17698,Southwestern Electric Power Co,5535619
+05135,814,Entergy Arkansas LLC,5782256
+05137,814,Entergy Arkansas LLC,5782256
+05139,814,Entergy Arkansas LLC,5782256
+05141,814,Entergy Arkansas LLC,5782256
+05143,14063,Oklahoma Gas & Electric Co,13595741
+05145,814,Entergy Arkansas LLC,5782256
+05147,814,Entergy Arkansas LLC,5782256
+05149,814,Entergy Arkansas LLC,5782256
+06001,14328,Pacific Gas & Electric Co.,28797402
+06003,14328,Pacific Gas & Electric Co.,28797402
+06005,14328,Pacific Gas & Electric Co.,28797402
+06007,14328,Pacific Gas & Electric Co.,28797402
+06009,14328,Pacific Gas & Electric Co.,28797402
+06011,14328,Pacific Gas & Electric Co.,28797402
+06013,14328,Pacific Gas & Electric Co.,28797402
+06015,14354,PacifiCorp,21994492
+06017,14328,Pacific Gas & Electric Co.,28797402
+06019,17609,Southern California Edison Co,48211694
+06021,14328,Pacific Gas & Electric Co.,28797402
+06023,14328,Pacific Gas & Electric Co.,28797402
+06025,17609,Southern California Edison Co,48211694
+06027,17609,Southern California Edison Co,48211694
+06029,17609,Southern California Edison Co,48211694
+06031,17609,Southern California Edison Co,48211694
+06033,14328,Pacific Gas & Electric Co.,28797402
+06035,14328,Pacific Gas & Electric Co.,28797402
+06037,17609,Southern California Edison Co,48211694
+06039,17609,Southern California Edison Co,48211694
+06041,14328,Pacific Gas & Electric Co.,28797402
+06043,14328,Pacific Gas & Electric Co.,28797402
+06045,14328,Pacific Gas & Electric Co.,28797402
+06047,14328,Pacific Gas & Electric Co.,28797402
+06049,14328,Pacific Gas & Electric Co.,28797402
+06051,17609,Southern California Edison Co,48211694
+06053,14328,Pacific Gas & Electric Co.,28797402
+06055,14328,Pacific Gas & Electric Co.,28797402
+06057,14328,Pacific Gas & Electric Co.,28797402
+06059,17609,Southern California Edison Co,48211694
+06061,14328,Pacific Gas & Electric Co.,28797402
+06063,14328,Pacific Gas & Electric Co.,28797402
+06065,17609,Southern California Edison Co,48211694
+06067,14328,Pacific Gas & Electric Co.,28797402
+06069,14328,Pacific Gas & Electric Co.,28797402
+06071,17609,Southern California Edison Co,48211694
+06073,17609,Southern California Edison Co,48211694
+06075,14328,Pacific Gas & Electric Co.,28797402
+06077,14328,Pacific Gas & Electric Co.,28797402
+06079,14328,Pacific Gas & Electric Co.,28797402
+06081,14328,Pacific Gas & Electric Co.,28797402
+06083,17609,Southern California Edison Co,48211694
+06085,14328,Pacific Gas & Electric Co.,28797402
+06087,14328,Pacific Gas & Electric Co.,28797402
+06089,14328,Pacific Gas & Electric Co.,28797402
+06091,14328,Pacific Gas & Electric Co.,28797402
+06093,14328,Pacific Gas & Electric Co.,28797402
+06095,14328,Pacific Gas & Electric Co.,28797402
+06097,14328,Pacific Gas & Electric Co.,28797402
+06099,14328,Pacific Gas & Electric Co.,28797402
+06101,14328,Pacific Gas & Electric Co.,28797402
+06103,14328,Pacific Gas & Electric Co.,28797402
+06105,14328,Pacific Gas & Electric Co.,28797402
+06107,17609,Southern California Edison Co,48211694
+06109,17609,Southern California Edison Co,48211694
+06111,17609,Southern California Edison Co,48211694
+06113,14328,Pacific Gas & Electric Co.,28797402
+06115,14328,Pacific Gas & Electric Co.,28797402
+08001,15466,Public Service Co of Colorado,12655120
+08003,15466,Public Service Co of Colorado,12655120
+08005,15466,Public Service Co of Colorado,12655120
+08007,15466,Public Service Co of Colorado,12655120
+08009,15466,Public Service Co of Colorado,12655120
+08011,15466,Public Service Co of Colorado,12655120
+08013,15466,Public Service Co of Colorado,12655120
+08014,27000,WAPA-- Western Area Power Administration,2939735
+08015,15466,Public Service Co of Colorado,12655120
+08017,20510,"Wheatland Electric Coop, Inc",496289
+08019,15466,Public Service Co of Colorado,12655120
+08021,15466,Public Service Co of Colorado,12655120
+08023,15466,Public Service Co of Colorado,12655120
+08025,15466,Public Service Co of Colorado,12655120
+08027,15466,Public Service Co of Colorado,12655120
+08029,15466,Public Service Co of Colorado,12655120
+08031,15466,Public Service Co of Colorado,12655120
+08033,15466,Public Service Co of Colorado,12655120
+08035,15466,Public Service Co of Colorado,12655120
+08037,15466,Public Service Co of Colorado,12655120
+08039,15466,Public Service Co of Colorado,12655120
+08041,15466,Public Service Co of Colorado,12655120
+08043,15466,Public Service Co of Colorado,12655120
+08045,15466,Public Service Co of Colorado,12655120
+08047,15466,Public Service Co of Colorado,12655120
+08049,15466,Public Service Co of Colorado,12655120
+08051,15466,Public Service Co of Colorado,12655120
+08053,15466,Public Service Co of Colorado,12655120
+08055,15466,Public Service Co of Colorado,12655120
+08057,27000,WAPA-- Western Area Power Administration,2939735
+08059,15466,Public Service Co of Colorado,12655120
+08061,15466,Public Service Co of Colorado,12655120
+08063,10066,K C Electric Association,121498
+08065,15466,Public Service Co of Colorado,12655120
+08067,15466,Public Service Co of Colorado,12655120
+08069,15466,Public Service Co of Colorado,12655120
+08071,15466,Public Service Co of Colorado,12655120
+08073,27000,WAPA-- Western Area Power Administration,2939735
+08075,15466,Public Service Co of Colorado,12655120
+08077,15466,Public Service Co of Colorado,12655120
+08079,15466,Public Service Co of Colorado,12655120
+08081,15466,Public Service Co of Colorado,12655120
+08083,15466,Public Service Co of Colorado,12655120
+08085,15466,Public Service Co of Colorado,12655120
+08087,15466,Public Service Co of Colorado,12655120
+08089,15466,Public Service Co of Colorado,12655120
+08091,15466,Public Service Co of Colorado,12655120
+08093,15466,Public Service Co of Colorado,12655120
+08095,27000,WAPA-- Western Area Power Administration,2939735
+08097,15466,Public Service Co of Colorado,12655120
+08099,15466,Public Service Co of Colorado,12655120
+08101,15466,Public Service Co of Colorado,12655120
+08103,15466,Public Service Co of Colorado,12655120
+08105,15466,Public Service Co of Colorado,12655120
+08107,15466,Public Service Co of Colorado,12655120
+08109,15466,Public Service Co of Colorado,12655120
+08111,10539,"La Plata Electric Assn, Inc",252265
+08113,15466,Public Service Co of Colorado,12655120
+08115,27000,WAPA-- Western Area Power Administration,2939735
+08117,15466,Public Service Co of Colorado,12655120
+08119,15466,Public Service Co of Colorado,12655120
+08121,15466,Public Service Co of Colorado,12655120
+08123,15466,Public Service Co of Colorado,12655120
+08125,15466,Public Service Co of Colorado,12655120
+09001,4176,Connecticut Light & Power Co,8459689
+09003,4176,Connecticut Light & Power Co,8459689
+09005,4176,Connecticut Light & Power Co,8459689
+09007,4176,Connecticut Light & Power Co,8459689
+09009,4176,Connecticut Light & Power Co,8459689
+09011,4176,Connecticut Light & Power Co,8459689
+09013,4176,Connecticut Light & Power Co,8459689
+09015,4176,Connecticut Light & Power Co,8459689
+10001,5027,Delmarva Power,5194749
+10003,5027,Delmarva Power,5194749
+10005,5027,Delmarva Power,5194749
+11001,15270,Potomac Electric Power Co,14550141
+12001,6452,Florida Power & Light Co,53585736
+12003,6452,Florida Power & Light Co,53585736
+12005,6452,Florida Power & Light Co,53585736
+12007,6452,Florida Power & Light Co,53585736
+12009,6452,Florida Power & Light Co,53585736
+12011,6452,Florida Power & Light Co,53585736
+12013,6457,Florida Public Utilities Co,305971
+12015,6452,Florida Power & Light Co,53585736
+12017,6455,"Duke Energy Florida, LLC",15801970
+12019,6452,Florida Power & Light Co,53585736
+12021,6452,Florida Power & Light Co,53585736
+12023,6452,Florida Power & Light Co,53585736
+12027,6452,Florida Power & Light Co,53585736
+12029,6455,"Duke Energy Florida, LLC",15801970
+12031,6452,Florida Power & Light Co,53585736
+12033,6452,Florida Power & Light Co,53585736
+12035,6452,Florida Power & Light Co,53585736
+12037,6455,"Duke Energy Florida, LLC",15801970
+12039,18449,"Talquin Electric Coop, Inc",166373
+12041,6455,"Duke Energy Florida, LLC",15801970
+12043,6452,Florida Power & Light Co,53585736
+12045,6455,"Duke Energy Florida, LLC",15801970
+12047,6455,"Duke Energy Florida, LLC",15801970
+12049,6452,Florida Power & Light Co,53585736
+12051,6452,Florida Power & Light Co,53585736
+12053,6455,"Duke Energy Florida, LLC",15801970
+12055,6452,Florida Power & Light Co,53585736
+12057,6455,"Duke Energy Florida, LLC",15801970
+12059,6452,Florida Power & Light Co,53585736
+12061,6452,Florida Power & Light Co,53585736
+12063,6452,Florida Power & Light Co,53585736
+12065,6455,"Duke Energy Florida, LLC",15801970
+12067,6455,"Duke Energy Florida, LLC",15801970
+12069,6455,"Duke Energy Florida, LLC",15801970
+12071,6452,Florida Power & Light Co,53585736
+12073,6455,"Duke Energy Florida, LLC",15801970
+12075,6455,"Duke Energy Florida, LLC",15801970
+12077,6457,Florida Public Utilities Co,305971
+12079,6455,"Duke Energy Florida, LLC",15801970
+12081,6452,Florida Power & Light Co,53585736
+12083,6455,"Duke Energy Florida, LLC",15801970
+12085,6452,Florida Power & Light Co,53585736
+12086,6452,Florida Power & Light Co,53585736
+12087,6452,Florida Power & Light Co,53585736
+12089,6452,Florida Power & Light Co,53585736
+12091,6452,Florida Power & Light Co,53585736
+12093,6452,Florida Power & Light Co,53585736
+12095,6452,Florida Power & Light Co,53585736
+12097,6452,Florida Power & Light Co,53585736
+12099,6452,Florida Power & Light Co,53585736
+12101,6455,"Duke Energy Florida, LLC",15801970
+12103,6455,"Duke Energy Florida, LLC",15801970
+12105,6455,"Duke Energy Florida, LLC",15801970
+12107,6452,Florida Power & Light Co,53585736
+12109,6452,Florida Power & Light Co,53585736
+12111,6452,Florida Power & Light Co,53585736
+12113,6452,Florida Power & Light Co,53585736
+12115,6452,Florida Power & Light Co,53585736
+12117,6452,Florida Power & Light Co,53585736
+12119,6455,"Duke Energy Florida, LLC",15801970
+12121,6452,Florida Power & Light Co,53585736
+12123,6455,"Duke Energy Florida, LLC",15801970
+12125,6452,Florida Power & Light Co,53585736
+12127,6452,Florida Power & Light Co,53585736
+12129,6455,"Duke Energy Florida, LLC",15801970
+12131,6452,Florida Power & Light Co,53585736
+12133,6452,Florida Power & Light Co,53585736
+13001,7140,Georgia Power Co,34306574
+13003,7140,Georgia Power Co,34306574
+13005,7140,Georgia Power Co,34306574
+13007,7140,Georgia Power Co,34306574
+13009,7140,Georgia Power Co,34306574
+13011,7140,Georgia Power Co,34306574
+13013,7140,Georgia Power Co,34306574
+13015,7140,Georgia Power Co,34306574
+13017,7140,Georgia Power Co,34306574
+13019,7140,Georgia Power Co,34306574
+13021,7140,Georgia Power Co,34306574
+13023,7140,Georgia Power Co,34306574
+13025,7140,Georgia Power Co,34306574
+13027,7140,Georgia Power Co,34306574
+13029,7140,Georgia Power Co,34306574
+13031,7140,Georgia Power Co,34306574
+13033,7140,Georgia Power Co,34306574
+13035,7140,Georgia Power Co,34306574
+13037,7140,Georgia Power Co,34306574
+13039,7140,Georgia Power Co,34306574
+13043,7140,Georgia Power Co,34306574
+13045,7140,Georgia Power Co,34306574
+13047,7140,Georgia Power Co,34306574
+13049,7140,Georgia Power Co,34306574
+13051,2903,Canoochee Electric Member Corp,100438
+13053,7140,Georgia Power Co,34306574
+13055,7140,Georgia Power Co,34306574
+13057,7140,Georgia Power Co,34306574
+13059,7140,Georgia Power Co,34306574
+13061,7140,Georgia Power Co,34306574
+13063,7140,Georgia Power Co,34306574
+13065,7140,Georgia Power Co,34306574
+13067,7140,Georgia Power Co,34306574
+13069,7140,Georgia Power Co,34306574
+13071,7140,Georgia Power Co,34306574
+13073,7140,Georgia Power Co,34306574
+13075,7140,Georgia Power Co,34306574
+13077,7140,Georgia Power Co,34306574
+13079,7140,Georgia Power Co,34306574
+13081,7140,Georgia Power Co,34306574
+13083,7140,Georgia Power Co,34306574
+13085,7140,Georgia Power Co,34306574
+13087,7140,Georgia Power Co,34306574
+13089,7140,Georgia Power Co,34306574
+13091,7140,Georgia Power Co,34306574
+13093,7140,Georgia Power Co,34306574
+13095,7140,Georgia Power Co,34306574
+13097,7140,Georgia Power Co,34306574
+13099,7140,Georgia Power Co,34306574
+13101,7140,Georgia Power Co,34306574
+13103,7140,Georgia Power Co,34306574
+13105,7140,Georgia Power Co,34306574
+13107,7140,Georgia Power Co,34306574
+13109,7140,Georgia Power Co,34306574
+13111,1891,Blue Ridge Mountain EMC - (GA),230386
+13113,7140,Georgia Power Co,34306574
+13115,7140,Georgia Power Co,34306574
+13117,7140,Georgia Power Co,34306574
+13119,7140,Georgia Power Co,34306574
+13121,7140,Georgia Power Co,34306574
+13123,7140,Georgia Power Co,34306574
+13125,7140,Georgia Power Co,34306574
+13127,7140,Georgia Power Co,34306574
+13129,7140,Georgia Power Co,34306574
+13131,7140,Georgia Power Co,34306574
+13133,7140,Georgia Power Co,34306574
+13135,7140,Georgia Power Co,34306574
+13137,7140,Georgia Power Co,34306574
+13139,7140,Georgia Power Co,34306574
+13141,7140,Georgia Power Co,34306574
+13143,7140,Georgia Power Co,34306574
+13145,7140,Georgia Power Co,34306574
+13147,7140,Georgia Power Co,34306574
+13149,7140,Georgia Power Co,34306574
+13151,7140,Georgia Power Co,34306574
+13153,7140,Georgia Power Co,34306574
+13155,7140,Georgia Power Co,34306574
+13157,7140,Georgia Power Co,34306574
+13159,7140,Georgia Power Co,34306574
+13161,7140,Georgia Power Co,34306574
+13163,7140,Georgia Power Co,34306574
+13165,7140,Georgia Power Co,34306574
+13167,7140,Georgia Power Co,34306574
+13169,7140,Georgia Power Co,34306574
+13171,7140,Georgia Power Co,34306574
+13173,7140,Georgia Power Co,34306574
+13175,7140,Georgia Power Co,34306574
+13177,7140,Georgia Power Co,34306574
+13179,7140,Georgia Power Co,34306574
+13181,7140,Georgia Power Co,34306574
+13183,7140,Georgia Power Co,34306574
+13185,7140,Georgia Power Co,34306574
+13187,7140,Georgia Power Co,34306574
+13189,7140,Georgia Power Co,34306574
+13191,7140,Georgia Power Co,34306574
+13193,7140,Georgia Power Co,34306574
+13195,7140,Georgia Power Co,34306574
+13197,7140,Georgia Power Co,34306574
+13199,7140,Georgia Power Co,34306574
+13201,7140,Georgia Power Co,34306574
+13205,7140,Georgia Power Co,34306574
+13207,7140,Georgia Power Co,34306574
+13209,7140,Georgia Power Co,34306574
+13211,7140,Georgia Power Co,34306574
+13213,7140,Georgia Power Co,34306574
+13215,7140,Georgia Power Co,34306574
+13217,7140,Georgia Power Co,34306574
+13219,7140,Georgia Power Co,34306574
+13221,7140,Georgia Power Co,34306574
+13223,7140,Georgia Power Co,34306574
+13225,7140,Georgia Power Co,34306574
+13227,7140,Georgia Power Co,34306574
+13229,7140,Georgia Power Co,34306574
+13231,7140,Georgia Power Co,34306574
+13233,7140,Georgia Power Co,34306574
+13235,7140,Georgia Power Co,34306574
+13237,7140,Georgia Power Co,34306574
+13239,7140,Georgia Power Co,34306574
+13241,7140,Georgia Power Co,34306574
+13243,7140,Georgia Power Co,34306574
+13245,7140,Georgia Power Co,34306574
+13247,7140,Georgia Power Co,34306574
+13249,7140,Georgia Power Co,34306574
+13251,7140,Georgia Power Co,34306574
+13253,7140,Georgia Power Co,34306574
+13255,7140,Georgia Power Co,34306574
+13257,7140,Georgia Power Co,34306574
+13259,7140,Georgia Power Co,34306574
+13261,7140,Georgia Power Co,34306574
+13263,7140,Georgia Power Co,34306574
+13265,7140,Georgia Power Co,34306574
+13267,7140,Georgia Power Co,34306574
+13269,7140,Georgia Power Co,34306574
+13271,7140,Georgia Power Co,34306574
+13273,7140,Georgia Power Co,34306574
+13275,7140,Georgia Power Co,34306574
+13277,7140,Georgia Power Co,34306574
+13279,7140,Georgia Power Co,34306574
+13281,1891,Blue Ridge Mountain EMC - (GA),230386
+13283,7140,Georgia Power Co,34306574
+13285,7140,Georgia Power Co,34306574
+13287,7140,Georgia Power Co,34306574
+13289,7140,Georgia Power Co,34306574
+13291,1891,Blue Ridge Mountain EMC - (GA),230386
+13293,7140,Georgia Power Co,34306574
+13295,7140,Georgia Power Co,34306574
+13297,7140,Georgia Power Co,34306574
+13299,7140,Georgia Power Co,34306574
+13301,7140,Georgia Power Co,34306574
+13303,7140,Georgia Power Co,34306574
+13305,7140,Georgia Power Co,34306574
+13307,7140,Georgia Power Co,34306574
+13309,7140,Georgia Power Co,34306574
+13311,7140,Georgia Power Co,34306574
+13313,7140,Georgia Power Co,34306574
+13315,7140,Georgia Power Co,34306574
+13317,7140,Georgia Power Co,34306574
+13319,7140,Georgia Power Co,34306574
+13321,7140,Georgia Power Co,34306574
+15001,8287,Hawaii Electric Light Co Inc,365299
+15003,19547,Hawaiian Electric Co Inc,1947937
+15005,11843,Maui Electric Co Ltd,308918
+15007,10071,Kauai Island Utility Cooperative,118236
+15009,11843,Maui Electric Co Ltd,308918
+16001,9191,Idaho Power Co,4332006
+16003,9191,Idaho Power Co,4332006
+16005,14354,PacifiCorp,21994492
+16007,14354,PacifiCorp,21994492
+16009,20169,Avista Corp,3199806
+16011,14354,PacifiCorp,21994492
+16013,9191,Idaho Power Co,4332006
+16015,9191,Idaho Power Co,4332006
+16017,20169,Avista Corp,3199806
+16019,14354,PacifiCorp,21994492
+16021,13758,"Northern Lights, Inc",60435
+16023,14354,PacifiCorp,21994492
+16025,9191,Idaho Power Co,4332006
+16027,9191,Idaho Power Co,4332006
+16029,14354,PacifiCorp,21994492
+16031,9191,Idaho Power Co,4332006
+16033,14354,PacifiCorp,21994492
+16035,20169,Avista Corp,3199806
+16037,1738,Bonneville Power Administration,687678
+16039,9191,Idaho Power Co,4332006
+16041,14354,PacifiCorp,21994492
+16043,14354,PacifiCorp,21994492
+16045,9191,Idaho Power Co,4332006
+16047,9191,Idaho Power Co,4332006
+16049,9191,Idaho Power Co,4332006
+16051,14354,PacifiCorp,21994492
+16053,9191,Idaho Power Co,4332006
+16055,20169,Avista Corp,3199806
+16057,20169,Avista Corp,3199806
+16059,9191,Idaho Power Co,4332006
+16061,20169,Avista Corp,3199806
+16063,9191,Idaho Power Co,4332006
+16065,14354,PacifiCorp,21994492
+16067,9191,Idaho Power Co,4332006
+16069,20169,Avista Corp,3199806
+16071,14354,PacifiCorp,21994492
+16073,9191,Idaho Power Co,4332006
+16075,9191,Idaho Power Co,4332006
+16077,14354,PacifiCorp,21994492
+16079,20169,Avista Corp,3199806
+16081,14354,PacifiCorp,21994492
+16083,9191,Idaho Power Co,4332006
+16085,9191,Idaho Power Co,4332006
+16087,9191,Idaho Power Co,4332006
+17001,56697,Ameren Illinois Company,11886170
+17003,56697,Ameren Illinois Company,11886170
+17005,56697,Ameren Illinois Company,11886170
+17007,4110,Commonwealth Edison Co,28811409
+17009,56697,Ameren Illinois Company,11886170
+17011,4110,Commonwealth Edison Co,28811409
+17013,56697,Ameren Illinois Company,11886170
+17015,4110,Commonwealth Edison Co,28811409
+17017,56697,Ameren Illinois Company,11886170
+17019,56697,Ameren Illinois Company,11886170
+17021,56697,Ameren Illinois Company,11886170
+17023,56697,Ameren Illinois Company,11886170
+17025,56697,Ameren Illinois Company,11886170
+17027,56697,Ameren Illinois Company,11886170
+17029,56697,Ameren Illinois Company,11886170
+17031,4110,Commonwealth Edison Co,28811409
+17033,56697,Ameren Illinois Company,11886170
+17035,56697,Ameren Illinois Company,11886170
+17037,4110,Commonwealth Edison Co,28811409
+17039,56697,Ameren Illinois Company,11886170
+17041,56697,Ameren Illinois Company,11886170
+17043,4110,Commonwealth Edison Co,28811409
+17045,56697,Ameren Illinois Company,11886170
+17047,56697,Ameren Illinois Company,11886170
+17049,56697,Ameren Illinois Company,11886170
+17051,56697,Ameren Illinois Company,11886170
+17053,4110,Commonwealth Edison Co,28811409
+17055,56697,Ameren Illinois Company,11886170
+17057,56697,Ameren Illinois Company,11886170
+17059,56697,Ameren Illinois Company,11886170
+17061,56697,Ameren Illinois Company,11886170
+17063,4110,Commonwealth Edison Co,28811409
+17065,17585,"Southeastern IL Elec Coop, Inc",88535
+17067,56697,Ameren Illinois Company,11886170
+17069,17585,"Southeastern IL Elec Coop, Inc",88535
+17071,56697,Ameren Illinois Company,11886170
+17073,56697,Ameren Illinois Company,11886170
+17075,56697,Ameren Illinois Company,11886170
+17077,56697,Ameren Illinois Company,11886170
+17079,56697,Ameren Illinois Company,11886170
+17081,56697,Ameren Illinois Company,11886170
+17083,56697,Ameren Illinois Company,11886170
+17085,4110,Commonwealth Edison Co,28811409
+17087,56697,Ameren Illinois Company,11886170
+17089,4110,Commonwealth Edison Co,28811409
+17091,4110,Commonwealth Edison Co,28811409
+17093,4110,Commonwealth Edison Co,28811409
+17095,56697,Ameren Illinois Company,11886170
+17097,4110,Commonwealth Edison Co,28811409
+17099,4110,Commonwealth Edison Co,28811409
+17101,56697,Ameren Illinois Company,11886170
+17103,4110,Commonwealth Edison Co,28811409
+17105,4110,Commonwealth Edison Co,28811409
+17107,56697,Ameren Illinois Company,11886170
+17109,56697,Ameren Illinois Company,11886170
+17111,4110,Commonwealth Edison Co,28811409
+17113,56697,Ameren Illinois Company,11886170
+17115,56697,Ameren Illinois Company,11886170
+17117,56697,Ameren Illinois Company,11886170
+17119,56697,Ameren Illinois Company,11886170
+17121,56697,Ameren Illinois Company,11886170
+17123,4110,Commonwealth Edison Co,28811409
+17125,56697,Ameren Illinois Company,11886170
+17127,56697,Ameren Illinois Company,11886170
+17129,56697,Ameren Illinois Company,11886170
+17131,56697,Ameren Illinois Company,11886170
+17133,56697,Ameren Illinois Company,11886170
+17135,56697,Ameren Illinois Company,11886170
+17137,56697,Ameren Illinois Company,11886170
+17139,56697,Ameren Illinois Company,11886170
+17141,4110,Commonwealth Edison Co,28811409
+17143,56697,Ameren Illinois Company,11886170
+17145,56697,Ameren Illinois Company,11886170
+17147,56697,Ameren Illinois Company,11886170
+17149,56697,Ameren Illinois Company,11886170
+17151,17585,"Southeastern IL Elec Coop, Inc",88535
+17153,56697,Ameren Illinois Company,11886170
+17155,56697,Ameren Illinois Company,11886170
+17157,56697,Ameren Illinois Company,11886170
+17159,56697,Ameren Illinois Company,11886170
+17161,12341,MidAmerican Energy Co,5589082
+17163,56697,Ameren Illinois Company,11886170
+17165,56697,Ameren Illinois Company,11886170
+17167,56697,Ameren Illinois Company,11886170
+17169,56697,Ameren Illinois Company,11886170
+17171,56697,Ameren Illinois Company,11886170
+17173,56697,Ameren Illinois Company,11886170
+17175,56697,Ameren Illinois Company,11886170
+17177,4110,Commonwealth Edison Co,28811409
+17179,56697,Ameren Illinois Company,11886170
+17181,56697,Ameren Illinois Company,11886170
+17183,56697,Ameren Illinois Company,11886170
+17185,56697,Ameren Illinois Company,11886170
+17187,56697,Ameren Illinois Company,11886170
+17189,56697,Ameren Illinois Company,11886170
+17191,56697,Ameren Illinois Company,11886170
+17193,56697,Ameren Illinois Company,11886170
+17195,4110,Commonwealth Edison Co,28811409
+17197,4110,Commonwealth Edison Co,28811409
+17199,56697,Ameren Illinois Company,11886170
+17201,4110,Commonwealth Edison Co,28811409
+17203,4110,Commonwealth Edison Co,28811409
+18001,9324,Indiana Michigan Power Co,5321674
+18003,9324,Indiana Michigan Power Co,5321674
+18005,15470,"Duke Energy Indiana, LLC",8229148
+18007,15470,"Duke Energy Indiana, LLC",8229148
+18009,9324,Indiana Michigan Power Co,5321674
+18011,15470,"Duke Energy Indiana, LLC",8229148
+18013,15470,"Duke Energy Indiana, LLC",8229148
+18015,15470,"Duke Energy Indiana, LLC",8229148
+18017,15470,"Duke Energy Indiana, LLC",8229148
+18019,15470,"Duke Energy Indiana, LLC",8229148
+18021,15470,"Duke Energy Indiana, LLC",8229148
+18023,15470,"Duke Energy Indiana, LLC",8229148
+18025,15470,"Duke Energy Indiana, LLC",8229148
+18027,15470,"Duke Energy Indiana, LLC",8229148
+18029,15470,"Duke Energy Indiana, LLC",8229148
+18031,15470,"Duke Energy Indiana, LLC",8229148
+18033,9324,Indiana Michigan Power Co,5321674
+18035,15470,"Duke Energy Indiana, LLC",8229148
+18037,15470,"Duke Energy Indiana, LLC",8229148
+18039,9324,Indiana Michigan Power Co,5321674
+18041,15470,"Duke Energy Indiana, LLC",8229148
+18043,15470,"Duke Energy Indiana, LLC",8229148
+18045,15470,"Duke Energy Indiana, LLC",8229148
+18047,15470,"Duke Energy Indiana, LLC",8229148
+18049,15470,"Duke Energy Indiana, LLC",8229148
+18051,15470,"Duke Energy Indiana, LLC",8229148
+18053,15470,"Duke Energy Indiana, LLC",8229148
+18055,15470,"Duke Energy Indiana, LLC",8229148
+18057,15470,"Duke Energy Indiana, LLC",8229148
+18059,15470,"Duke Energy Indiana, LLC",8229148
+18061,15470,"Duke Energy Indiana, LLC",8229148
+18063,15470,"Duke Energy Indiana, LLC",8229148
+18065,15470,"Duke Energy Indiana, LLC",8229148
+18067,15470,"Duke Energy Indiana, LLC",8229148
+18069,15470,"Duke Energy Indiana, LLC",8229148
+18071,15470,"Duke Energy Indiana, LLC",8229148
+18073,13756,Northern Indiana Pub Serv Co,3765256
+18075,9324,Indiana Michigan Power Co,5321674
+18077,15470,"Duke Energy Indiana, LLC",8229148
+18079,15470,"Duke Energy Indiana, LLC",8229148
+18081,15470,"Duke Energy Indiana, LLC",8229148
+18083,15470,"Duke Energy Indiana, LLC",8229148
+18085,15470,"Duke Energy Indiana, LLC",8229148
+18087,9324,Indiana Michigan Power Co,5321674
+18089,13756,Northern Indiana Pub Serv Co,3765256
+18091,9324,Indiana Michigan Power Co,5321674
+18093,15470,"Duke Energy Indiana, LLC",8229148
+18095,15470,"Duke Energy Indiana, LLC",8229148
+18097,15470,"Duke Energy Indiana, LLC",8229148
+18099,9324,Indiana Michigan Power Co,5321674
+18101,15470,"Duke Energy Indiana, LLC",8229148
+18103,15470,"Duke Energy Indiana, LLC",8229148
+18105,15470,"Duke Energy Indiana, LLC",8229148
+18107,15470,"Duke Energy Indiana, LLC",8229148
+18109,15470,"Duke Energy Indiana, LLC",8229148
+18111,13756,Northern Indiana Pub Serv Co,3765256
+18113,9324,Indiana Michigan Power Co,5321674
+18115,15470,"Duke Energy Indiana, LLC",8229148
+18117,15470,"Duke Energy Indiana, LLC",8229148
+18119,15470,"Duke Energy Indiana, LLC",8229148
+18121,15470,"Duke Energy Indiana, LLC",8229148
+18123,19445,"Southern Indiana R E C, Inc",33782
+18125,15470,"Duke Energy Indiana, LLC",8229148
+18127,13756,Northern Indiana Pub Serv Co,3765256
+18129,15470,"Duke Energy Indiana, LLC",8229148
+18131,13756,Northern Indiana Pub Serv Co,3765256
+18133,15470,"Duke Energy Indiana, LLC",8229148
+18135,15470,"Duke Energy Indiana, LLC",8229148
+18137,15470,"Duke Energy Indiana, LLC",8229148
+18139,15470,"Duke Energy Indiana, LLC",8229148
+18141,9324,Indiana Michigan Power Co,5321674
+18143,15470,"Duke Energy Indiana, LLC",8229148
+18145,15470,"Duke Energy Indiana, LLC",8229148
+18147,17633,Southern Indiana Gas & Elec Co,1161784
+18149,13756,Northern Indiana Pub Serv Co,3765256
+18151,9324,Indiana Michigan Power Co,5321674
+18153,15470,"Duke Energy Indiana, LLC",8229148
+18155,15470,"Duke Energy Indiana, LLC",8229148
+18157,15470,"Duke Energy Indiana, LLC",8229148
+18159,15470,"Duke Energy Indiana, LLC",8229148
+18161,15470,"Duke Energy Indiana, LLC",8229148
+18163,17633,Southern Indiana Gas & Elec Co,1161784
+18165,15470,"Duke Energy Indiana, LLC",8229148
+18167,15470,"Duke Energy Indiana, LLC",8229148
+18169,15470,"Duke Energy Indiana, LLC",8229148
+18171,15470,"Duke Energy Indiana, LLC",8229148
+18173,15470,"Duke Energy Indiana, LLC",8229148
+18175,15470,"Duke Energy Indiana, LLC",8229148
+18177,15470,"Duke Energy Indiana, LLC",8229148
+18179,15470,"Duke Energy Indiana, LLC",8229148
+18181,15470,"Duke Energy Indiana, LLC",8229148
+18183,15470,"Duke Energy Indiana, LLC",8229148
+19001,12341,MidAmerican Energy Co,5589082
+19003,12341,MidAmerican Energy Co,5589082
+19005,9417,Interstate Power and Light Co,4005972
+19007,9417,Interstate Power and Light Co,4005972
+19009,12341,MidAmerican Energy Co,5589082
+19011,9417,Interstate Power and Light Co,4005972
+19013,12341,MidAmerican Energy Co,5589082
+19015,9417,Interstate Power and Light Co,4005972
+19017,12341,MidAmerican Energy Co,5589082
+19019,12341,MidAmerican Energy Co,5589082
+19021,12341,MidAmerican Energy Co,5589082
+19023,12341,MidAmerican Energy Co,5589082
+19025,12341,MidAmerican Energy Co,5589082
+19027,12341,MidAmerican Energy Co,5589082
+19029,12341,MidAmerican Energy Co,5589082
+19031,9417,Interstate Power and Light Co,4005972
+19033,12341,MidAmerican Energy Co,5589082
+19035,12341,MidAmerican Energy Co,5589082
+19037,12341,MidAmerican Energy Co,5589082
+19039,9417,Interstate Power and Light Co,4005972
+19041,9417,Interstate Power and Light Co,4005972
+19043,9417,Interstate Power and Light Co,4005972
+19045,12341,MidAmerican Energy Co,5589082
+19047,12341,MidAmerican Energy Co,5589082
+19049,12341,MidAmerican Energy Co,5589082
+19051,9417,Interstate Power and Light Co,4005972
+19053,9417,Interstate Power and Light Co,4005972
+19055,9417,Interstate Power and Light Co,4005972
+19057,9417,Interstate Power and Light Co,4005972
+19059,9417,Interstate Power and Light Co,4005972
+19061,9417,Interstate Power and Light Co,4005972
+19063,9417,Interstate Power and Light Co,4005972
+19065,9417,Interstate Power and Light Co,4005972
+19067,12341,MidAmerican Energy Co,5589082
+19069,12341,MidAmerican Energy Co,5589082
+19071,12341,MidAmerican Energy Co,5589082
+19073,9417,Interstate Power and Light Co,4005972
+19075,9417,Interstate Power and Light Co,4005972
+19077,9417,Interstate Power and Light Co,4005972
+19079,12341,MidAmerican Energy Co,5589082
+19081,9417,Interstate Power and Light Co,4005972
+19083,12341,MidAmerican Energy Co,5589082
+19085,12341,MidAmerican Energy Co,5589082
+19087,9417,Interstate Power and Light Co,4005972
+19089,9417,Interstate Power and Light Co,4005972
+19091,12341,MidAmerican Energy Co,5589082
+19093,12341,MidAmerican Energy Co,5589082
+19095,9417,Interstate Power and Light Co,4005972
+19097,9417,Interstate Power and Light Co,4005972
+19099,12341,MidAmerican Energy Co,5589082
+19101,9417,Interstate Power and Light Co,4005972
+19103,12341,MidAmerican Energy Co,5589082
+19105,9417,Interstate Power and Light Co,4005972
+19107,9417,Interstate Power and Light Co,4005972
+19109,12341,MidAmerican Energy Co,5589082
+19111,9417,Interstate Power and Light Co,4005972
+19113,9417,Interstate Power and Light Co,4005972
+19115,9417,Interstate Power and Light Co,4005972
+19117,9417,Interstate Power and Light Co,4005972
+19119,12341,MidAmerican Energy Co,5589082
+19121,12341,MidAmerican Energy Co,5589082
+19123,12341,MidAmerican Energy Co,5589082
+19125,12341,MidAmerican Energy Co,5589082
+19127,9417,Interstate Power and Light Co,4005972
+19129,12341,MidAmerican Energy Co,5589082
+19131,9417,Interstate Power and Light Co,4005972
+19133,12341,MidAmerican Energy Co,5589082
+19135,12341,MidAmerican Energy Co,5589082
+19137,12341,MidAmerican Energy Co,5589082
+19139,12341,MidAmerican Energy Co,5589082
+19141,12341,MidAmerican Energy Co,5589082
+19143,9417,Interstate Power and Light Co,4005972
+19145,12341,MidAmerican Energy Co,5589082
+19147,12341,MidAmerican Energy Co,5589082
+19149,12341,MidAmerican Energy Co,5589082
+19151,12341,MidAmerican Energy Co,5589082
+19153,12341,MidAmerican Energy Co,5589082
+19155,14127,Omaha Public Power District,6415364
+19157,12341,MidAmerican Energy Co,5589082
+19159,9417,Interstate Power and Light Co,4005972
+19161,12341,MidAmerican Energy Co,5589082
+19163,12341,MidAmerican Energy Co,5589082
+19165,12341,MidAmerican Energy Co,5589082
+19167,12341,MidAmerican Energy Co,5589082
+19169,9417,Interstate Power and Light Co,4005972
+19171,9417,Interstate Power and Light Co,4005972
+19173,12341,MidAmerican Energy Co,5589082
+19175,9417,Interstate Power and Light Co,4005972
+19177,9417,Interstate Power and Light Co,4005972
+19179,9417,Interstate Power and Light Co,4005972
+19181,12341,MidAmerican Energy Co,5589082
+19183,12341,MidAmerican Energy Co,5589082
+19185,9417,Interstate Power and Light Co,4005972
+19187,12341,MidAmerican Energy Co,5589082
+19189,9417,Interstate Power and Light Co,4005972
+19191,9417,Interstate Power and Light Co,4005972
+19193,12341,MidAmerican Energy Co,5589082
+19195,9417,Interstate Power and Light Co,4005972
+19197,12341,MidAmerican Energy Co,5589082
+20001,10005,"Evergy Kansas South, Inc",3150612
+20003,10000,Evergy Metro,7414441
+20005,22500,"Evergy Kansas Central, Inc",4275484
+20007,60839,Southern Pioneer Electric Company,149572
+20009,20510,"Wheatland Electric Coop, Inc",496289
+20011,10000,Evergy Metro,7414441
+20013,22500,"Evergy Kansas Central, Inc",4275484
+20015,22500,"Evergy Kansas Central, Inc",4275484
+20017,22500,"Evergy Kansas Central, Inc",4275484
+20019,10005,"Evergy Kansas South, Inc",3150612
+20021,10005,"Evergy Kansas South, Inc",3150612
+20023,12524,Midwest Energy Inc - (KS),379076
+20025,19820,Victory Electric Coop Assn Inc,216669
+20027,22500,"Evergy Kansas Central, Inc",4275484
+20029,22500,"Evergy Kansas Central, Inc",4275484
+20031,10000,Evergy Metro,7414441
+20033,60839,Southern Pioneer Electric Company,149572
+20035,10005,"Evergy Kansas South, Inc",3150612
+20037,10005,"Evergy Kansas South, Inc",3150612
+20039,12524,Midwest Energy Inc - (KS),379076
+20041,22500,"Evergy Kansas Central, Inc",4275484
+20043,22500,"Evergy Kansas Central, Inc",4275484
+20045,10000,Evergy Metro,7414441
+20047,12524,Midwest Energy Inc - (KS),379076
+20049,22500,"Evergy Kansas Central, Inc",4275484
+20051,12524,Midwest Energy Inc - (KS),379076
+20053,22500,"Evergy Kansas Central, Inc",4275484
+20055,20510,"Wheatland Electric Coop, Inc",496289
+20057,19820,Victory Electric Coop Assn Inc,216669
+20059,10000,Evergy Metro,7414441
+20061,22500,"Evergy Kansas Central, Inc",4275484
+20063,12524,Midwest Energy Inc - (KS),379076
+20065,12524,Midwest Energy Inc - (KS),379076
+20067,15073,"Pioneer Electric Coop, Inc - (KS)",328555
+20069,20510,"Wheatland Electric Coop, Inc",496289
+20071,20510,"Wheatland Electric Coop, Inc",496289
+20073,22500,"Evergy Kansas Central, Inc",4275484
+20075,20510,"Wheatland Electric Coop, Inc",496289
+20077,20510,"Wheatland Electric Coop, Inc",496289
+20079,10005,"Evergy Kansas South, Inc",3150612
+20081,15073,"Pioneer Electric Coop, Inc - (KS)",328555
+20083,12524,Midwest Energy Inc - (KS),379076
+20085,22500,"Evergy Kansas Central, Inc",4275484
+20087,22500,"Evergy Kansas Central, Inc",4275484
+20089,27000,WAPA-- Western Area Power Administration,2939735
+20091,10000,Evergy Metro,7414441
+20093,20510,"Wheatland Electric Coop, Inc",496289
+20095,10005,"Evergy Kansas South, Inc",3150612
+20097,19820,Victory Electric Coop Assn Inc,216669
+20099,22500,"Evergy Kansas Central, Inc",4275484
+20101,12524,Midwest Energy Inc - (KS),379076
+20103,10000,Evergy Metro,7414441
+20105,22500,"Evergy Kansas Central, Inc",4275484
+20107,10000,Evergy Metro,7414441
+20109,20510,"Wheatland Electric Coop, Inc",496289
+20111,22500,"Evergy Kansas Central, Inc",4275484
+20113,22500,"Evergy Kansas Central, Inc",4275484
+20115,22500,"Evergy Kansas Central, Inc",4275484
+20117,22500,"Evergy Kansas Central, Inc",4275484
+20119,19820,Victory Electric Coop Assn Inc,216669
+20121,10000,Evergy Metro,7414441
+20123,13799,Prairie Land Electric Coop Inc,153986
+20125,10005,"Evergy Kansas South, Inc",3150612
+20127,22500,"Evergy Kansas Central, Inc",4275484
+20129,19160,"Tri-County Electric Coop, Inc (OK)",332204
+20131,22500,"Evergy Kansas Central, Inc",4275484
+20133,22500,"Evergy Kansas Central, Inc",4275484
+20135,12524,Midwest Energy Inc - (KS),379076
+20137,12524,Midwest Energy Inc - (KS),379076
+20139,10000,Evergy Metro,7414441
+20141,12524,Midwest Energy Inc - (KS),379076
+20143,22500,"Evergy Kansas Central, Inc",4275484
+20145,12524,Midwest Energy Inc - (KS),379076
+20147,12524,Midwest Energy Inc - (KS),379076
+20149,22500,"Evergy Kansas Central, Inc",4275484
+20151,12524,Midwest Energy Inc - (KS),379076
+20153,12524,Midwest Energy Inc - (KS),379076
+20155,22500,"Evergy Kansas Central, Inc",4275484
+20157,13799,Prairie Land Electric Coop Inc,153986
+20159,22500,"Evergy Kansas Central, Inc",4275484
+20161,22500,"Evergy Kansas Central, Inc",4275484
+20163,12524,Midwest Energy Inc - (KS),379076
+20165,12524,Midwest Energy Inc - (KS),379076
+20167,12524,Midwest Energy Inc - (KS),379076
+20169,22500,"Evergy Kansas Central, Inc",4275484
+20171,20510,"Wheatland Electric Coop, Inc",496289
+20173,10005,"Evergy Kansas South, Inc",3150612
+20175,19160,"Tri-County Electric Coop, Inc (OK)",332204
+20177,22500,"Evergy Kansas Central, Inc",4275484
+20179,12524,Midwest Energy Inc - (KS),379076
+20181,12524,Midwest Energy Inc - (KS),379076
+20183,17642,Southern Public Power District,365095
+20185,12524,Midwest Energy Inc - (KS),379076
+20187,15073,"Pioneer Electric Coop, Inc - (KS)",328555
+20189,15073,"Pioneer Electric Coop, Inc - (KS)",328555
+20191,10005,"Evergy Kansas South, Inc",3150612
+20193,12524,Midwest Energy Inc - (KS),379076
+20195,12524,Midwest Energy Inc - (KS),379076
+20197,22500,"Evergy Kansas Central, Inc",4275484
+20199,20510,"Wheatland Electric Coop, Inc",496289
+20201,22500,"Evergy Kansas Central, Inc",4275484
+20203,20510,"Wheatland Electric Coop, Inc",496289
+20205,22500,"Evergy Kansas Central, Inc",4275484
+20207,22500,"Evergy Kansas Central, Inc",4275484
+20209,10000,Evergy Metro,7414441
+21001,10171,Kentucky Utilities Co,5767706
+21003,19162,Tri-County Elec Member Corp (TN),503164
+21005,10171,Kentucky Utilities Co,5767706
+21007,10171,Kentucky Utilities Co,5767706
+21009,10171,Kentucky Utilities Co,5767706
+21011,10171,Kentucky Utilities Co,5767706
+21013,10171,Kentucky Utilities Co,5767706
+21015,19446,Duke Energy Kentucky,1767187
+21017,10171,Kentucky Utilities Co,5767706
+21019,22053,Kentucky Power Co,1446978
+21021,10171,Kentucky Utilities Co,5767706
+21023,10171,Kentucky Utilities Co,5767706
+21025,22053,Kentucky Power Co,1446978
+21027,9964,Kenergy Corp,304684
+21029,10171,Kentucky Utilities Co,5767706
+21031,20130,Warren Rural Elec Coop Corp,455823
+21033,10171,Kentucky Utilities Co,5767706
+21035,20377,West Kentucky Rural E C C,192566
+21037,10171,Kentucky Utilities Co,5767706
+21039,10171,Kentucky Utilities Co,5767706
+21041,10171,Kentucky Utilities Co,5767706
+21043,22053,Kentucky Power Co,1446978
+21045,10171,Kentucky Utilities Co,5767706
+21047,10171,Kentucky Utilities Co,5767706
+21049,10171,Kentucky Utilities Co,5767706
+21051,10171,Kentucky Utilities Co,5767706
+21053,19162,Tri-County Elec Member Corp (TN),503164
+21055,10171,Kentucky Utilities Co,5767706
+21057,19162,Tri-County Elec Member Corp (TN),503164
+21059,10171,Kentucky Utilities Co,5767706
+21061,10171,Kentucky Utilities Co,5767706
+21063,22053,Kentucky Power Co,1446978
+21065,10171,Kentucky Utilities Co,5767706
+21067,10171,Kentucky Utilities Co,5767706
+21069,10171,Kentucky Utilities Co,5767706
+21071,22053,Kentucky Power Co,1446978
+21073,10171,Kentucky Utilities Co,5767706
+21075,10171,Kentucky Utilities Co,5767706
+21077,10171,Kentucky Utilities Co,5767706
+21079,10171,Kentucky Utilities Co,5767706
+21081,10171,Kentucky Utilities Co,5767706
+21083,9605,Jackson Purchase Energy Corporation,471428
+21085,10171,Kentucky Utilities Co,5767706
+21087,10171,Kentucky Utilities Co,5767706
+21089,22053,Kentucky Power Co,1446978
+21091,9964,Kenergy Corp,304684
+21093,10171,Kentucky Utilities Co,5767706
+21095,10171,Kentucky Utilities Co,5767706
+21097,10171,Kentucky Utilities Co,5767706
+21099,10171,Kentucky Utilities Co,5767706
+21101,10171,Kentucky Utilities Co,5767706
+21103,10171,Kentucky Utilities Co,5767706
+21105,10171,Kentucky Utilities Co,5767706
+21107,10171,Kentucky Utilities Co,5767706
+21109,1886,Blue Grass Energy Coop Corp,191732
+21111,11249,Louisville Gas & Electric Co,4682305
+21113,10171,Kentucky Utilities Co,5767706
+21115,22053,Kentucky Power Co,1446978
+21117,19446,Duke Energy Kentucky,1767187
+21119,22053,Kentucky Power Co,1446978
+21121,10171,Kentucky Utilities Co,5767706
+21123,10171,Kentucky Utilities Co,5767706
+21125,10171,Kentucky Utilities Co,5767706
+21127,22053,Kentucky Power Co,1446978
+21129,10171,Kentucky Utilities Co,5767706
+21131,22053,Kentucky Power Co,1446978
+21133,22053,Kentucky Power Co,1446978
+21135,22053,Kentucky Power Co,1446978
+21137,10171,Kentucky Utilities Co,5767706
+21139,10171,Kentucky Utilities Co,5767706
+21141,20130,Warren Rural Elec Coop Corp,455823
+21143,10171,Kentucky Utilities Co,5767706
+21145,10171,Kentucky Utilities Co,5767706
+21147,10171,Kentucky Utilities Co,5767706
+21149,10171,Kentucky Utilities Co,5767706
+21151,10171,Kentucky Utilities Co,5767706
+21153,22053,Kentucky Power Co,1446978
+21155,10171,Kentucky Utilities Co,5767706
+21157,18642,Tennessee Valley Authority,1207030
+21159,22053,Kentucky Power Co,1446978
+21161,10171,Kentucky Utilities Co,5767706
+21163,11249,Louisville Gas & Electric Co,4682305
+21165,11011,Licking Valley Rural E C C,135596
+21167,10171,Kentucky Utilities Co,5767706
+21169,19162,Tri-County Elec Member Corp (TN),503164
+21171,19162,Tri-County Elec Member Corp (TN),503164
+21173,10171,Kentucky Utilities Co,5767706
+21175,22053,Kentucky Power Co,1446978
+21177,10171,Kentucky Utilities Co,5767706
+21179,10171,Kentucky Utilities Co,5767706
+21181,10171,Kentucky Utilities Co,5767706
+21183,10171,Kentucky Utilities Co,5767706
+21185,10171,Kentucky Utilities Co,5767706
+21187,10171,Kentucky Utilities Co,5767706
+21189,22053,Kentucky Power Co,1446978
+21191,10171,Kentucky Utilities Co,5767706
+21193,22053,Kentucky Power Co,1446978
+21195,22053,Kentucky Power Co,1446978
+21197,9575,Jackson Energy Coop Corp - (KY),139293
+21199,10171,Kentucky Utilities Co,5767706
+21201,10171,Kentucky Utilities Co,5767706
+21203,10171,Kentucky Utilities Co,5767706
+21205,10171,Kentucky Utilities Co,5767706
+21207,10171,Kentucky Utilities Co,5767706
+21209,10171,Kentucky Utilities Co,5767706
+21211,10171,Kentucky Utilities Co,5767706
+21213,20130,Warren Rural Elec Coop Corp,455823
+21215,10171,Kentucky Utilities Co,5767706
+21217,10171,Kentucky Utilities Co,5767706
+21219,14724,Pennyrile Rural Electric Coop,325262
+21221,14724,Pennyrile Rural Electric Coop,325262
+21223,10171,Kentucky Utilities Co,5767706
+21225,10171,Kentucky Utilities Co,5767706
+21227,2056,City of Bowling Green - (KY),465487
+21229,10171,Kentucky Utilities Co,5767706
+21231,17564,South Kentucky Rural E C C,94779
+21233,10171,Kentucky Utilities Co,5767706
+21235,10171,Kentucky Utilities Co,5767706
+21237,9575,Jackson Energy Coop Corp - (KY),139293
+21239,10171,Kentucky Utilities Co,5767706
+22001,11241,Entergy Louisiana LLC,11914015
+22003,11241,Entergy Louisiana LLC,11914015
+22005,11241,Entergy Louisiana LLC,11914015
+22007,11241,Entergy Louisiana LLC,11914015
+22009,11241,Entergy Louisiana LLC,11914015
+22011,11241,Entergy Louisiana LLC,11914015
+22013,11241,Entergy Louisiana LLC,11914015
+22015,11241,Entergy Louisiana LLC,11914015
+22017,17698,Southwestern Electric Power Co,5535619
+22019,11241,Entergy Louisiana LLC,11914015
+22021,11241,Entergy Louisiana LLC,11914015
+22023,11241,Entergy Louisiana LLC,11914015
+22025,11241,Entergy Louisiana LLC,11914015
+22027,11241,Entergy Louisiana LLC,11914015
+22029,11241,Entergy Louisiana LLC,11914015
+22031,17698,Southwestern Electric Power Co,5535619
+22033,11241,Entergy Louisiana LLC,11914015
+22035,11241,Entergy Louisiana LLC,11914015
+22037,11241,Entergy Louisiana LLC,11914015
+22039,3265,Cleco Power LLC,2824748
+22041,11241,Entergy Louisiana LLC,11914015
+22043,11241,Entergy Louisiana LLC,11914015
+22045,11241,Entergy Louisiana LLC,11914015
+22047,11241,Entergy Louisiana LLC,11914015
+22049,11241,Entergy Louisiana LLC,11914015
+22051,11241,Entergy Louisiana LLC,11914015
+22053,11241,Entergy Louisiana LLC,11914015
+22055,11241,Entergy Louisiana LLC,11914015
+22057,11241,Entergy Louisiana LLC,11914015
+22059,11241,Entergy Louisiana LLC,11914015
+22061,11241,Entergy Louisiana LLC,11914015
+22063,11241,Entergy Louisiana LLC,11914015
+22065,11241,Entergy Louisiana LLC,11914015
+22067,11241,Entergy Louisiana LLC,11914015
+22069,11241,Entergy Louisiana LLC,11914015
+22071,11241,Entergy Louisiana LLC,11914015
+22073,11241,Entergy Louisiana LLC,11914015
+22075,11241,Entergy Louisiana LLC,11914015
+22077,11241,Entergy Louisiana LLC,11914015
+22079,11241,Entergy Louisiana LLC,11914015
+22081,11241,Entergy Louisiana LLC,11914015
+22083,11241,Entergy Louisiana LLC,11914015
+22085,11241,Entergy Louisiana LLC,11914015
+22087,11241,Entergy Louisiana LLC,11914015
+22089,11241,Entergy Louisiana LLC,11914015
+22091,11241,Entergy Louisiana LLC,11914015
+22093,11241,Entergy Louisiana LLC,11914015
+22095,11241,Entergy Louisiana LLC,11914015
+22097,11241,Entergy Louisiana LLC,11914015
+22099,11241,Entergy Louisiana LLC,11914015
+22101,3265,Cleco Power LLC,2824748
+22103,11241,Entergy Louisiana LLC,11914015
+22105,11241,Entergy Louisiana LLC,11914015
+22107,11241,Entergy Louisiana LLC,11914015
+22109,11241,Entergy Louisiana LLC,11914015
+22111,11241,Entergy Louisiana LLC,11914015
+22113,11241,Entergy Louisiana LLC,11914015
+22115,11241,Entergy Louisiana LLC,11914015
+22117,11241,Entergy Louisiana LLC,11914015
+22119,11241,Entergy Louisiana LLC,11914015
+22121,11241,Entergy Louisiana LLC,11914015
+22123,11241,Entergy Louisiana LLC,11914015
+22125,11241,Entergy Louisiana LLC,11914015
+22127,11241,Entergy Louisiana LLC,11914015
+23001,3266,Central Maine Power Co,3254330
+23003,1179,Versant Power,730740
+23005,3266,Central Maine Power Co,3254330
+23007,3266,Central Maine Power Co,3254330
+23009,3266,Central Maine Power Co,3254330
+23011,3266,Central Maine Power Co,3254330
+23013,3266,Central Maine Power Co,3254330
+23015,3266,Central Maine Power Co,3254330
+23017,3266,Central Maine Power Co,3254330
+23019,3266,Central Maine Power Co,3254330
+23021,3266,Central Maine Power Co,3254330
+23023,3266,Central Maine Power Co,3254330
+23025,3266,Central Maine Power Co,3254330
+23027,3266,Central Maine Power Co,3254330
+23029,1179,Versant Power,730740
+23031,3266,Central Maine Power Co,3254330
+24001,15263,The Potomac Edison Company,2925164
+24003,1167,Baltimore Gas & Electric Co,14583081
+24009,1167,Baltimore Gas & Electric Co,14583081
+24011,5027,Delmarva Power,5194749
+24013,1167,Baltimore Gas & Electric Co,14583081
+24015,5027,Delmarva Power,5194749
+24017,17637,Southern Maryland Elec Coop Inc,1237133
+24019,5027,Delmarva Power,5194749
+24021,15263,The Potomac Edison Company,2925164
+24023,15263,The Potomac Edison Company,2925164
+24025,1167,Baltimore Gas & Electric Co,14583081
+24027,1167,Baltimore Gas & Electric Co,14583081
+24029,5027,Delmarva Power,5194749
+24031,1167,Baltimore Gas & Electric Co,14583081
+24033,1167,Baltimore Gas & Electric Co,14583081
+24035,5027,Delmarva Power,5194749
+24037,17637,Southern Maryland Elec Coop Inc,1237133
+24039,5027,Delmarva Power,5194749
+24041,5027,Delmarva Power,5194749
+24043,15263,The Potomac Edison Company,2925164
+24045,5027,Delmarva Power,5194749
+24047,5027,Delmarva Power,5194749
+25001,54913,NSTAR Electric Company,12087866
+25003,54913,NSTAR Electric Company,12087866
+25005,54913,NSTAR Electric Company,12087866
+25007,54913,NSTAR Electric Company,12087866
+25009,11804,Massachusetts Electric Co,8720298
+25011,54913,NSTAR Electric Company,12087866
+25013,54913,NSTAR Electric Company,12087866
+25015,54913,NSTAR Electric Company,12087866
+25017,54913,NSTAR Electric Company,12087866
+25019,13206,Nantucket Electric Co,56919
+25021,54913,NSTAR Electric Company,12087866
+25023,54913,NSTAR Electric Company,12087866
+25025,54913,NSTAR Electric Company,12087866
+25027,11804,Massachusetts Electric Co,8720298
+26001,4254,Consumers Energy Co - (MI),12856210
+26003,60631,Upper Michigan Energy Resources Corp.,177438
+26005,4254,Consumers Energy Co - (MI),12856210
+26007,392,Alpena Power Co,89556
+26009,4254,Consumers Energy Co - (MI),12856210
+26011,4254,Consumers Energy Co - (MI),12856210
+26013,60631,Upper Michigan Energy Resources Corp.,177438
+26015,4254,Consumers Energy Co - (MI),12856210
+26017,5109,DTE Electric Company,19175137
+26019,4254,Consumers Energy Co - (MI),12856210
+26021,9324,Indiana Michigan Power Co,5321674
+26023,5109,DTE Electric Company,19175137
+26025,4254,Consumers Energy Co - (MI),12856210
+26027,9324,Indiana Michigan Power Co,5321674
+26029,4254,Consumers Energy Co - (MI),12856210
+26031,4254,Consumers Energy Co - (MI),12856210
+26033,3828,Cloverland Electric Co-op,285591
+26035,4254,Consumers Energy Co - (MI),12856210
+26037,4254,Consumers Energy Co - (MI),12856210
+26039,4254,Consumers Energy Co - (MI),12856210
+26041,5109,DTE Electric Company,19175137
+26043,60631,Upper Michigan Energy Resources Corp.,177438
+26045,4254,Consumers Energy Co - (MI),12856210
+26047,4254,Consumers Energy Co - (MI),12856210
+26049,5109,DTE Electric Company,19175137
+26051,4254,Consumers Energy Co - (MI),12856210
+26053,13780,Northern States Power Co,2720597
+26055,4254,Consumers Energy Co - (MI),12856210
+26057,5109,DTE Electric Company,19175137
+26059,4254,Consumers Energy Co - (MI),12856210
+26061,60631,Upper Michigan Energy Resources Corp.,177438
+26063,5109,DTE Electric Company,19175137
+26065,5109,DTE Electric Company,19175137
+26067,4254,Consumers Energy Co - (MI),12856210
+26069,4254,Consumers Energy Co - (MI),12856210
+26071,60631,Upper Michigan Energy Resources Corp.,177438
+26073,5109,DTE Electric Company,19175137
+26075,4254,Consumers Energy Co - (MI),12856210
+26077,4254,Consumers Energy Co - (MI),12856210
+26079,4254,Consumers Energy Co - (MI),12856210
+26081,4254,Consumers Energy Co - (MI),12856210
+26083,19578,Upper Peninsula Power Company,148814
+26085,4254,Consumers Energy Co - (MI),12856210
+26087,5109,DTE Electric Company,19175137
+26089,4254,Consumers Energy Co - (MI),12856210
+26091,5109,DTE Electric Company,19175137
+26093,5109,DTE Electric Company,19175137
+26095,3828,Cloverland Electric Co-op,285591
+26097,3828,Cloverland Electric Co-op,285591
+26099,5109,DTE Electric Company,19175137
+26101,4254,Consumers Energy Co - (MI),12856210
+26103,60631,Upper Michigan Energy Resources Corp.,177438
+26105,4254,Consumers Energy Co - (MI),12856210
+26107,4254,Consumers Energy Co - (MI),12856210
+26109,60631,Upper Michigan Energy Resources Corp.,177438
+26111,5109,DTE Electric Company,19175137
+26113,4254,Consumers Energy Co - (MI),12856210
+26115,5109,DTE Electric Company,19175137
+26117,5109,DTE Electric Company,19175137
+26119,4254,Consumers Energy Co - (MI),12856210
+26121,4254,Consumers Energy Co - (MI),12856210
+26123,4254,Consumers Energy Co - (MI),12856210
+26125,5109,DTE Electric Company,19175137
+26127,4254,Consumers Energy Co - (MI),12856210
+26129,4254,Consumers Energy Co - (MI),12856210
+26131,13780,Northern States Power Co,2720597
+26133,4254,Consumers Energy Co - (MI),12856210
+26135,4254,Consumers Energy Co - (MI),12856210
+26137,4254,Consumers Energy Co - (MI),12856210
+26139,4254,Consumers Energy Co - (MI),12856210
+26141,4254,Consumers Energy Co - (MI),12856210
+26143,4254,Consumers Energy Co - (MI),12856210
+26145,5109,DTE Electric Company,19175137
+26147,5109,DTE Electric Company,19175137
+26149,4254,Consumers Energy Co - (MI),12856210
+26151,5109,DTE Electric Company,19175137
+26153,3828,Cloverland Electric Co-op,285591
+26155,5109,DTE Electric Company,19175137
+26157,5109,DTE Electric Company,19175137
+26159,4254,Consumers Energy Co - (MI),12856210
+26161,5109,DTE Electric Company,19175137
+26163,5109,DTE Electric Company,19175137
+26165,4254,Consumers Energy Co - (MI),12856210
+27001,12647,"ALLETE, Inc.",1204294
+27003,13781,Northern States Power Co - Minnesota,14193083
+27005,14232,Otter Tail Power Co,3283159
+27007,14232,Otter Tail Power Co,3283159
+27009,13781,Northern States Power Co - Minnesota,14193083
+27011,14232,Otter Tail Power Co,3283159
+27013,13781,Northern States Power Co - Minnesota,14193083
+27015,13781,Northern States Power Co - Minnesota,14193083
+27017,12647,"ALLETE, Inc.",1204294
+27019,13781,Northern States Power Co - Minnesota,14193083
+27021,14232,Otter Tail Power Co,3283159
+27023,13781,Northern States Power Co - Minnesota,14193083
+27025,13781,Northern States Power Co - Minnesota,14193083
+27027,13781,Northern States Power Co - Minnesota,14193083
+27029,14232,Otter Tail Power Co,3283159
+27031,12647,"ALLETE, Inc.",1204294
+27033,6258,Federated Rural Electric Assn,71286
+27035,12647,"ALLETE, Inc.",1204294
+27037,13781,Northern States Power Co - Minnesota,14193083
+27039,13781,Northern States Power Co - Minnesota,14193083
+27041,13781,Northern States Power Co - Minnesota,14193083
+27043,13781,Northern States Power Co - Minnesota,14193083
+27045,19157,MiEnergy Cooperative,156581
+27047,13781,Northern States Power Co - Minnesota,14193083
+27049,13781,Northern States Power Co - Minnesota,14193083
+27051,14232,Otter Tail Power Co,3283159
+27053,13781,Northern States Power Co - Minnesota,14193083
+27055,13781,Northern States Power Co - Minnesota,14193083
+27057,12647,"ALLETE, Inc.",1204294
+27059,689,Connexus Energy,624680
+27061,12647,"ALLETE, Inc.",1204294
+27063,6258,Federated Rural Electric Assn,71286
+27065,5574,East Central Energy,269055
+27067,13781,Northern States Power Co - Minnesota,14193083
+27069,14232,Otter Tail Power Co,3283159
+27071,12647,"ALLETE, Inc.",1204294
+27073,13781,Northern States Power Co - Minnesota,14193083
+27075,12647,"ALLETE, Inc.",1204294
+27079,13781,Northern States Power Co - Minnesota,14193083
+27081,13781,Northern States Power Co - Minnesota,14193083
+27083,13781,Northern States Power Co - Minnesota,14193083
+27085,13781,Northern States Power Co - Minnesota,14193083
+27087,14232,Otter Tail Power Co,3283159
+27089,14232,Otter Tail Power Co,3283159
+27091,6258,Federated Rural Electric Assn,71286
+27093,13781,Northern States Power Co - Minnesota,14193083
+27095,689,Connexus Energy,624680
+27097,12647,"ALLETE, Inc.",1204294
+27099,13781,Northern States Power Co - Minnesota,14193083
+27101,13781,Northern States Power Co - Minnesota,14193083
+27103,13781,Northern States Power Co - Minnesota,14193083
+27105,13781,Northern States Power Co - Minnesota,14193083
+27107,13781,Northern States Power Co - Minnesota,14193083
+27109,13781,Northern States Power Co - Minnesota,14193083
+27111,14232,Otter Tail Power Co,3283159
+27113,14232,Otter Tail Power Co,3283159
+27115,13781,Northern States Power Co - Minnesota,14193083
+27117,13781,Northern States Power Co - Minnesota,14193083
+27119,13781,Northern States Power Co - Minnesota,14193083
+27121,13781,Northern States Power Co - Minnesota,14193083
+27123,13781,Northern States Power Co - Minnesota,14193083
+27125,14232,Otter Tail Power Co,3283159
+27127,13781,Northern States Power Co - Minnesota,14193083
+27129,13781,Northern States Power Co - Minnesota,14193083
+27131,13781,Northern States Power Co - Minnesota,14193083
+27133,13781,Northern States Power Co - Minnesota,14193083
+27135,14232,Otter Tail Power Co,3283159
+27137,12647,"ALLETE, Inc.",1204294
+27139,13781,Northern States Power Co - Minnesota,14193083
+27141,13781,Northern States Power Co - Minnesota,14193083
+27143,13781,Northern States Power Co - Minnesota,14193083
+27145,13781,Northern States Power Co - Minnesota,14193083
+27147,13781,Northern States Power Co - Minnesota,14193083
+27149,14232,Otter Tail Power Co,3283159
+27151,14232,Otter Tail Power Co,3283159
+27153,13781,Northern States Power Co - Minnesota,14193083
+27155,14232,Otter Tail Power Co,3283159
+27157,13781,Northern States Power Co - Minnesota,14193083
+27159,12647,"ALLETE, Inc.",1204294
+27161,13781,Northern States Power Co - Minnesota,14193083
+27163,13781,Northern States Power Co - Minnesota,14193083
+27165,13781,Northern States Power Co - Minnesota,14193083
+27167,13781,Northern States Power Co - Minnesota,14193083
+27169,13781,Northern States Power Co - Minnesota,14193083
+27171,13781,Northern States Power Co - Minnesota,14193083
+27173,13781,Northern States Power Co - Minnesota,14193083
+28001,12685,Entergy Mississippi LLC,4984401
+28003,276,Alcorn County Elec Power Assn,156737
+28005,12685,Entergy Mississippi LLC,4984401
+28007,12685,Entergy Mississippi LLC,4984401
+28009,13412,City of New Albany - (MS),110561
+28011,12685,Entergy Mississippi LLC,4984401
+28013,12685,Entergy Mississippi LLC,4984401
+28015,12685,Entergy Mississippi LLC,4984401
+28017,13227,Natchez Trace Elec Power Assn,104438
+28019,12685,Entergy Mississippi LLC,4984401
+28021,12685,Entergy Mississippi LLC,4984401
+28023,12686,Mississippi Power Co,2947843
+28025,12685,Entergy Mississippi LLC,4984401
+28027,12685,Entergy Mississippi LLC,4984401
+28029,12685,Entergy Mississippi LLC,4984401
+28031,12685,Entergy Mississippi LLC,4984401
+28033,12685,Entergy Mississippi LLC,4984401
+28035,12686,Mississippi Power Co,2947843
+28037,12685,Entergy Mississippi LLC,4984401
+28039,12686,Mississippi Power Co,2947843
+28041,12686,Mississippi Power Co,2947843
+28043,12685,Entergy Mississippi LLC,4984401
+28045,12686,Mississippi Power Co,2947843
+28047,12686,Mississippi Power Co,2947843
+28049,12685,Entergy Mississippi LLC,4984401
+28051,12685,Entergy Mississippi LLC,4984401
+28053,12685,Entergy Mississippi LLC,4984401
+28055,12685,Entergy Mississippi LLC,4984401
+28057,19007,Tombigbee Electric Power Assn,323181
+28059,12686,Mississippi Power Co,2947843
+28061,12686,Mississippi Power Co,2947843
+28063,12685,Entergy Mississippi LLC,4984401
+28065,12685,Entergy Mississippi LLC,4984401
+28067,12686,Mississippi Power Co,2947843
+28069,5578,East Mississippi Elec Pwr Assn,91099
+28071,40302,North East Mississippi EPA,246558
+28073,12686,Mississippi Power Co,2947843
+28075,12686,Mississippi Power Co,2947843
+28077,12685,Entergy Mississippi LLC,4984401
+28079,12685,Entergy Mississippi LLC,4984401
+28081,19007,Tombigbee Electric Power Assn,323181
+28083,12685,Entergy Mississippi LLC,4984401
+28085,12685,Entergy Mississippi LLC,4984401
+28087,6641,4-County Electric Power Assn,321662
+28089,12685,Entergy Mississippi LLC,4984401
+28091,12686,Mississippi Power Co,2947843
+28093,13735,Northcentral Mississippi E P A,450517
+28095,6641,4-County Electric Power Assn,321662
+28097,12685,Entergy Mississippi LLC,4984401
+28099,12686,Mississippi Power Co,2947843
+28101,12686,Mississippi Power Co,2947843
+28103,6641,4-County Electric Power Assn,321662
+28105,6641,4-County Electric Power Assn,321662
+28107,12685,Entergy Mississippi LLC,4984401
+28109,12686,Mississippi Power Co,2947843
+28111,12686,Mississippi Power Co,2947843
+28113,12685,Entergy Mississippi LLC,4984401
+28115,19007,Tombigbee Electric Power Assn,323181
+28117,19007,Tombigbee Electric Power Assn,323181
+28119,12685,Entergy Mississippi LLC,4984401
+28121,12685,Entergy Mississippi LLC,4984401
+28123,12685,Entergy Mississippi LLC,4984401
+28125,12685,Entergy Mississippi LLC,4984401
+28127,12685,Entergy Mississippi LLC,4984401
+28129,12685,Entergy Mississippi LLC,4984401
+28131,12686,Mississippi Power Co,2947843
+28133,12685,Entergy Mississippi LLC,4984401
+28135,12685,Entergy Mississippi LLC,4984401
+28137,12685,Entergy Mississippi LLC,4984401
+28139,13412,City of New Albany - (MS),110561
+28141,18951,Tishomingo County E P A,100077
+28143,12685,Entergy Mississippi LLC,4984401
+28145,40302,North East Mississippi EPA,246558
+28147,12685,Entergy Mississippi LLC,4984401
+28149,12685,Entergy Mississippi LLC,4984401
+28151,12685,Entergy Mississippi LLC,4984401
+28153,12686,Mississippi Power Co,2947843
+28155,12685,Entergy Mississippi LLC,4984401
+28157,12685,Entergy Mississippi LLC,4984401
+28159,5578,East Mississippi Elec Pwr Assn,91099
+28161,12685,Entergy Mississippi LLC,4984401
+28163,12685,Entergy Mississippi LLC,4984401
+29001,19436,Union Electric Co - (MO),13645800
+29003,12698,Evergy Missouri West,3535452
+29005,12698,Evergy Missouri West,3535452
+29007,19436,Union Electric Co - (MO),13645800
+29009,5860,Empire District Electric Co,1677629
+29011,12698,Evergy Missouri West,3535452
+29013,10000,Evergy Metro,7414441
+29015,12698,Evergy Missouri West,3535452
+29017,19436,Union Electric Co - (MO),13645800
+29019,19436,Union Electric Co - (MO),13645800
+29021,12698,Evergy Missouri West,3535452
+29023,19436,Union Electric Co - (MO),13645800
+29025,19436,Union Electric Co - (MO),13645800
+29027,19436,Union Electric Co - (MO),13645800
+29029,19436,Union Electric Co - (MO),13645800
+29031,19436,Union Electric Co - (MO),13645800
+29033,10000,Evergy Metro,7414441
+29035,14285,Ozark Border Electric Coop,158380
+29037,10000,Evergy Metro,7414441
+29039,12698,Evergy Missouri West,3535452
+29041,19436,Union Electric Co - (MO),13645800
+29043,5860,Empire District Electric Co,1677629
+29045,19436,Union Electric Co - (MO),13645800
+29047,19436,Union Electric Co - (MO),13645800
+29049,19436,Union Electric Co - (MO),13645800
+29051,19436,Union Electric Co - (MO),13645800
+29053,19436,Union Electric Co - (MO),13645800
+29055,19436,Union Electric Co - (MO),13645800
+29057,12698,Evergy Missouri West,3535452
+29059,5860,Empire District Electric Co,1677629
+29061,19436,Union Electric Co - (MO),13645800
+29063,19436,Union Electric Co - (MO),13645800
+29065,1775,Black River Electric Coop - (MO),138800
+29067,20574,White River Valley El Coop Inc,246665
+29069,19436,Union Electric Co - (MO),13645800
+29071,19436,Union Electric Co - (MO),13645800
+29073,19436,Union Electric Co - (MO),13645800
+29075,19436,Union Electric Co - (MO),13645800
+29077,5860,Empire District Electric Co,1677629
+29079,12698,Evergy Missouri West,3535452
+29081,12698,Evergy Missouri West,3535452
+29083,12698,Evergy Missouri West,3535452
+29085,5860,Empire District Electric Co,1677629
+29087,12698,Evergy Missouri West,3535452
+29089,19436,Union Electric Co - (MO),13645800
+29091,8934,"Howell-Oregon Elec Coop, Inc",57345
+29093,19436,Union Electric Co - (MO),13645800
+29095,10000,Evergy Metro,7414441
+29097,5860,Empire District Electric Co,1677629
+29099,19436,Union Electric Co - (MO),13645800
+29101,10000,Evergy Metro,7414441
+29103,19436,Union Electric Co - (MO),13645800
+29105,10603,"Laclede Electric Coop, Inc",114611
+29107,10000,Evergy Metro,7414441
+29109,5860,Empire District Electric Co,1677629
+29111,19436,Union Electric Co - (MO),13645800
+29113,19436,Union Electric Co - (MO),13645800
+29115,19436,Union Electric Co - (MO),13645800
+29117,19436,Union Electric Co - (MO),13645800
+29119,5860,Empire District Electric Co,1677629
+29121,19436,Union Electric Co - (MO),13645800
+29123,19436,Union Electric Co - (MO),13645800
+29125,19436,Union Electric Co - (MO),13645800
+29127,19436,Union Electric Co - (MO),13645800
+29129,12698,Evergy Missouri West,3535452
+29131,19436,Union Electric Co - (MO),13645800
+29133,19436,Union Electric Co - (MO),13645800
+29135,19436,Union Electric Co - (MO),13645800
+29137,19436,Union Electric Co - (MO),13645800
+29139,19436,Union Electric Co - (MO),13645800
+29141,19436,Union Electric Co - (MO),13645800
+29143,19436,Union Electric Co - (MO),13645800
+29145,5860,Empire District Electric Co,1677629
+29147,12698,Evergy Missouri West,3535452
+29149,814,Entergy Arkansas LLC,5782256
+29151,19436,Union Electric Co - (MO),13645800
+29153,20574,White River Valley El Coop Inc,246665
+29155,19436,Union Electric Co - (MO),13645800
+29157,19436,Union Electric Co - (MO),13645800
+29159,19436,Union Electric Co - (MO),13645800
+29161,19436,Union Electric Co - (MO),13645800
+29163,19436,Union Electric Co - (MO),13645800
+29165,10000,Evergy Metro,7414441
+29167,5860,Empire District Electric Co,1677629
+29169,19436,Union Electric Co - (MO),13645800
+29173,19436,Union Electric Co - (MO),13645800
+29175,19436,Union Electric Co - (MO),13645800
+29177,19436,Union Electric Co - (MO),13645800
+29179,19436,Union Electric Co - (MO),13645800
+29181,14285,Ozark Border Electric Coop,158380
+29183,19436,Union Electric Co - (MO),13645800
+29185,12698,Evergy Missouri West,3535452
+29186,19436,Union Electric Co - (MO),13645800
+29187,19436,Union Electric Co - (MO),13645800
+29195,19436,Union Electric Co - (MO),13645800
+29197,19436,Union Electric Co - (MO),13645800
+29199,19436,Union Electric Co - (MO),13645800
+29201,19436,Union Electric Co - (MO),13645800
+29203,14285,Ozark Border Electric Coop,158380
+29205,11463,Macon Electric Coop,40733
+29207,19436,Union Electric Co - (MO),13645800
+29209,5860,Empire District Electric Co,1677629
+29211,19436,Union Electric Co - (MO),13645800
+29213,814,Entergy Arkansas LLC,5782256
+29215,9331,Intercounty Electric Coop Assn - (MO),69384
+29217,12698,Evergy Missouri West,3535452
+29219,19436,Union Electric Co - (MO),13645800
+29221,19436,Union Electric Co - (MO),13645800
+29223,14285,Ozark Border Electric Coop,158380
+29225,5860,Empire District Electric Co,1677629
+29227,12698,Evergy Missouri West,3535452
+29229,10603,"Laclede Electric Coop, Inc",114611
+30001,12825,NorthWestern Energy LLC - (MT),3232651
+30003,12825,NorthWestern Energy LLC - (MT),3232651
+30005,12825,NorthWestern Energy LLC - (MT),3232651
+30007,12825,NorthWestern Energy LLC - (MT),3232651
+30009,12825,NorthWestern Energy LLC - (MT),3232651
+30011,19545,"Black Hills Power, Inc.",822199
+30013,12825,NorthWestern Energy LLC - (MT),3232651
+30015,12825,NorthWestern Energy LLC - (MT),3232651
+30017,27000,WAPA-- Western Area Power Administration,2939735
+30019,12199,Montana-Dakota Utilities Co,2556031
+30021,27000,WAPA-- Western Area Power Administration,2939735
+30023,12825,NorthWestern Energy LLC - (MT),3232651
+30025,27000,WAPA-- Western Area Power Administration,2939735
+30027,12825,NorthWestern Energy LLC - (MT),3232651
+30029,6395,Flathead Electric Coop Inc,484660
+30031,12825,NorthWestern Energy LLC - (MT),3232651
+30033,27000,WAPA-- Western Area Power Administration,2939735
+30037,12825,NorthWestern Energy LLC - (MT),3232651
+30039,12825,NorthWestern Energy LLC - (MT),3232651
+30041,12825,NorthWestern Energy LLC - (MT),3232651
+30043,12825,NorthWestern Energy LLC - (MT),3232651
+30045,12825,NorthWestern Energy LLC - (MT),3232651
+30047,6395,Flathead Electric Coop Inc,484660
+30049,12825,NorthWestern Energy LLC - (MT),3232651
+30051,12825,NorthWestern Energy LLC - (MT),3232651
+30053,6395,Flathead Electric Coop Inc,484660
+30055,27000,WAPA-- Western Area Power Administration,2939735
+30057,12825,NorthWestern Energy LLC - (MT),3232651
+30059,12825,NorthWestern Energy LLC - (MT),3232651
+30061,12825,NorthWestern Energy LLC - (MT),3232651
+30063,12825,NorthWestern Energy LLC - (MT),3232651
+30065,12825,NorthWestern Energy LLC - (MT),3232651
+30067,12825,NorthWestern Energy LLC - (MT),3232651
+30069,21513,"Fergus Electric Coop, Inc",192382
+30071,12825,NorthWestern Energy LLC - (MT),3232651
+30073,12825,NorthWestern Energy LLC - (MT),3232651
+30075,19545,"Black Hills Power, Inc.",822199
+30077,12825,NorthWestern Energy LLC - (MT),3232651
+30079,27000,WAPA-- Western Area Power Administration,2939735
+30081,12825,NorthWestern Energy LLC - (MT),3232651
+30083,27000,WAPA-- Western Area Power Administration,2939735
+30085,27000,WAPA-- Western Area Power Administration,2939735
+30087,12825,NorthWestern Energy LLC - (MT),3232651
+30089,12825,NorthWestern Energy LLC - (MT),3232651
+30091,12199,Montana-Dakota Utilities Co,2556031
+30093,12825,NorthWestern Energy LLC - (MT),3232651
+30095,12825,NorthWestern Energy LLC - (MT),3232651
+30097,12825,NorthWestern Energy LLC - (MT),3232651
+30099,12825,NorthWestern Energy LLC - (MT),3232651
+30101,27000,WAPA-- Western Area Power Administration,2939735
+30103,27000,WAPA-- Western Area Power Administration,2939735
+30105,12825,NorthWestern Energy LLC - (MT),3232651
+30107,12825,NorthWestern Energy LLC - (MT),3232651
+30109,27000,WAPA-- Western Area Power Administration,2939735
+30111,12825,NorthWestern Energy LLC - (MT),3232651
+31001,17642,Southern Public Power District,365095
+31003,27000,WAPA-- Western Area Power Administration,2939735
+31007,27000,WAPA-- Western Area Power Administration,2939735
+31009,4671,Custer Public Power District,51368
+31011,27000,WAPA-- Western Area Power Administration,2939735
+31013,27000,WAPA-- Western Area Power Administration,2939735
+31015,27000,WAPA-- Western Area Power Administration,2939735
+31017,13337,Nebraska Public Power District,1101923
+31019,13337,Nebraska Public Power District,1101923
+31021,14127,Omaha Public Power District,6415364
+31023,2643,Butler Public Power District - (NE),38920
+31025,14127,Omaha Public Power District,6415364
+31027,27000,WAPA-- Western Area Power Administration,2939735
+31029,8570,Highline Electric Assn,65036
+31031,13337,Nebraska Public Power District,1101923
+31033,27000,WAPA-- Western Area Power Administration,2939735
+31035,17642,Southern Public Power District,365095
+31037,14127,Omaha Public Power District,6415364
+31041,4911,Dawson Power District,71275
+31043,27000,WAPA-- Western Area Power Administration,2939735
+31045,27000,WAPA-- Western Area Power Administration,2939735
+31047,17642,Southern Public Power District,365095
+31049,27000,WAPA-- Western Area Power Administration,2939735
+31051,13739,Northeast Power,201291
+31053,14127,Omaha Public Power District,6415364
+31055,14127,Omaha Public Power District,6415364
+31057,21075,Y-W Electric Assn Inc,164892
+31059,13337,Nebraska Public Power District,1101923
+31061,17642,Southern Public Power District,365095
+31063,4911,Dawson Power District,71275
+31067,13337,Nebraska Public Power District,1101923
+31069,13337,Nebraska Public Power District,1101923
+31071,4671,Custer Public Power District,51368
+31073,17642,Southern Public Power District,365095
+31075,4671,Custer Public Power District,51368
+31077,27000,WAPA-- Western Area Power Administration,2939735
+31079,13337,Nebraska Public Power District,1101923
+31081,13337,Nebraska Public Power District,1101923
+31083,17642,Southern Public Power District,365095
+31085,17692,Southwest Public Power Dist,51136
+31087,17692,Southwest Public Power Dist,51136
+31089,27000,WAPA-- Western Area Power Administration,2939735
+31091,4671,Custer Public Power District,51368
+31093,13337,Nebraska Public Power District,1101923
+31095,13664,Norris Public Power District,154274
+31097,14127,Omaha Public Power District,6415364
+31099,17642,Southern Public Power District,365095
+31101,27000,WAPA-- Western Area Power Administration,2939735
+31105,27000,WAPA-- Western Area Power Administration,2939735
+31107,13337,Nebraska Public Power District,1101923
+31109,14127,Omaha Public Power District,6415364
+31111,13337,Nebraska Public Power District,1101923
+31113,4671,Custer Public Power District,51368
+31115,4671,Custer Public Power District,51368
+31117,4671,Custer Public Power District,51368
+31119,13337,Nebraska Public Power District,1101923
+31121,27000,WAPA-- Western Area Power Administration,2939735
+31123,27000,WAPA-- Western Area Power Administration,2939735
+31125,27000,WAPA-- Western Area Power Administration,2939735
+31127,14127,Omaha Public Power District,6415364
+31129,17548,South Central Public Pwr Dist,225222
+31131,14127,Omaha Public Power District,6415364
+31133,14127,Omaha Public Power District,6415364
+31135,13337,Nebraska Public Power District,1101923
+31137,17642,Southern Public Power District,365095
+31139,13337,Nebraska Public Power District,1101923
+31141,11251,Loup River Public Power Dist,213715
+31145,13337,Nebraska Public Power District,1101923
+31147,14127,Omaha Public Power District,6415364
+31149,13337,Nebraska Public Power District,1101923
+31151,13664,Norris Public Power District,154274
+31153,14127,Omaha Public Power District,6415364
+31155,14127,Omaha Public Power District,6415364
+31157,27000,WAPA-- Western Area Power Administration,2939735
+31159,13337,Nebraska Public Power District,1101923
+31161,13337,Nebraska Public Power District,1101923
+31163,13337,Nebraska Public Power District,1101923
+31165,27000,WAPA-- Western Area Power Administration,2939735
+31167,13739,Northeast Power,201291
+31169,17548,South Central Public Pwr Dist,225222
+31171,4671,Custer Public Power District,51368
+31173,13337,Nebraska Public Power District,1101923
+31175,4671,Custer Public Power District,51368
+31177,14127,Omaha Public Power District,6415364
+31179,13739,Northeast Power,201291
+31181,17642,Southern Public Power District,365095
+31183,27000,WAPA-- Western Area Power Administration,2939735
+31185,13337,Nebraska Public Power District,1101923
+32001,17166,Sierra Pacific Power Co,4170299
+32003,17609,Southern California Edison Co,48211694
+32005,17166,Sierra Pacific Power Co,4170299
+32007,17166,Sierra Pacific Power Co,4170299
+32009,17166,Sierra Pacific Power Co,4170299
+32011,17166,Sierra Pacific Power Co,4170299
+32013,17166,Sierra Pacific Power Co,4170299
+32015,17166,Sierra Pacific Power Co,4170299
+32019,17166,Sierra Pacific Power Co,4170299
+32021,17166,Sierra Pacific Power Co,4170299
+32023,13407,Nevada Power Co,8659672
+32027,17166,Sierra Pacific Power Co,4170299
+32029,17166,Sierra Pacific Power Co,4170299
+32031,17166,Sierra Pacific Power Co,4170299
+32033,13073,"Mt Wheeler Power, Inc",44004
+32510,17166,Sierra Pacific Power Co,4170299
+33001,15472,Public Service Co of NH,3026659
+33003,15472,Public Service Co of NH,3026659
+33005,15472,Public Service Co of NH,3026659
+33007,15472,Public Service Co of NH,3026659
+33009,15472,Public Service Co of NH,3026659
+33011,15472,Public Service Co of NH,3026659
+33013,15472,Public Service Co of NH,3026659
+33015,15472,Public Service Co of NH,3026659
+33017,15472,Public Service Co of NH,3026659
+33019,15472,Public Service Co of NH,3026659
+34001,963,Atlantic City Electric Co,4260042
+34003,15477,Public Service Elec & Gas Co,22745379
+34005,15477,Public Service Elec & Gas Co,22745379
+34007,15477,Public Service Elec & Gas Co,22745379
+34009,963,Atlantic City Electric Co,4260042
+34011,963,Atlantic City Electric Co,4260042
+34013,15477,Public Service Elec & Gas Co,22745379
+34015,15477,Public Service Elec & Gas Co,22745379
+34017,15477,Public Service Elec & Gas Co,22745379
+34019,9726,Jersey Central Power & Lt Co,8264725
+34021,15477,Public Service Elec & Gas Co,22745379
+34023,15477,Public Service Elec & Gas Co,22745379
+34025,15477,Public Service Elec & Gas Co,22745379
+34027,15477,Public Service Elec & Gas Co,22745379
+34029,9726,Jersey Central Power & Lt Co,8264725
+34031,15477,Public Service Elec & Gas Co,22745379
+34033,15477,Public Service Elec & Gas Co,22745379
+34035,15477,Public Service Elec & Gas Co,22745379
+34037,9726,Jersey Central Power & Lt Co,8264725
+34039,15477,Public Service Elec & Gas Co,22745379
+34041,9726,Jersey Central Power & Lt Co,8264725
+35001,15473,Public Service Co of NM,3869779
+35003,15473,Public Service Co of NM,3869779
+35005,17718,Southwestern Public Service Co,6130103
+35006,15473,Public Service Co of NM,3869779
+35007,10378,"Kit Carson Electric Coop, Inc",112231
+35009,17718,Southwestern Public Service Co,6130103
+35011,6198,"Farmers Electric Coop, Inc - (NM)",102977
+35013,5701,El Paso Electric Co,4091846
+35015,17718,Southwestern Public Service Co,6130103
+35017,15473,Public Service Co of NM,3869779
+35019,6198,"Farmers Electric Coop, Inc - (NM)",102977
+35021,6198,"Farmers Electric Coop, Inc - (NM)",102977
+35023,15473,Public Service Co of NM,3869779
+35025,17718,Southwestern Public Service Co,6130103
+35027,15473,Public Service Co of NM,3869779
+35028,11204,Los Alamos County,56271
+35029,5701,El Paso Electric Co,4091846
+35031,15473,Public Service Co of NM,3869779
+35033,17826,"Springer Electric Coop, Inc",20908
+35035,5701,El Paso Electric Co,4091846
+35037,17718,Southwestern Public Service Co,6130103
+35039,6204,City of Farmington - (NM),372913
+35041,17718,Southwestern Public Service Co,6130103
+35043,15473,Public Service Co of NM,3869779
+35045,15473,Public Service Co of NM,3869779
+35047,15473,Public Service Co of NM,3869779
+35049,15473,Public Service Co of NM,3869779
+35051,5701,El Paso Electric Co,4091846
+35053,15473,Public Service Co of NM,3869779
+35055,10378,"Kit Carson Electric Coop, Inc",112231
+35057,15473,Public Service Co of NM,3869779
+35059,15473,Public Service Co of NM,3869779
+35061,15473,Public Service Co of NM,3869779
+36001,13573,Niagara Mohawk Power Corp.,12576316
+36003,13573,Niagara Mohawk Power Corp.,12576316
+36005,4226,Consolidated Edison Co-NY Inc,35041849
+36007,13511,New York State Elec & Gas Corp,5806928
+36009,13573,Niagara Mohawk Power Corp.,12576316
+36011,13573,Niagara Mohawk Power Corp.,12576316
+36013,13573,Niagara Mohawk Power Corp.,12576316
+36015,66101,FirstEnergy Pennsylvania Electric Co,9525791
+36017,13573,Niagara Mohawk Power Corp.,12576316
+36019,13573,Niagara Mohawk Power Corp.,12576316
+36021,13573,Niagara Mohawk Power Corp.,12576316
+36023,13573,Niagara Mohawk Power Corp.,12576316
+36025,13511,New York State Elec & Gas Corp,5806928
+36027,13511,New York State Elec & Gas Corp,5806928
+36029,13573,Niagara Mohawk Power Corp.,12576316
+36031,13573,Niagara Mohawk Power Corp.,12576316
+36033,13573,Niagara Mohawk Power Corp.,12576316
+36035,13573,Niagara Mohawk Power Corp.,12576316
+36037,13573,Niagara Mohawk Power Corp.,12576316
+36039,13511,New York State Elec & Gas Corp,5806928
+36041,13573,Niagara Mohawk Power Corp.,12576316
+36043,13573,Niagara Mohawk Power Corp.,12576316
+36045,13573,Niagara Mohawk Power Corp.,12576316
+36047,4226,Consolidated Edison Co-NY Inc,35041849
+36049,13573,Niagara Mohawk Power Corp.,12576316
+36051,13573,Niagara Mohawk Power Corp.,12576316
+36053,13573,Niagara Mohawk Power Corp.,12576316
+36055,13573,Niagara Mohawk Power Corp.,12576316
+36057,13573,Niagara Mohawk Power Corp.,12576316
+36059,11171,Long Island Power Authority,8971761
+36061,4226,Consolidated Edison Co-NY Inc,35041849
+36063,13573,Niagara Mohawk Power Corp.,12576316
+36065,13573,Niagara Mohawk Power Corp.,12576316
+36067,13573,Niagara Mohawk Power Corp.,12576316
+36069,13573,Niagara Mohawk Power Corp.,12576316
+36071,13511,New York State Elec & Gas Corp,5806928
+36073,13573,Niagara Mohawk Power Corp.,12576316
+36075,13573,Niagara Mohawk Power Corp.,12576316
+36077,13573,Niagara Mohawk Power Corp.,12576316
+36079,13511,New York State Elec & Gas Corp,5806928
+36081,4226,Consolidated Edison Co-NY Inc,35041849
+36083,13573,Niagara Mohawk Power Corp.,12576316
+36085,4226,Consolidated Edison Co-NY Inc,35041849
+36087,14154,Orange & Rockland Utils Inc,2023377
+36089,13573,Niagara Mohawk Power Corp.,12576316
+36091,13573,Niagara Mohawk Power Corp.,12576316
+36093,13573,Niagara Mohawk Power Corp.,12576316
+36095,13573,Niagara Mohawk Power Corp.,12576316
+36097,13511,New York State Elec & Gas Corp,5806928
+36099,13511,New York State Elec & Gas Corp,5806928
+36101,13511,New York State Elec & Gas Corp,5806928
+36103,11171,Long Island Power Authority,8971761
+36105,13511,New York State Elec & Gas Corp,5806928
+36107,66101,FirstEnergy Pennsylvania Electric Co,9525791
+36109,13511,New York State Elec & Gas Corp,5806928
+36111,13511,New York State Elec & Gas Corp,5806928
+36113,13573,Niagara Mohawk Power Corp.,12576316
+36115,13573,Niagara Mohawk Power Corp.,12576316
+36117,13511,New York State Elec & Gas Corp,5806928
+36119,4226,Consolidated Edison Co-NY Inc,35041849
+36121,13573,Niagara Mohawk Power Corp.,12576316
+36123,13511,New York State Elec & Gas Corp,5806928
+37001,5416,"Duke Energy Carolinas, LLC",30598623
+37003,5416,"Duke Energy Carolinas, LLC",30598623
+37005,1889,Blue Ridge Elec Member Corp - (NC),260865
+37007,5416,"Duke Energy Carolinas, LLC",30598623
+37009,1889,Blue Ridge Elec Member Corp - (NC),260865
+37011,3046,Duke Energy Progress - (NC),15332194
+37013,19876,Virginia Electric & Power Co,61120776
+37015,19876,Virginia Electric & Power Co,61120776
+37017,3046,Duke Energy Progress - (NC),15332194
+37019,19876,Virginia Electric & Power Co,61120776
+37021,5416,"Duke Energy Carolinas, LLC",30598623
+37023,5416,"Duke Energy Carolinas, LLC",30598623
+37025,19876,Virginia Electric & Power Co,61120776
+37027,5416,"Duke Energy Carolinas, LLC",30598623
+37029,19876,Virginia Electric & Power Co,61120776
+37031,3046,Duke Energy Progress - (NC),15332194
+37033,5416,"Duke Energy Carolinas, LLC",30598623
+37035,5416,"Duke Energy Carolinas, LLC",30598623
+37037,5416,"Duke Energy Carolinas, LLC",30598623
+37039,5416,"Duke Energy Carolinas, LLC",30598623
+37041,19876,Virginia Electric & Power Co,61120776
+37043,5416,"Duke Energy Carolinas, LLC",30598623
+37045,5416,"Duke Energy Carolinas, LLC",30598623
+37047,3046,Duke Energy Progress - (NC),15332194
+37049,3046,Duke Energy Progress - (NC),15332194
+37051,19876,Virginia Electric & Power Co,61120776
+37053,19876,Virginia Electric & Power Co,61120776
+37055,19876,Virginia Electric & Power Co,61120776
+37057,5416,"Duke Energy Carolinas, LLC",30598623
+37059,5416,"Duke Energy Carolinas, LLC",30598623
+37061,3046,Duke Energy Progress - (NC),15332194
+37063,5416,"Duke Energy Carolinas, LLC",30598623
+37065,19876,Virginia Electric & Power Co,61120776
+37067,5416,"Duke Energy Carolinas, LLC",30598623
+37069,3046,Duke Energy Progress - (NC),15332194
+37071,5416,"Duke Energy Carolinas, LLC",30598623
+37073,19876,Virginia Electric & Power Co,61120776
+37075,5416,"Duke Energy Carolinas, LLC",30598623
+37077,19876,Virginia Electric & Power Co,61120776
+37079,3046,Duke Energy Progress - (NC),15332194
+37081,5416,"Duke Energy Carolinas, LLC",30598623
+37083,19876,Virginia Electric & Power Co,61120776
+37085,3046,Duke Energy Progress - (NC),15332194
+37087,3046,Duke Energy Progress - (NC),15332194
+37089,5416,"Duke Energy Carolinas, LLC",30598623
+37091,19876,Virginia Electric & Power Co,61120776
+37093,3046,Duke Energy Progress - (NC),15332194
+37095,19876,Virginia Electric & Power Co,61120776
+37097,5416,"Duke Energy Carolinas, LLC",30598623
+37099,5416,"Duke Energy Carolinas, LLC",30598623
+37101,3046,Duke Energy Progress - (NC),15332194
+37103,3046,Duke Energy Progress - (NC),15332194
+37105,3046,Duke Energy Progress - (NC),15332194
+37107,3046,Duke Energy Progress - (NC),15332194
+37109,5416,"Duke Energy Carolinas, LLC",30598623
+37111,5416,"Duke Energy Carolinas, LLC",30598623
+37113,5416,"Duke Energy Carolinas, LLC",30598623
+37115,3046,Duke Energy Progress - (NC),15332194
+37117,19876,Virginia Electric & Power Co,61120776
+37119,5416,"Duke Energy Carolinas, LLC",30598623
+37121,3046,Duke Energy Progress - (NC),15332194
+37123,3046,Duke Energy Progress - (NC),15332194
+37125,3046,Duke Energy Progress - (NC),15332194
+37127,19876,Virginia Electric & Power Co,61120776
+37129,3046,Duke Energy Progress - (NC),15332194
+37131,19876,Virginia Electric & Power Co,61120776
+37133,3046,Duke Energy Progress - (NC),15332194
+37135,5416,"Duke Energy Carolinas, LLC",30598623
+37137,3046,Duke Energy Progress - (NC),15332194
+37139,19876,Virginia Electric & Power Co,61120776
+37141,3046,Duke Energy Progress - (NC),15332194
+37143,19876,Virginia Electric & Power Co,61120776
+37145,19876,Virginia Electric & Power Co,61120776
+37147,19876,Virginia Electric & Power Co,61120776
+37149,5416,"Duke Energy Carolinas, LLC",30598623
+37151,5416,"Duke Energy Carolinas, LLC",30598623
+37153,3046,Duke Energy Progress - (NC),15332194
+37155,3046,Duke Energy Progress - (NC),15332194
+37157,5416,"Duke Energy Carolinas, LLC",30598623
+37159,5416,"Duke Energy Carolinas, LLC",30598623
+37161,5416,"Duke Energy Carolinas, LLC",30598623
+37163,3046,Duke Energy Progress - (NC),15332194
+37165,3046,Duke Energy Progress - (NC),15332194
+37167,5416,"Duke Energy Carolinas, LLC",30598623
+37169,5416,"Duke Energy Carolinas, LLC",30598623
+37171,5416,"Duke Energy Carolinas, LLC",30598623
+37173,5416,"Duke Energy Carolinas, LLC",30598623
+37175,5416,"Duke Energy Carolinas, LLC",30598623
+37177,19876,Virginia Electric & Power Co,61120776
+37179,5416,"Duke Energy Carolinas, LLC",30598623
+37181,3046,Duke Energy Progress - (NC),15332194
+37183,5416,"Duke Energy Carolinas, LLC",30598623
+37185,19876,Virginia Electric & Power Co,61120776
+37187,19876,Virginia Electric & Power Co,61120776
+37189,1889,Blue Ridge Elec Member Corp - (NC),260865
+37191,3046,Duke Energy Progress - (NC),15332194
+37193,5416,"Duke Energy Carolinas, LLC",30598623
+37195,3046,Duke Energy Progress - (NC),15332194
+37197,5416,"Duke Energy Carolinas, LLC",30598623
+37199,3046,Duke Energy Progress - (NC),15332194
+38001,12199,Montana-Dakota Utilities Co,2556031
+38003,14232,Otter Tail Power Co,3283159
+38005,14232,Otter Tail Power Co,3283159
+38007,27000,WAPA-- Western Area Power Administration,2939735
+38009,14232,Otter Tail Power Co,3283159
+38011,12199,Montana-Dakota Utilities Co,2556031
+38013,12199,Montana-Dakota Utilities Co,2556031
+38015,14232,Otter Tail Power Co,3283159
+38017,13781,Northern States Power Co - Minnesota,14193083
+38019,14232,Otter Tail Power Co,3283159
+38021,14232,Otter Tail Power Co,3283159
+38023,12199,Montana-Dakota Utilities Co,2556031
+38025,27000,WAPA-- Western Area Power Administration,2939735
+38027,14232,Otter Tail Power Co,3283159
+38029,27000,WAPA-- Western Area Power Administration,2939735
+38031,14232,Otter Tail Power Co,3283159
+38033,27000,WAPA-- Western Area Power Administration,2939735
+38035,13781,Northern States Power Co - Minnesota,14193083
+38037,27000,WAPA-- Western Area Power Administration,2939735
+38039,14232,Otter Tail Power Co,3283159
+38041,12199,Montana-Dakota Utilities Co,2556031
+38043,14232,Otter Tail Power Co,3283159
+38045,14232,Otter Tail Power Co,3283159
+38047,14232,Otter Tail Power Co,3283159
+38049,13781,Northern States Power Co - Minnesota,14193083
+38051,12199,Montana-Dakota Utilities Co,2556031
+38053,27000,WAPA-- Western Area Power Administration,2939735
+38055,14232,Otter Tail Power Co,3283159
+38057,27000,WAPA-- Western Area Power Administration,2939735
+38059,27000,WAPA-- Western Area Power Administration,2939735
+38061,14232,Otter Tail Power Co,3283159
+38063,14232,Otter Tail Power Co,3283159
+38065,27000,WAPA-- Western Area Power Administration,2939735
+38067,14232,Otter Tail Power Co,3283159
+38069,14232,Otter Tail Power Co,3283159
+38071,14232,Otter Tail Power Co,3283159
+38073,14232,Otter Tail Power Co,3283159
+38075,14232,Otter Tail Power Co,3283159
+38077,14232,Otter Tail Power Co,3283159
+38079,14232,Otter Tail Power Co,3283159
+38081,14232,Otter Tail Power Co,3283159
+38083,14232,Otter Tail Power Co,3283159
+38085,12199,Montana-Dakota Utilities Co,2556031
+38087,12199,Montana-Dakota Utilities Co,2556031
+38089,27000,WAPA-- Western Area Power Administration,2939735
+38091,14232,Otter Tail Power Co,3283159
+38093,14232,Otter Tail Power Co,3283159
+38095,14232,Otter Tail Power Co,3283159
+38097,13781,Northern States Power Co - Minnesota,14193083
+38099,14232,Otter Tail Power Co,3283159
+38101,13781,Northern States Power Co - Minnesota,14193083
+38103,14232,Otter Tail Power Co,3283159
+38105,27000,WAPA-- Western Area Power Administration,2939735
+39001,14006,Ohio Power Co,20420120
+39003,14006,Ohio Power Co,20420120
+39005,14006,Ohio Power Co,20420120
+39007,13998,Ohio Edison Co,6164194
+39009,14006,Ohio Power Co,20420120
+39011,14006,Ohio Power Co,20420120
+39013,14006,Ohio Power Co,20420120
+39015,3542,Duke Energy Ohio Inc,7603442
+39017,3542,Duke Energy Ohio Inc,7603442
+39019,14006,Ohio Power Co,20420120
+39021,13998,Ohio Edison Co,6164194
+39023,3542,Duke Energy Ohio Inc,7603442
+39025,3542,Duke Energy Ohio Inc,7603442
+39027,3542,Duke Energy Ohio Inc,7603442
+39029,14006,Ohio Power Co,20420120
+39031,14006,Ohio Power Co,20420120
+39033,14006,Ohio Power Co,20420120
+39035,13998,Ohio Edison Co,6164194
+39037,14006,Ohio Power Co,20420120
+39039,14006,Ohio Power Co,20420120
+39041,14006,Ohio Power Co,20420120
+39043,13998,Ohio Edison Co,6164194
+39045,14006,Ohio Power Co,20420120
+39047,13998,Ohio Edison Co,6164194
+39049,14006,Ohio Power Co,20420120
+39051,18997,The Toledo Edison Co,1745539
+39053,14006,Ohio Power Co,20420120
+39055,13998,Ohio Edison Co,6164194
+39057,3542,Duke Energy Ohio Inc,7603442
+39059,14006,Ohio Power Co,20420120
+39061,3542,Duke Energy Ohio Inc,7603442
+39063,14006,Ohio Power Co,20420120
+39065,14006,Ohio Power Co,20420120
+39067,14006,Ohio Power Co,20420120
+39069,14006,Ohio Power Co,20420120
+39071,3542,Duke Energy Ohio Inc,7603442
+39073,14006,Ohio Power Co,20420120
+39075,14006,Ohio Power Co,20420120
+39077,14006,Ohio Power Co,20420120
+39079,14006,Ohio Power Co,20420120
+39081,14006,Ohio Power Co,20420120
+39083,14006,Ohio Power Co,20420120
+39085,3755,Cleveland Electric Illum Co,5828964
+39087,14006,Ohio Power Co,20420120
+39089,14006,Ohio Power Co,20420120
+39091,14006,Ohio Power Co,20420120
+39093,13998,Ohio Edison Co,6164194
+39095,18997,The Toledo Edison Co,1745539
+39097,3542,Duke Energy Ohio Inc,7603442
+39099,13998,Ohio Edison Co,6164194
+39101,14006,Ohio Power Co,20420120
+39103,13998,Ohio Edison Co,6164194
+39105,14006,Ohio Power Co,20420120
+39107,4922,Dayton Power & Light Co,4905649
+39109,13998,Ohio Edison Co,6164194
+39111,14006,Ohio Power Co,20420120
+39113,3542,Duke Energy Ohio Inc,7603442
+39115,14006,Ohio Power Co,20420120
+39117,14006,Ohio Power Co,20420120
+39119,14006,Ohio Power Co,20420120
+39121,14006,Ohio Power Co,20420120
+39123,13998,Ohio Edison Co,6164194
+39125,14006,Ohio Power Co,20420120
+39127,14006,Ohio Power Co,20420120
+39129,3542,Duke Energy Ohio Inc,7603442
+39131,14006,Ohio Power Co,20420120
+39133,13998,Ohio Edison Co,6164194
+39135,3542,Duke Energy Ohio Inc,7603442
+39137,14006,Ohio Power Co,20420120
+39139,14006,Ohio Power Co,20420120
+39141,3542,Duke Energy Ohio Inc,7603442
+39143,14006,Ohio Power Co,20420120
+39145,14006,Ohio Power Co,20420120
+39147,14006,Ohio Power Co,20420120
+39149,4922,Dayton Power & Light Co,4905649
+39151,14006,Ohio Power Co,20420120
+39153,14006,Ohio Power Co,20420120
+39155,13998,Ohio Edison Co,6164194
+39157,14006,Ohio Power Co,20420120
+39159,14006,Ohio Power Co,20420120
+39161,14006,Ohio Power Co,20420120
+39163,18085,South Central Power Company,374616
+39165,3542,Duke Energy Ohio Inc,7603442
+39167,14006,Ohio Power Co,20420120
+39169,14006,Ohio Power Co,20420120
+39171,18997,The Toledo Edison Co,1745539
+39173,14006,Ohio Power Co,20420120
+39175,14006,Ohio Power Co,20420120
+40001,14063,Oklahoma Gas & Electric Co,13595741
+40003,14063,Oklahoma Gas & Electric Co,13595741
+40005,14063,Oklahoma Gas & Electric Co,13595741
+40007,14063,Oklahoma Gas & Electric Co,13595741
+40009,14063,Oklahoma Gas & Electric Co,13595741
+40011,14063,Oklahoma Gas & Electric Co,13595741
+40013,14063,Oklahoma Gas & Electric Co,13595741
+40015,14063,Oklahoma Gas & Electric Co,13595741
+40017,14063,Oklahoma Gas & Electric Co,13595741
+40019,14063,Oklahoma Gas & Electric Co,13595741
+40021,14063,Oklahoma Gas & Electric Co,13595741
+40023,14063,Oklahoma Gas & Electric Co,13595741
+40025,19160,"Tri-County Electric Coop, Inc (OK)",332204
+40027,14063,Oklahoma Gas & Electric Co,13595741
+40029,14063,Oklahoma Gas & Electric Co,13595741
+40031,15474,Public Service Co of Oklahoma,6952135
+40033,15474,Public Service Co of Oklahoma,6952135
+40035,15474,Public Service Co of Oklahoma,6952135
+40037,14063,Oklahoma Gas & Electric Co,13595741
+40039,14063,Oklahoma Gas & Electric Co,13595741
+40041,15474,Public Service Co of Oklahoma,6952135
+40043,14063,Oklahoma Gas & Electric Co,13595741
+40045,14063,Oklahoma Gas & Electric Co,13595741
+40047,14063,Oklahoma Gas & Electric Co,13595741
+40049,14063,Oklahoma Gas & Electric Co,13595741
+40051,14063,Oklahoma Gas & Electric Co,13595741
+40053,14063,Oklahoma Gas & Electric Co,13595741
+40055,15474,Public Service Co of Oklahoma,6952135
+40057,15474,Public Service Co of Oklahoma,6952135
+40059,14063,Oklahoma Gas & Electric Co,13595741
+40061,14063,Oklahoma Gas & Electric Co,13595741
+40063,14063,Oklahoma Gas & Electric Co,13595741
+40065,15474,Public Service Co of Oklahoma,6952135
+40067,14063,Oklahoma Gas & Electric Co,13595741
+40069,14063,Oklahoma Gas & Electric Co,13595741
+40071,14063,Oklahoma Gas & Electric Co,13595741
+40073,14063,Oklahoma Gas & Electric Co,13595741
+40075,15474,Public Service Co of Oklahoma,6952135
+40077,15474,Public Service Co of Oklahoma,6952135
+40079,14063,Oklahoma Gas & Electric Co,13595741
+40081,14063,Oklahoma Gas & Electric Co,13595741
+40083,14063,Oklahoma Gas & Electric Co,13595741
+40085,14063,Oklahoma Gas & Electric Co,13595741
+40087,14063,Oklahoma Gas & Electric Co,13595741
+40089,15474,Public Service Co of Oklahoma,6952135
+40091,14063,Oklahoma Gas & Electric Co,13595741
+40093,14063,Oklahoma Gas & Electric Co,13595741
+40095,14063,Oklahoma Gas & Electric Co,13595741
+40097,15474,Public Service Co of Oklahoma,6952135
+40099,14063,Oklahoma Gas & Electric Co,13595741
+40101,14063,Oklahoma Gas & Electric Co,13595741
+40103,14063,Oklahoma Gas & Electric Co,13595741
+40105,15474,Public Service Co of Oklahoma,6952135
+40107,14063,Oklahoma Gas & Electric Co,13595741
+40109,14063,Oklahoma Gas & Electric Co,13595741
+40111,14063,Oklahoma Gas & Electric Co,13595741
+40113,14063,Oklahoma Gas & Electric Co,13595741
+40115,15474,Public Service Co of Oklahoma,6952135
+40117,14063,Oklahoma Gas & Electric Co,13595741
+40119,14063,Oklahoma Gas & Electric Co,13595741
+40121,14063,Oklahoma Gas & Electric Co,13595741
+40123,14063,Oklahoma Gas & Electric Co,13595741
+40125,14063,Oklahoma Gas & Electric Co,13595741
+40127,15474,Public Service Co of Oklahoma,6952135
+40129,14063,Oklahoma Gas & Electric Co,13595741
+40131,15474,Public Service Co of Oklahoma,6952135
+40133,14063,Oklahoma Gas & Electric Co,13595741
+40135,14063,Oklahoma Gas & Electric Co,13595741
+40137,14063,Oklahoma Gas & Electric Co,13595741
+40139,19160,"Tri-County Electric Coop, Inc (OK)",332204
+40141,15474,Public Service Co of Oklahoma,6952135
+40143,14063,Oklahoma Gas & Electric Co,13595741
+40145,14063,Oklahoma Gas & Electric Co,13595741
+40147,15474,Public Service Co of Oklahoma,6952135
+40149,14063,Oklahoma Gas & Electric Co,13595741
+40151,14063,Oklahoma Gas & Electric Co,13595741
+40153,14063,Oklahoma Gas & Electric Co,13595741
+41001,9191,Idaho Power Co,4332006
+41003,14354,PacifiCorp,21994492
+41005,15248,Portland General Electric Co,6948233
+41007,14354,PacifiCorp,21994492
+41009,15248,Portland General Electric Co,6948233
+41011,14354,PacifiCorp,21994492
+41013,14354,PacifiCorp,21994492
+41015,1738,Bonneville Power Administration,687678
+41017,14354,PacifiCorp,21994492
+41019,14354,PacifiCorp,21994492
+41021,14354,PacifiCorp,21994492
+41023,9191,Idaho Power Co,4332006
+41025,9191,Idaho Power Co,4332006
+41027,14354,PacifiCorp,21994492
+41029,14354,PacifiCorp,21994492
+41031,14354,PacifiCorp,21994492
+41033,14354,PacifiCorp,21994492
+41035,14354,PacifiCorp,21994492
+41037,14354,PacifiCorp,21994492
+41039,14354,PacifiCorp,21994492
+41041,14354,PacifiCorp,21994492
+41043,14354,PacifiCorp,21994492
+41045,9191,Idaho Power Co,4332006
+41047,14354,PacifiCorp,21994492
+41049,14354,PacifiCorp,21994492
+41051,14354,PacifiCorp,21994492
+41053,14354,PacifiCorp,21994492
+41055,14354,PacifiCorp,21994492
+41057,14354,PacifiCorp,21994492
+41059,14354,PacifiCorp,21994492
+41061,19325,Umatilla Electric Coop Assn,7507887
+41063,14354,PacifiCorp,21994492
+41065,14354,PacifiCorp,21994492
+41067,15248,Portland General Electric Co,6948233
+41071,15248,Portland General Electric Co,6948233
+42001,66101,FirstEnergy Pennsylvania Electric Co,9525791
+42003,66101,FirstEnergy Pennsylvania Electric Co,9525791
+42005,66101,FirstEnergy Pennsylvania Electric Co,9525791
+42007,66101,FirstEnergy Pennsylvania Electric Co,9525791
+42009,66101,FirstEnergy Pennsylvania Electric Co,9525791
+42011,14715,PPL Electric Utilities Corp,13897227
+42013,66101,FirstEnergy Pennsylvania Electric Co,9525791
+42015,14715,PPL Electric Utilities Corp,13897227
+42017,14715,PPL Electric Utilities Corp,13897227
+42019,66101,FirstEnergy Pennsylvania Electric Co,9525791
+42021,66101,FirstEnergy Pennsylvania Electric Co,9525791
+42023,66101,FirstEnergy Pennsylvania Electric Co,9525791
+42025,14715,PPL Electric Utilities Corp,13897227
+42027,14715,PPL Electric Utilities Corp,13897227
+42029,14715,PPL Electric Utilities Corp,13897227
+42031,66101,FirstEnergy Pennsylvania Electric Co,9525791
+42033,66101,FirstEnergy Pennsylvania Electric Co,9525791
+42035,14715,PPL Electric Utilities Corp,13897227
+42037,14715,PPL Electric Utilities Corp,13897227
+42039,66101,FirstEnergy Pennsylvania Electric Co,9525791
+42041,14715,PPL Electric Utilities Corp,13897227
+42043,14715,PPL Electric Utilities Corp,13897227
+42045,14940,PECO Energy Co,7593320
+42047,66101,FirstEnergy Pennsylvania Electric Co,9525791
+42049,66101,FirstEnergy Pennsylvania Electric Co,9525791
+42051,66101,FirstEnergy Pennsylvania Electric Co,9525791
+42053,66101,FirstEnergy Pennsylvania Electric Co,9525791
+42055,66101,FirstEnergy Pennsylvania Electric Co,9525791
+42057,66101,FirstEnergy Pennsylvania Electric Co,9525791
+42059,66101,FirstEnergy Pennsylvania Electric Co,9525791
+42061,66101,FirstEnergy Pennsylvania Electric Co,9525791
+42063,66101,FirstEnergy Pennsylvania Electric Co,9525791
+42065,66101,FirstEnergy Pennsylvania Electric Co,9525791
+42067,14715,PPL Electric Utilities Corp,13897227
+42069,14715,PPL Electric Utilities Corp,13897227
+42071,14715,PPL Electric Utilities Corp,13897227
+42073,66101,FirstEnergy Pennsylvania Electric Co,9525791
+42075,14715,PPL Electric Utilities Corp,13897227
+42077,14715,PPL Electric Utilities Corp,13897227
+42079,14715,PPL Electric Utilities Corp,13897227
+42081,14715,PPL Electric Utilities Corp,13897227
+42083,66101,FirstEnergy Pennsylvania Electric Co,9525791
+42085,66101,FirstEnergy Pennsylvania Electric Co,9525791
+42087,14715,PPL Electric Utilities Corp,13897227
+42089,14715,PPL Electric Utilities Corp,13897227
+42091,14715,PPL Electric Utilities Corp,13897227
+42093,14715,PPL Electric Utilities Corp,13897227
+42095,14715,PPL Electric Utilities Corp,13897227
+42097,14715,PPL Electric Utilities Corp,13897227
+42099,14715,PPL Electric Utilities Corp,13897227
+42101,14940,PECO Energy Co,7593320
+42103,14715,PPL Electric Utilities Corp,13897227
+42105,66101,FirstEnergy Pennsylvania Electric Co,9525791
+42107,14715,PPL Electric Utilities Corp,13897227
+42109,14715,PPL Electric Utilities Corp,13897227
+42111,66101,FirstEnergy Pennsylvania Electric Co,9525791
+42113,14715,PPL Electric Utilities Corp,13897227
+42115,14715,PPL Electric Utilities Corp,13897227
+42117,66101,FirstEnergy Pennsylvania Electric Co,9525791
+42119,14715,PPL Electric Utilities Corp,13897227
+42121,66101,FirstEnergy Pennsylvania Electric Co,9525791
+42123,66101,FirstEnergy Pennsylvania Electric Co,9525791
+42125,66101,FirstEnergy Pennsylvania Electric Co,9525791
+42127,14715,PPL Electric Utilities Corp,13897227
+42129,66101,FirstEnergy Pennsylvania Electric Co,9525791
+42131,14715,PPL Electric Utilities Corp,13897227
+42133,14715,PPL Electric Utilities Corp,13897227
+44001,13214,The Narragansett Electric Co,3612883
+44003,13214,The Narragansett Electric Co,3612883
+44005,13214,The Narragansett Electric Co,3612883
+44007,13214,The Narragansett Electric Co,3612883
+44009,13214,The Narragansett Electric Co,3612883
+45001,5416,"Duke Energy Carolinas, LLC",30598623
+45003,17539,"Dominion Energy South Carolina, Inc",7842225
+45005,14398,Palmetto Electric Coop Inc,471914
+45007,5416,"Duke Energy Carolinas, LLC",30598623
+45009,5644,"Edisto Electric Coop, Inc",56887
+45011,162,Aiken Electric Coop Inc,142543
+45013,17539,"Dominion Energy South Carolina, Inc",7842225
+45015,17539,"Dominion Energy South Carolina, Inc",7842225
+45017,17539,"Dominion Energy South Carolina, Inc",7842225
+45019,17539,"Dominion Energy South Carolina, Inc",7842225
+45021,5416,"Duke Energy Carolinas, LLC",30598623
+45023,5416,"Duke Energy Carolinas, LLC",30598623
+45025,3046,Duke Energy Progress - (NC),15332194
+45027,3046,Duke Energy Progress - (NC),15332194
+45029,17539,"Dominion Energy South Carolina, Inc",7842225
+45031,3046,Duke Energy Progress - (NC),15332194
+45033,3046,Duke Energy Progress - (NC),15332194
+45035,17539,"Dominion Energy South Carolina, Inc",7842225
+45037,5416,"Duke Energy Carolinas, LLC",30598623
+45039,5416,"Duke Energy Carolinas, LLC",30598623
+45041,3046,Duke Energy Progress - (NC),15332194
+45043,3046,Duke Energy Progress - (NC),15332194
+45045,5416,"Duke Energy Carolinas, LLC",30598623
+45047,5416,"Duke Energy Carolinas, LLC",30598623
+45049,14398,Palmetto Electric Coop Inc,471914
+45051,3046,Duke Energy Progress - (NC),15332194
+45053,17539,"Dominion Energy South Carolina, Inc",7842225
+45055,5416,"Duke Energy Carolinas, LLC",30598623
+45057,5416,"Duke Energy Carolinas, LLC",30598623
+45059,5416,"Duke Energy Carolinas, LLC",30598623
+45061,3046,Duke Energy Progress - (NC),15332194
+45063,17539,"Dominion Energy South Carolina, Inc",7842225
+45065,5416,"Duke Energy Carolinas, LLC",30598623
+45067,3046,Duke Energy Progress - (NC),15332194
+45069,3046,Duke Energy Progress - (NC),15332194
+45071,5416,"Duke Energy Carolinas, LLC",30598623
+45073,5416,"Duke Energy Carolinas, LLC",30598623
+45075,14164,City of Orangeburg - (SC),252377
+45077,5416,"Duke Energy Carolinas, LLC",30598623
+45079,17539,"Dominion Energy South Carolina, Inc",7842225
+45081,5416,"Duke Energy Carolinas, LLC",30598623
+45083,5416,"Duke Energy Carolinas, LLC",30598623
+45085,3046,Duke Energy Progress - (NC),15332194
+45087,5416,"Duke Energy Carolinas, LLC",30598623
+45089,3046,Duke Energy Progress - (NC),15332194
+45091,5416,"Duke Energy Carolinas, LLC",30598623
+46003,27000,WAPA-- Western Area Power Administration,2939735
+46005,27000,WAPA-- Western Area Power Administration,2939735
+46007,27000,WAPA-- Western Area Power Administration,2939735
+46009,27000,WAPA-- Western Area Power Administration,2939735
+46011,14232,Otter Tail Power Co,3283159
+46013,27000,WAPA-- Western Area Power Administration,2939735
+46015,27000,WAPA-- Western Area Power Administration,2939735
+46017,27000,WAPA-- Western Area Power Administration,2939735
+46019,27000,WAPA-- Western Area Power Administration,2939735
+46021,27000,WAPA-- Western Area Power Administration,2939735
+46023,27000,WAPA-- Western Area Power Administration,2939735
+46025,27000,WAPA-- Western Area Power Administration,2939735
+46027,27000,WAPA-- Western Area Power Administration,2939735
+46029,14232,Otter Tail Power Co,3283159
+46031,12199,Montana-Dakota Utilities Co,2556031
+46033,27000,WAPA-- Western Area Power Administration,2939735
+46035,27000,WAPA-- Western Area Power Administration,2939735
+46037,14232,Otter Tail Power Co,3283159
+46039,14232,Otter Tail Power Co,3283159
+46041,27000,WAPA-- Western Area Power Administration,2939735
+46043,27000,WAPA-- Western Area Power Administration,2939735
+46045,12199,Montana-Dakota Utilities Co,2556031
+46047,27000,WAPA-- Western Area Power Administration,2939735
+46049,12199,Montana-Dakota Utilities Co,2556031
+46051,14232,Otter Tail Power Co,3283159
+46053,27000,WAPA-- Western Area Power Administration,2939735
+46055,27000,WAPA-- Western Area Power Administration,2939735
+46057,14232,Otter Tail Power Co,3283159
+46059,27000,WAPA-- Western Area Power Administration,2939735
+46061,13781,Northern States Power Co - Minnesota,14193083
+46063,12199,Montana-Dakota Utilities Co,2556031
+46065,27000,WAPA-- Western Area Power Administration,2939735
+46067,13781,Northern States Power Co - Minnesota,14193083
+46069,27000,WAPA-- Western Area Power Administration,2939735
+46071,27000,WAPA-- Western Area Power Administration,2939735
+46073,27000,WAPA-- Western Area Power Administration,2939735
+46075,27000,WAPA-- Western Area Power Administration,2939735
+46077,14232,Otter Tail Power Co,3283159
+46079,13781,Northern States Power Co - Minnesota,14193083
+46081,19545,"Black Hills Power, Inc.",822199
+46083,13781,Northern States Power Co - Minnesota,14193083
+46085,27000,WAPA-- Western Area Power Administration,2939735
+46087,13781,Northern States Power Co - Minnesota,14193083
+46089,12199,Montana-Dakota Utilities Co,2556031
+46091,14232,Otter Tail Power Co,3283159
+46093,27000,WAPA-- Western Area Power Administration,2939735
+46095,16286,Rosebud Electric Coop Inc,23349
+46097,13781,Northern States Power Co - Minnesota,14193083
+46099,13781,Northern States Power Co - Minnesota,14193083
+46101,13781,Northern States Power Co - Minnesota,14193083
+46102,13337,Nebraska Public Power District,1101923
+46103,27000,WAPA-- Western Area Power Administration,2939735
+46105,27000,WAPA-- Western Area Power Administration,2939735
+46107,27000,WAPA-- Western Area Power Administration,2939735
+46109,14232,Otter Tail Power Co,3283159
+46111,13781,Northern States Power Co - Minnesota,14193083
+46115,27000,WAPA-- Western Area Power Administration,2939735
+46117,27000,WAPA-- Western Area Power Administration,2939735
+46119,27000,WAPA-- Western Area Power Administration,2939735
+46121,27000,WAPA-- Western Area Power Administration,2939735
+46123,27000,WAPA-- Western Area Power Administration,2939735
+46125,13781,Northern States Power Co - Minnesota,14193083
+46127,12341,MidAmerican Energy Co,5589082
+46129,27000,WAPA-- Western Area Power Administration,2939735
+46135,27000,WAPA-- Western Area Power Administration,2939735
+46137,27000,WAPA-- Western Area Power Administration,2939735
+47001,10421,Knoxville Utilities Board,2324105
+47003,5399,Duck River Elec Member Corp,525914
+47005,1578,Benton County,53806
+47007,3408,City of Chattanooga - (TN),2189876
+47009,10421,Knoxville Utilities Board,2324105
+47011,3408,City of Chattanooga - (TN),2189876
+47013,3812,City of Clinton - (TN),183352
+47015,12470,Middle Tennessee E M C,3173415
+47017,10968,City of Lexington - (TN),157783
+47019,9777,Johnson City - (TN),731665
+47021,13216,Nashville Electric Service,6069079
+47023,17694,Southwest Tennessee E M C,238284
+47025,10579,City of LaFollette,171619
+47027,19162,Tri-County Elec Member Corp (TN),503164
+47029,13550,City of Newport - (TN),127248
+47031,5399,Duck River Elec Member Corp,525914
+47033,7174,Gibson Electric Members Corp,248482
+47035,19898,Volunteer Electric Coop,628824
+47037,13216,Nashville Electric Service,6069079
+47039,10968,City of Lexington - (TN),157783
+47041,12470,Middle Tennessee E M C,3173415
+47043,4624,Cumberland Elec Member Corp,565206
+47045,7174,Gibson Electric Members Corp,248482
+47047,17694,Southwest Tennessee E M C,238284
+47049,19898,Volunteer Electric Coop,628824
+47051,5399,Duck River Elec Member Corp,525914
+47053,7174,Gibson Electric Members Corp,248482
+47055,5399,Duck River Elec Member Corp,525914
+47057,10421,Knoxville Utilities Board,2324105
+47059,9777,Johnson City - (TN),731665
+47061,5399,Duck River Elec Member Corp,525914
+47063,12988,City of Morristown - (TN),308118
+47065,3408,City of Chattanooga - (TN),2189876
+47067,15293,Powell Valley Electric Coop,152699
+47069,17694,Southwest Tennessee E M C,238284
+47071,10968,City of Lexington - (TN),157783
+47073,10331,Kingsport Power Co,386067
+47075,7174,Gibson Electric Members Corp,248482
+47077,17694,Southwest Tennessee E M C,238284
+47079,14455,City of Paris - (TN),185299
+47081,5148,City of Dickson,252454
+47083,5148,City of Dickson,252454
+47085,12330,Meriwether Lewis Electric Coop,215638
+47087,19162,Tri-County Elec Member Corp (TN),503164
+47089,10421,Knoxville Utilities Board,2324105
+47091,13027,"Mountain Electric Coop, Inc",173209
+47093,10421,Knoxville Utilities Board,2324105
+47095,7174,Gibson Electric Members Corp,248482
+47097,7174,Gibson Electric Members Corp,248482
+47099,5399,Duck River Elec Member Corp,525914
+47101,5399,Duck River Elec Member Corp,525914
+47103,5399,Duck River Elec Member Corp,525914
+47105,10906,City of Lenoir - (TN),744498
+47107,19898,Volunteer Electric Coop,628824
+47109,15016,Pickwick Electric Coop,120660
+47111,19162,Tri-County Elec Member Corp (TN),503164
+47113,9612,City of Jackson - (TN),547092
+47115,3408,City of Chattanooga - (TN),2189876
+47117,5399,Duck River Elec Member Corp,525914
+47119,12470,Middle Tennessee E M C,3173415
+47121,19898,Volunteer Electric Coop,628824
+47123,6608,Fort Loudoun Electric Coop,145628
+47125,3704,City of Clarksville - (TN),575059
+47127,5399,Duck River Elec Member Corp,525914
+47129,3812,City of Clinton - (TN),183352
+47131,7174,Gibson Electric Members Corp,248482
+47133,19898,Volunteer Electric Coop,628824
+47135,12330,Meriwether Lewis Electric Coop,215638
+47137,19898,Volunteer Electric Coop,628824
+47139,19898,Volunteer Electric Coop,628824
+47141,19898,Volunteer Electric Coop,628824
+47143,3408,City of Chattanooga - (TN),2189876
+47145,10906,City of Lenoir - (TN),744498
+47147,13216,Nashville Electric Service,6069079
+47149,13216,Nashville Electric Service,6069079
+47151,19898,Volunteer Electric Coop,628824
+47153,3408,City of Chattanooga - (TN),2189876
+47155,10421,Knoxville Utilities Board,2324105
+47157,12293,City of Memphis - (TN),6007246
+47159,12470,Middle Tennessee E M C,3173415
+47161,4624,Cumberland Elec Member Corp,565206
+47163,9777,Johnson City - (TN),731665
+47165,13216,Nashville Electric Service,6069079
+47167,814,Entergy Arkansas LLC,5782256
+47169,12470,Middle Tennessee E M C,3173415
+47171,13027,"Mountain Electric Coop, Inc",173209
+47173,10421,Knoxville Utilities Board,2324105
+47175,16930,Sequachee Valley Electric Coop,270051
+47177,2960,"Caney Fork Electric Coop, Inc",135795
+47179,9777,Johnson City - (TN),731665
+47181,18643,Tennessee Valley Electric Coop,152368
+47183,7174,Gibson Electric Members Corp,248482
+47185,19898,Volunteer Electric Coop,628824
+47187,13216,Nashville Electric Service,6069079
+47189,13216,Nashville Electric Service,6069079
+48001,18976,Trinity Valley Elec Coop Inc,218539
+48003,17718,Southwestern Public Service Co,6130103
+48005,16613,Sam Houston Electric Coop Inc,164368
+48007,16627,San Patricio Electric Coop Inc,43298
+48009,19159,"Tri-County Electric Coop, Inc (TX)",1153776
+48011,17718,Southwestern Public Service Co,6130103
+48013,16604,City of San Antonio - (TX),13566138
+48015,1892,"Bluebonnet Electric Coop, Inc",1704548
+48017,17718,Southwestern Public Service Co,6130103
+48019,16604,City of San Antonio - (TX),13566138
+48021,1892,"Bluebonnet Electric Coop, Inc",1704548
+48023,19159,"Tri-County Electric Coop, Inc (TX)",1153776
+48025,10009,Karnes Electric Coop Inc,640754
+48027,14626,"Pedernales Electric Coop, Inc",1760388
+48029,16604,City of San Antonio - (TX),13566138
+48031,14626,"Pedernales Electric Coop, Inc",1760388
+48033,17718,Southwestern Public Service Co,6130103
+48035,19490,United Electric Coop Service Inc - (TX),541512
+48037,17698,Southwestern Electric Power Co,5535619
+48039,9590,"Jackson Electric Coop, Inc - (TX)",47660
+48041,55937,Entergy Texas Inc.,5140970
+48043,16057,"Rio Grande Electric Coop, Inc",132417
+48045,17718,Southwestern Public Service Co,6130103
+48047,12268,"Medina Electric Coop, Inc",314086
+48049,4295,Comanche County Elec Coop Assn,430743
+48051,55937,Entergy Texas Inc.,5140970
+48053,14626,"Pedernales Electric Coop, Inc",1760388
+48055,14626,"Pedernales Electric Coop, Inc",1760388
+48057,19806,"Victoria Electric Coop, Inc",51033
+48059,4295,Comanche County Elec Coop Assn,430743
+48061,2409,Brownsville Public Utilities Board,685671
+48063,17698,Southwestern Electric Power Co,5535619
+48065,17718,Southwestern Public Service Co,6130103
+48067,17698,Southwestern Electric Power Co,5535619
+48069,17718,Southwestern Public Service Co,6130103
+48071,55937,Entergy Texas Inc.,5140970
+48073,8898,Houston County Elec Coop Inc,59552
+48075,17698,Southwestern Electric Power Co,5535619
+48077,20948,Wise Electric Coop Inc,403269
+48079,17718,Southwestern Public Service Co,6130103
+48081,27369,Taylor Electric Coop Inc - (TX),79117
+48083,27369,Taylor Electric Coop Inc - (TX),79117
+48085,5078,"Denton County Elec Coop, Inc",653218
+48087,17698,Southwestern Electric Power Co,5535619
+48089,1892,"Bluebonnet Electric Coop, Inc",1704548
+48091,16604,City of San Antonio - (TX),13566138
+48093,19490,United Electric Coop Service Inc - (TX),541512
+48095,17693,"Southwest Texas Elec Coop, Inc",32219
+48097,5078,"Denton County Elec Coop, Inc",653218
+48099,19490,United Electric Coop Service Inc - (TX),541512
+48101,17718,Southwestern Public Service Co,6130103
+48105,16057,"Rio Grande Electric Coop, Inc",132417
+48107,17718,Southwestern Public Service Co,6130103
+48109,5701,El Paso Electric Co,4091846
+48111,17718,Southwestern Public Service Co,6130103
+48113,6958,City of Garland - (TX),809954
+48115,17718,Southwestern Public Service Co,6130103
+48117,17718,Southwestern Public Service Co,6130103
+48119,6182,"Farmers Electric Coop, Inc - (TX)",253915
+48121,5063,City of Denton - (TX),1241113
+48123,10009,Karnes Electric Coop Inc,640754
+48125,11014,"Lighthouse Electric Coop, Inc",442650
+48127,12268,"Medina Electric Coop, Inc",314086
+48129,17718,Southwestern Public Service Co,6130103
+48131,12268,"Medina Electric Coop, Inc",314086
+48133,19490,United Electric Coop Service Inc - (TX),541512
+48135,17718,Southwestern Public Service Co,6130103
+48137,14626,"Pedernales Electric Coop, Inc",1760388
+48139,19490,United Electric Coop Service Inc - (TX),541512
+48141,5701,El Paso Electric Co,4091846
+48143,19490,United Electric Coop Service Inc - (TX),541512
+48145,55937,Entergy Texas Inc.,5140970
+48147,7559,"Grayson-Collin Elec Coop, Inc",301890
+48149,1892,"Bluebonnet Electric Coop, Inc",1704548
+48151,1591,"Big Country Electric Coop, Inc",255720
+48153,17718,Southwestern Public Service Co,6130103
+48155,17718,Southwestern Public Service Co,6130103
+48159,17698,Southwestern Electric Power Co,5535619
+48161,16146,"Navasota Valley Elec Coop, Inc",87007
+48163,10009,Karnes Electric Coop Inc,640754
+48165,17718,Southwestern Public Service Co,6130103
+48167,55937,Entergy Texas Inc.,5140970
+48169,17718,Southwestern Public Service Co,6130103
+48171,14626,"Pedernales Electric Coop, Inc",1760388
+48173,4146,Concho Valley Elec Coop Inc,25895
+48175,10009,Karnes Electric Coop Inc,640754
+48177,1892,"Bluebonnet Electric Coop, Inc",1704548
+48179,17718,Southwestern Public Service Co,6130103
+48181,5078,"Denton County Elec Coop, Inc",653218
+48183,17698,Southwestern Electric Power Co,5535619
+48185,55937,Entergy Texas Inc.,5140970
+48187,16604,City of San Antonio - (TX),13566138
+48189,17718,Southwestern Public Service Co,6130103
+48191,17698,Southwestern Electric Power Co,5535619
+48193,19490,United Electric Coop Service Inc - (TX),541512
+48195,17718,Southwestern Public Service Co,6130103
+48197,17561,South Plains Electric Coop Inc,395786
+48199,55937,Entergy Texas Inc.,5140970
+48201,55937,Entergy Texas Inc.,5140970
+48203,17698,Southwestern Electric Power Co,5535619
+48205,17718,Southwestern Public Service Co,6130103
+48207,19159,"Tri-County Electric Coop, Inc (TX)",1153776
+48209,14626,"Pedernales Electric Coop, Inc",1760388
+48211,17718,Southwestern Public Service Co,6130103
+48213,18976,Trinity Valley Elec Coop Inc,218539
+48215,11501,Magic Valley Electric Coop Inc,292304
+48217,8620,"HILCO Electric Cooperative, Inc.",180767
+48219,17718,Southwestern Public Service Co,6130103
+48221,19159,"Tri-County Electric Coop, Inc (TX)",1153776
+48223,17698,Southwestern Electric Power Co,5535619
+48225,55937,Entergy Texas Inc.,5140970
+48227,11364,"Lyntegar Electric Coop, Inc",375771
+48229,5701,El Paso Electric Co,4091846
+48231,7634,City of Greenville - (TX),351199
+48233,17718,Southwestern Public Service Co,6130103
+48235,17693,"Southwest Texas Elec Coop, Inc",32219
+48237,19159,"Tri-County Electric Coop, Inc (TX)",1153776
+48239,7752,Guadalupe Valley Elec Coop Inc,366237
+48241,55937,Entergy Texas Inc.,5140970
+48243,16057,"Rio Grande Electric Coop, Inc",132417
+48245,55937,Entergy Texas Inc.,5140970
+48247,12268,"Medina Electric Coop, Inc",314086
+48249,13830,Nueces Electric Cooperative,149849
+48251,19490,United Electric Coop Service Inc - (TX),541512
+48253,1591,"Big Country Electric Coop, Inc",255720
+48255,10009,Karnes Electric Coop Inc,640754
+48257,6182,"Farmers Electric Coop, Inc - (TX)",253915
+48259,16604,City of San Antonio - (TX),13566138
+48261,11501,Magic Valley Electric Coop Inc,292304
+48263,17561,South Plains Electric Coop Inc,395786
+48265,14626,"Pedernales Electric Coop, Inc",1760388
+48267,14626,"Pedernales Electric Coop, Inc",1760388
+48269,19159,"Tri-County Electric Coop, Inc (TX)",1153776
+48271,14626,"Pedernales Electric Coop, Inc",1760388
+48273,13830,Nueces Electric Cooperative,149849
+48275,19159,"Tri-County Electric Coop, Inc (TX)",1153776
+48277,10649,Lamar County Elec Coop Assn,126944
+48279,17718,Southwestern Public Service Co,6130103
+48281,14626,"Pedernales Electric Coop, Inc",1760388
+48283,10009,Karnes Electric Coop Inc,640754
+48285,7752,Guadalupe Valley Elec Coop Inc,366237
+48287,1892,"Bluebonnet Electric Coop, Inc",1704548
+48289,55937,Entergy Texas Inc.,5140970
+48291,55937,Entergy Texas Inc.,5140970
+48293,55937,Entergy Texas Inc.,5140970
+48295,17718,Southwestern Public Service Co,6130103
+48297,10009,Karnes Electric Coop Inc,640754
+48299,14626,"Pedernales Electric Coop, Inc",1760388
+48303,17718,Southwestern Public Service Co,6130103
+48305,17718,Southwestern Public Service Co,6130103
+48307,3282,"Central Texas Elec Coop, Inc",77510
+48309,8620,"HILCO Electric Cooperative, Inc.",180767
+48311,10009,Karnes Electric Coop Inc,640754
+48313,55937,Entergy Texas Inc.,5140970
+48315,17698,Southwestern Electric Power Co,5535619
+48317,11364,"Lyntegar Electric Coop, Inc",375771
+48319,14626,"Pedernales Electric Coop, Inc",1760388
+48321,20472,"Wharton County Elec Coop, Inc",60493
+48323,16057,"Rio Grande Electric Coop, Inc",132417
+48325,16604,City of San Antonio - (TX),13566138
+48327,14626,"Pedernales Electric Coop, Inc",1760388
+48329,17718,Southwestern Public Service Co,6130103
+48331,55937,Entergy Texas Inc.,5140970
+48333,4295,Comanche County Elec Coop Assn,430743
+48335,1591,"Big Country Electric Coop, Inc",255720
+48337,20948,Wise Electric Coop Inc,403269
+48339,55937,Entergy Texas Inc.,5140970
+48341,17718,Southwestern Public Service Co,6130103
+48343,17698,Southwestern Electric Power Co,5535619
+48345,17718,Southwestern Public Service Co,6130103
+48347,4975,Deep East Texas Elec Coop Inc,203246
+48349,13332,"Navarro County Elec Coop, Inc",48369
+48351,55937,Entergy Texas Inc.,5140970
+48353,1591,"Big Country Electric Coop, Inc",255720
+48355,13830,Nueces Electric Cooperative,149849
+48357,17718,Southwestern Public Service Co,6130103
+48359,17718,Southwestern Public Service Co,6130103
+48361,55937,Entergy Texas Inc.,5140970
+48363,19159,"Tri-County Electric Coop, Inc (TX)",1153776
+48365,17698,Southwestern Electric Power Co,5535619
+48367,19159,"Tri-County Electric Coop, Inc (TX)",1153776
+48369,17718,Southwestern Public Service Co,6130103
+48371,16057,"Rio Grande Electric Coop, Inc",132417
+48373,55937,Entergy Texas Inc.,5140970
+48375,17718,Southwestern Public Service Co,6130103
+48377,16057,"Rio Grande Electric Coop, Inc",132417
+48379,17698,Southwestern Electric Power Co,5535619
+48381,17718,Southwestern Public Service Co,6130103
+48383,17693,"Southwest Texas Elec Coop, Inc",32219
+48385,14626,"Pedernales Electric Coop, Inc",1760388
+48387,17698,Southwestern Electric Power Co,5535619
+48389,16057,"Rio Grande Electric Coop, Inc",132417
+48391,19806,"Victoria Electric Coop, Inc",51033
+48393,17718,Southwestern Public Service Co,6130103
+48395,55937,Entergy Texas Inc.,5140970
+48397,6182,"Farmers Electric Coop, Inc - (TX)",253915
+48399,27369,Taylor Electric Coop Inc - (TX),79117
+48401,17698,Southwestern Electric Power Co,5535619
+48403,4975,Deep East Texas Elec Coop Inc,203246
+48405,4975,Deep East Texas Elec Coop Inc,203246
+48407,55937,Entergy Texas Inc.,5140970
+48409,16627,San Patricio Electric Coop Inc,43298
+48411,14626,"Pedernales Electric Coop, Inc",1760388
+48413,14626,"Pedernales Electric Coop, Inc",1760388
+48415,1591,"Big Country Electric Coop, Inc",255720
+48417,4295,Comanche County Elec Coop Assn,430743
+48419,17698,Southwestern Electric Power Co,5535619
+48421,17718,Southwestern Public Service Co,6130103
+48423,17698,Southwestern Electric Power Co,5535619
+48425,19490,United Electric Coop Service Inc - (TX),541512
+48427,12268,"Medina Electric Coop, Inc",314086
+48429,19490,United Electric Coop Service Inc - (TX),541512
+48431,4146,Concho Valley Elec Coop Inc,25895
+48433,19159,"Tri-County Electric Coop, Inc (TX)",1153776
+48435,14626,"Pedernales Electric Coop, Inc",1760388
+48437,17718,Southwestern Public Service Co,6130103
+48439,19159,"Tri-County Electric Coop, Inc (TX)",1153776
+48441,27369,Taylor Electric Coop Inc - (TX),79117
+48443,16057,"Rio Grande Electric Coop, Inc",132417
+48445,17718,Southwestern Public Service Co,6130103
+48447,19159,"Tri-County Electric Coop, Inc (TX)",1153776
+48449,17698,Southwestern Electric Power Co,5535619
+48451,17693,"Southwest Texas Elec Coop, Inc",32219
+48453,1015,Austin Energy,5909072
+48455,55937,Entergy Texas Inc.,5140970
+48457,55937,Entergy Texas Inc.,5140970
+48459,17698,Southwestern Electric Power Co,5535619
+48461,17693,"Southwest Texas Elec Coop, Inc",32219
+48463,12268,"Medina Electric Coop, Inc",314086
+48465,16057,"Rio Grande Electric Coop, Inc",132417
+48467,17698,Southwestern Electric Power Co,5535619
+48469,7752,Guadalupe Valley Elec Coop Inc,366237
+48471,55937,Entergy Texas Inc.,5140970
+48473,55937,Entergy Texas Inc.,5140970
+48477,55937,Entergy Texas Inc.,5140970
+48479,12268,"Medina Electric Coop, Inc",314086
+48481,20472,"Wharton County Elec Coop, Inc",60493
+48483,17718,Southwestern Public Service Co,6130103
+48487,17718,Southwestern Public Service Co,6130103
+48489,11501,Magic Valley Electric Coop Inc,292304
+48491,1015,Austin Energy,5909072
+48493,16604,City of San Antonio - (TX),13566138
+48497,19159,"Tri-County Electric Coop, Inc (TX)",1153776
+48499,17698,Southwestern Electric Power Co,5535619
+48501,17718,Southwestern Public Service Co,6130103
+48503,19490,United Electric Coop Service Inc - (TX),541512
+48505,12268,"Medina Electric Coop, Inc",314086
+48507,12268,"Medina Electric Coop, Inc",314086
+49001,14354,PacifiCorp,21994492
+49003,14354,PacifiCorp,21994492
+49005,14354,PacifiCorp,21994492
+49007,14354,PacifiCorp,21994492
+49009,27000,WAPA-- Western Area Power Administration,2939735
+49011,14354,PacifiCorp,21994492
+49013,14354,PacifiCorp,21994492
+49015,14354,PacifiCorp,21994492
+49017,14354,PacifiCorp,21994492
+49019,14354,PacifiCorp,21994492
+49021,14354,PacifiCorp,21994492
+49023,14354,PacifiCorp,21994492
+49025,6957,"Garkane Energy Coop, Inc",121392
+49027,14354,PacifiCorp,21994492
+49029,14354,PacifiCorp,21994492
+49031,14354,PacifiCorp,21994492
+49033,14354,PacifiCorp,21994492
+49035,14354,PacifiCorp,21994492
+49037,14354,PacifiCorp,21994492
+49039,14354,PacifiCorp,21994492
+49041,14354,PacifiCorp,21994492
+49043,14354,PacifiCorp,21994492
+49045,14354,PacifiCorp,21994492
+49047,14354,PacifiCorp,21994492
+49049,14354,PacifiCorp,21994492
+49051,14354,PacifiCorp,21994492
+49053,14354,PacifiCorp,21994492
+49055,6957,"Garkane Energy Coop, Inc",121392
+49057,14354,PacifiCorp,21994492
+50001,7601,Green Mountain Power Corp,1471398
+50003,7601,Green Mountain Power Corp,1471398
+50005,7601,Green Mountain Power Corp,1471398
+50007,7601,Green Mountain Power Corp,1471398
+50009,7601,Green Mountain Power Corp,1471398
+50011,7601,Green Mountain Power Corp,1471398
+50013,19791,"Vermont Electric Cooperative, Inc",133028
+50015,7601,Green Mountain Power Corp,1471398
+50017,7601,Green Mountain Power Corp,1471398
+50019,7601,Green Mountain Power Corp,1471398
+50021,7601,Green Mountain Power Corp,1471398
+50023,7601,Green Mountain Power Corp,1471398
+50025,7601,Green Mountain Power Corp,1471398
+50027,7601,Green Mountain Power Corp,1471398
+51001,19876,Virginia Electric & Power Co,61120776
+51003,19876,Virginia Electric & Power Co,61120776
+51005,19876,Virginia Electric & Power Co,61120776
+51007,19876,Virginia Electric & Power Co,61120776
+51009,19876,Virginia Electric & Power Co,61120776
+51011,19876,Virginia Electric & Power Co,61120776
+51013,19876,Virginia Electric & Power Co,61120776
+51015,19876,Virginia Electric & Power Co,61120776
+51017,19876,Virginia Electric & Power Co,61120776
+51019,19876,Virginia Electric & Power Co,61120776
+51021,733,Appalachian Power Co,6776729
+51023,19876,Virginia Electric & Power Co,61120776
+51025,19876,Virginia Electric & Power Co,61120776
+51027,19876,Virginia Electric & Power Co,61120776
+51029,19876,Virginia Electric & Power Co,61120776
+51031,19876,Virginia Electric & Power Co,61120776
+51033,19876,Virginia Electric & Power Co,61120776
+51035,19876,Virginia Electric & Power Co,61120776
+51037,19876,Virginia Electric & Power Co,61120776
+51041,19876,Virginia Electric & Power Co,61120776
+51043,19876,Virginia Electric & Power Co,61120776
+51045,733,Appalachian Power Co,6776729
+51047,19876,Virginia Electric & Power Co,61120776
+51049,19876,Virginia Electric & Power Co,61120776
+51051,733,Appalachian Power Co,6776729
+51053,19876,Virginia Electric & Power Co,61120776
+51057,19876,Virginia Electric & Power Co,61120776
+51061,19876,Virginia Electric & Power Co,61120776
+51063,733,Appalachian Power Co,6776729
+51065,19876,Virginia Electric & Power Co,61120776
+51069,17066,Shenandoah Valley Elec Coop,525096
+51071,733,Appalachian Power Co,6776729
+51073,19876,Virginia Electric & Power Co,61120776
+51075,19876,Virginia Electric & Power Co,61120776
+51077,733,Appalachian Power Co,6776729
+51079,19876,Virginia Electric & Power Co,61120776
+51081,19876,Virginia Electric & Power Co,61120776
+51083,19876,Virginia Electric & Power Co,61120776
+51085,19876,Virginia Electric & Power Co,61120776
+51087,19876,Virginia Electric & Power Co,61120776
+51089,19876,Virginia Electric & Power Co,61120776
+51091,17066,Shenandoah Valley Elec Coop,525096
+51093,19876,Virginia Electric & Power Co,61120776
+51097,19876,Virginia Electric & Power Co,61120776
+51099,19876,Virginia Electric & Power Co,61120776
+51101,19876,Virginia Electric & Power Co,61120776
+51103,19876,Virginia Electric & Power Co,61120776
+51105,10171,Kentucky Utilities Co,5767706
+51107,19876,Virginia Electric & Power Co,61120776
+51109,19876,Virginia Electric & Power Co,61120776
+51111,19876,Virginia Electric & Power Co,61120776
+51113,19876,Virginia Electric & Power Co,61120776
+51115,19876,Virginia Electric & Power Co,61120776
+51117,19876,Virginia Electric & Power Co,61120776
+51119,19876,Virginia Electric & Power Co,61120776
+51121,733,Appalachian Power Co,6776729
+51125,19876,Virginia Electric & Power Co,61120776
+51127,19876,Virginia Electric & Power Co,61120776
+51131,84,A & N Electric Coop,173135
+51133,19876,Virginia Electric & Power Co,61120776
+51135,19876,Virginia Electric & Power Co,61120776
+51137,19876,Virginia Electric & Power Co,61120776
+51139,19876,Virginia Electric & Power Co,61120776
+51141,733,Appalachian Power Co,6776729
+51143,19876,Virginia Electric & Power Co,61120776
+51145,19876,Virginia Electric & Power Co,61120776
+51147,19876,Virginia Electric & Power Co,61120776
+51149,19876,Virginia Electric & Power Co,61120776
+51153,19876,Virginia Electric & Power Co,61120776
+51155,733,Appalachian Power Co,6776729
+51157,19876,Virginia Electric & Power Co,61120776
+51163,19876,Virginia Electric & Power Co,61120776
+51165,19876,Virginia Electric & Power Co,61120776
+51167,733,Appalachian Power Co,6776729
+51169,733,Appalachian Power Co,6776729
+51171,19876,Virginia Electric & Power Co,61120776
+51173,733,Appalachian Power Co,6776729
+51175,19876,Virginia Electric & Power Co,61120776
+51177,19876,Virginia Electric & Power Co,61120776
+51179,19876,Virginia Electric & Power Co,61120776
+51181,19876,Virginia Electric & Power Co,61120776
+51183,19876,Virginia Electric & Power Co,61120776
+51185,19876,Virginia Electric & Power Co,61120776
+51187,19876,Virginia Electric & Power Co,61120776
+51191,733,Appalachian Power Co,6776729
+51193,19876,Virginia Electric & Power Co,61120776
+51195,733,Appalachian Power Co,6776729
+51197,733,Appalachian Power Co,6776729
+51199,19876,Virginia Electric & Power Co,61120776
+51510,19876,Virginia Electric & Power Co,61120776
+51520,19876,Virginia Electric & Power Co,61120776
+51530,19876,Virginia Electric & Power Co,61120776
+51540,19876,Virginia Electric & Power Co,61120776
+51550,19876,Virginia Electric & Power Co,61120776
+51570,19876,Virginia Electric & Power Co,61120776
+51580,19876,Virginia Electric & Power Co,61120776
+51590,4794,City of Danville - (VA),282358
+51595,19876,Virginia Electric & Power Co,61120776
+51610,19876,Virginia Electric & Power Co,61120776
+51630,19876,Virginia Electric & Power Co,61120776
+51640,733,Appalachian Power Co,6776729
+51650,19876,Virginia Electric & Power Co,61120776
+51660,19876,Virginia Electric & Power Co,61120776
+51670,19876,Virginia Electric & Power Co,61120776
+51678,19876,Virginia Electric & Power Co,61120776
+51680,733,Appalachian Power Co,6776729
+51683,19876,Virginia Electric & Power Co,61120776
+51685,19876,Virginia Electric & Power Co,61120776
+51700,19876,Virginia Electric & Power Co,61120776
+51710,19876,Virginia Electric & Power Co,61120776
+51720,10171,Kentucky Utilities Co,5767706
+51730,19876,Virginia Electric & Power Co,61120776
+51735,19876,Virginia Electric & Power Co,61120776
+51740,19876,Virginia Electric & Power Co,61120776
+51775,16558,City of Salem - (VA),96855
+51790,19876,Virginia Electric & Power Co,61120776
+51800,19876,Virginia Electric & Power Co,61120776
+51810,19876,Virginia Electric & Power Co,61120776
+51820,19876,Virginia Electric & Power Co,61120776
+51830,19876,Virginia Electric & Power Co,61120776
+51840,17066,Shenandoah Valley Elec Coop,525096
+53001,14624,PUD No 2 of Grant County,3621318
+53003,20169,Avista Corp,3199806
+53005,14354,PacifiCorp,21994492
+53007,1738,Bonneville Power Administration,687678
+53009,1738,Bonneville Power Administration,687678
+53011,3660,PUD No 1 of Clark County - (WA),1365364
+53013,14354,PacifiCorp,21994492
+53015,14354,PacifiCorp,21994492
+53017,14624,PUD No 2 of Grant County,3621318
+53019,20169,Avista Corp,3199806
+53021,1738,Bonneville Power Administration,687678
+53023,14354,PacifiCorp,21994492
+53025,14624,PUD No 2 of Grant County,3621318
+53027,1738,Bonneville Power Administration,687678
+53029,15500,Puget Sound Energy Inc,8936022
+53031,1738,Bonneville Power Administration,687678
+53033,15500,Puget Sound Energy Inc,8936022
+53035,15500,Puget Sound Energy Inc,8936022
+53037,15500,Puget Sound Energy Inc,8936022
+53039,1738,Bonneville Power Administration,687678
+53041,1738,Bonneville Power Administration,687678
+53043,14624,PUD No 2 of Grant County,3621318
+53045,18429,City of Tacoma - (WA),319870
+53047,1738,Bonneville Power Administration,687678
+53049,1738,Bonneville Power Administration,687678
+53051,20169,Avista Corp,3199806
+53053,15500,Puget Sound Energy Inc,8936022
+53055,14170,Orcas Power & Light Coop,56915
+53057,15500,Puget Sound Energy Inc,8936022
+53059,10393,PUD No 1 of Klickitat County,112111
+53061,17470,PUD No 1 of Snohomish County,2431764
+53063,20169,Avista Corp,3199806
+53065,20169,Avista Corp,3199806
+53067,15500,Puget Sound Energy Inc,8936022
+53069,14324,PUD No 2 of Pacific County,90423
+53071,14354,PacifiCorp,21994492
+53073,15500,Puget Sound Energy Inc,8936022
+53075,20169,Avista Corp,3199806
+53077,14354,PacifiCorp,21994492
+54001,12796,Monongahela Power Co,3269443
+54003,15263,The Potomac Edison Company,2925164
+54005,733,Appalachian Power Co,6776729
+54007,12796,Monongahela Power Co,3269443
+54009,12796,Monongahela Power Co,3269443
+54011,733,Appalachian Power Co,6776729
+54013,12796,Monongahela Power Co,3269443
+54015,733,Appalachian Power Co,6776729
+54017,12796,Monongahela Power Co,3269443
+54019,733,Appalachian Power Co,6776729
+54021,12796,Monongahela Power Co,3269443
+54023,12796,Monongahela Power Co,3269443
+54025,733,Appalachian Power Co,6776729
+54027,15263,The Potomac Edison Company,2925164
+54029,12796,Monongahela Power Co,3269443
+54031,15263,The Potomac Edison Company,2925164
+54033,12796,Monongahela Power Co,3269443
+54035,733,Appalachian Power Co,6776729
+54037,15263,The Potomac Edison Company,2925164
+54039,733,Appalachian Power Co,6776729
+54041,12796,Monongahela Power Co,3269443
+54043,733,Appalachian Power Co,6776729
+54045,733,Appalachian Power Co,6776729
+54047,733,Appalachian Power Co,6776729
+54049,12796,Monongahela Power Co,3269443
+54051,20521,Wheeling Power Co,377859
+54053,733,Appalachian Power Co,6776729
+54055,733,Appalachian Power Co,6776729
+54057,12796,Monongahela Power Co,3269443
+54059,733,Appalachian Power Co,6776729
+54061,12796,Monongahela Power Co,3269443
+54063,733,Appalachian Power Co,6776729
+54065,15263,The Potomac Edison Company,2925164
+54067,733,Appalachian Power Co,6776729
+54069,20521,Wheeling Power Co,377859
+54071,12796,Monongahela Power Co,3269443
+54073,12796,Monongahela Power Co,3269443
+54075,12796,Monongahela Power Co,3269443
+54077,12796,Monongahela Power Co,3269443
+54079,733,Appalachian Power Co,6776729
+54081,733,Appalachian Power Co,6776729
+54083,12796,Monongahela Power Co,3269443
+54085,12796,Monongahela Power Co,3269443
+54087,733,Appalachian Power Co,6776729
+54089,733,Appalachian Power Co,6776729
+54091,12796,Monongahela Power Co,3269443
+54093,12796,Monongahela Power Co,3269443
+54095,12796,Monongahela Power Co,3269443
+54097,12796,Monongahela Power Co,3269443
+54099,733,Appalachian Power Co,6776729
+54101,12796,Monongahela Power Co,3269443
+54103,12796,Monongahela Power Co,3269443
+54105,12796,Monongahela Power Co,3269443
+54107,12796,Monongahela Power Co,3269443
+54109,733,Appalachian Power Co,6776729
+55001,20856,Wisconsin Power & Light Co,2354882
+55003,13780,Northern States Power Co,2720597
+55005,13780,Northern States Power Co,2720597
+55007,13780,Northern States Power Co,2720597
+55009,20847,Wisconsin Electric Power Co,8752660
+55011,13780,Northern States Power Co,2720597
+55013,5574,East Central Energy,269055
+55015,20847,Wisconsin Electric Power Co,8752660
+55017,13780,Northern States Power Co,2720597
+55019,13780,Northern States Power Co,2720597
+55021,20847,Wisconsin Electric Power Co,8752660
+55023,13780,Northern States Power Co,2720597
+55025,20847,Wisconsin Electric Power Co,8752660
+55027,20847,Wisconsin Electric Power Co,8752660
+55029,20860,Wisconsin Public Service Corp,4051564
+55031,5574,East Central Energy,269055
+55033,13780,Northern States Power Co,2720597
+55035,13780,Northern States Power Co,2720597
+55037,20847,Wisconsin Electric Power Co,8752660
+55039,20847,Wisconsin Electric Power Co,8752660
+55041,20847,Wisconsin Electric Power Co,8752660
+55043,20847,Wisconsin Electric Power Co,8752660
+55045,20856,Wisconsin Power & Light Co,2354882
+55047,20856,Wisconsin Power & Light Co,2354882
+55049,20856,Wisconsin Power & Light Co,2354882
+55051,20860,Wisconsin Public Service Corp,4051564
+55053,13780,Northern States Power Co,2720597
+55055,20847,Wisconsin Electric Power Co,8752660
+55057,20856,Wisconsin Power & Light Co,2354882
+55059,20847,Wisconsin Electric Power Co,8752660
+55061,20860,Wisconsin Public Service Corp,4051564
+55063,13780,Northern States Power Co,2720597
+55065,20856,Wisconsin Power & Light Co,2354882
+55067,20860,Wisconsin Public Service Corp,4051564
+55069,20860,Wisconsin Public Service Corp,4051564
+55071,20847,Wisconsin Electric Power Co,8752660
+55073,20860,Wisconsin Public Service Corp,4051564
+55075,20847,Wisconsin Electric Power Co,8752660
+55077,20856,Wisconsin Power & Light Co,2354882
+55078,20856,Wisconsin Power & Light Co,2354882
+55079,20847,Wisconsin Electric Power Co,8752660
+55081,13780,Northern States Power Co,2720597
+55083,20847,Wisconsin Electric Power Co,8752660
+55085,20860,Wisconsin Public Service Corp,4051564
+55087,20847,Wisconsin Electric Power Co,8752660
+55089,20847,Wisconsin Electric Power Co,8752660
+55091,13780,Northern States Power Co,2720597
+55093,13780,Northern States Power Co,2720597
+55095,13780,Northern States Power Co,2720597
+55097,20860,Wisconsin Public Service Corp,4051564
+55099,13780,Northern States Power Co,2720597
+55101,20847,Wisconsin Electric Power Co,8752660
+55103,20856,Wisconsin Power & Light Co,2354882
+55105,20847,Wisconsin Electric Power Co,8752660
+55107,13780,Northern States Power Co,2720597
+55109,13780,Northern States Power Co,2720597
+55111,20856,Wisconsin Power & Light Co,2354882
+55113,13780,Northern States Power Co,2720597
+55115,20847,Wisconsin Electric Power Co,8752660
+55117,20847,Wisconsin Electric Power Co,8752660
+55119,13780,Northern States Power Co,2720597
+55121,13780,Northern States Power Co,2720597
+55123,13780,Northern States Power Co,2720597
+55125,20847,Wisconsin Electric Power Co,8752660
+55127,20847,Wisconsin Electric Power Co,8752660
+55129,13780,Northern States Power Co,2720597
+55131,20847,Wisconsin Electric Power Co,8752660
+55133,20847,Wisconsin Electric Power Co,8752660
+55135,20847,Wisconsin Electric Power Co,8752660
+55137,20847,Wisconsin Electric Power Co,8752660
+55139,20847,Wisconsin Electric Power Co,8752660
+55141,20856,Wisconsin Power & Light Co,2354882
+56001,14354,PacifiCorp,21994492
+56003,14354,PacifiCorp,21994492
+56005,19545,"Black Hills Power, Inc.",822199
+56007,14354,PacifiCorp,21994492
+56009,14354,PacifiCorp,21994492
+56011,19545,"Black Hills Power, Inc.",822199
+56013,14354,PacifiCorp,21994492
+56015,27000,WAPA-- Western Area Power Administration,2939735
+56017,14354,PacifiCorp,21994492
+56019,14354,PacifiCorp,21994492
+56021,27000,WAPA-- Western Area Power Administration,2939735
+56023,14354,PacifiCorp,21994492
+56025,14354,PacifiCorp,21994492
+56027,27000,WAPA-- Western Area Power Administration,2939735
+56029,14354,PacifiCorp,21994492
+56031,14354,PacifiCorp,21994492
+56033,12199,Montana-Dakota Utilities Co,2556031
+56035,14354,PacifiCorp,21994492
+56037,14354,PacifiCorp,21994492
+56039,12825,NorthWestern Energy LLC - (MT),3232651
+56041,14354,PacifiCorp,21994492
+56043,14354,PacifiCorp,21994492
+56045,19545,"Black Hills Power, Inc.",822199

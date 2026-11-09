@@ -238,10 +238,15 @@ total. The job allocates Cox/KBB 2025 US Tesla sales 589,160 minus the
 CEC 2025 California Tesla total 169,650 by households and income. The
 EV-share term is 1. A suppressed income uses the $80,000 reference.
 
-Energy and demand charges are still the PG&E B-10 figures in
-`data/demo/san_mateo/operating_inputs.json` for every ZIP. No EIA or
-OpenEI loader is wired. `mean_commute` is null: ACS S0801 is not in the
-national summary file.
+Energy and demand charges come from the electricity ladder: a utility
+tariff (PG&E Schedule B-10 on PG&E territory), then that utility's EIA-861
+commercial average, then EIA Table 5.6.A for the state, then the U.S.
+total. An average sets the demand charge to 0 because demand is already
+in the $/kWh. Commercial property tax is the Lincoln Institute rate for
+the county's studied city, or the state's studied city when the county is
+not in the study, and it shifts the NNN load. Fit-out uses the BEA goods
+price parity. `mean_commute` is null: ACS S0801 is not in the national
+summary file.
 
 `acs_rent_v1` still has zero income, density, and home-value exponents.
 The ZIP adjustment is the ACS median gross rent ratio only, until a fit

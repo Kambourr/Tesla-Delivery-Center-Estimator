@@ -29,18 +29,27 @@ Contract
     :class:`~dce.model.errors.ZeroDeliveriesError`.
 
 ``build_cost_inputs(assumptions, *, rent_psf_month, wage_annual, energy_rate_kwh,
-demand_rate_kw, annual_deliveries) -> CostInputs``
+demand_rate_kw, annual_deliveries, opex_load=None, fitout_index=1, property_tax_rate=None)
+-> CostInputs``
     Turns the assumptions table plus resolved public inputs into
     :class:`CostInputs`. Rent arrives as a number; this module never looks
     rent up. ``other_opex_annual`` is a percentage of baseline (unshocked)
     lease + labor, so a scenario shock does not move it. ``capex_total`` is
     :func:`upfront_capex` (improvements + equipment). ``property_tax_annual``
     is 0 when ``property_tax.included_in_nnn`` is true, because NNN rent's
-    ``opex_load`` already carries the landlord's tax.
+    ``opex_load`` already carries the landlord's tax. ``opex_load`` replaces
+    that fraction when a local tax rate has shifted it.
+    ``fitout_index`` scales fit-out only (1 is the national assumption).
+    ``property_tax_rate`` replaces the assumptions rate when tax is not
+    inside NNN.
 
-``upfront_capex(assumptions, sqft=None) -> tuple[float, float]``
-    ``(improvements, equipment)`` in USD: ``fitout_psf × sqft ×
-    (1 + soft_contingency)`` and ``equipment_usd``.
+``upfront_capex(assumptions, sqft=None, *, fitout_index=1) -> tuple[float, float]``
+    ``(improvements, equipment)`` in USD: ``fitout_psf × fitout_index × sqft ×
+    (1 + soft_contingency)`` and ``equipment_usd``. Equipment is not indexed.
+
+``nnn_opex_load(...) -> float``
+    The NNN load after swapping the reference tax rate for a local one.
+    At the reference rate the load is unchanged. A zero rent is not shifted.
 
 Pure. No I/O, no network, no LLM.
 """
@@ -133,16 +142,46 @@ def staffing_headcount(
     return max(staffing.min_headcount, deliveries / staffing.deliveries_per_fte)
 
 
+def nnn_opex_load(
+    base_load: float,
+    *,
+    reference_rate: float,
+    local_rate: float,
+    assessed_value_psf: float,
+    rent_psf_year: float,
+) -> float:
+    """Return the NNN load after replacing the reference tax rate with ``local_rate``.
+
+    ``base_load`` already includes tax at ``reference_rate``. The difference
+    is ``assessed_value_psf × (local_rate − reference_rate) / rent_psf_year``.
+    A zero annual rent cannot carry that difference, so the base load is
+    returned. The result is never negative.
+    """
+    base = v.non_negative("opex_load", base_load)
+    reference = v.non_negative("reference_rate", reference_rate)
+    local = v.non_negative("local_rate", local_rate)
+    assessed = v.non_negative("assessed_value_psf", assessed_value_psf)
+    rent = v.non_negative("rent_psf_year", rent_psf_year)
+    if rent == 0.0:
+        return base
+    return max(0.0, base + assessed * (local - reference) / rent)
+
+
 def upfront_capex(
-    assumptions: Assumptions | ModelAssumptions, sqft: float | None = None
+    assumptions: Assumptions | ModelAssumptions,
+    sqft: float | None = None,
+    *,
+    fitout_index: float = 1.0,
 ) -> tuple[float, float]:
     """Return ``(improvements, equipment)`` upfront capex in USD.
 
-    ``sqft`` defaults to ``facility.sqft``.
+    ``sqft`` defaults to ``facility.sqft``. ``fitout_index`` scales fit-out
+    only. Equipment stays the national catalog price.
     """
     a = parse_assumptions(assumptions)
     area = a.facility.sqft if sqft is None else v.positive("sqft", sqft)
-    improvements = a.capex.fitout_psf * area * (1.0 + a.capex.soft_contingency)
+    index = v.positive("fitout_index", fitout_index)
+    improvements = a.capex.fitout_psf * index * area * (1.0 + a.capex.soft_contingency)
     return improvements, a.capex.equipment_usd
 
 
@@ -154,22 +193,36 @@ def build_cost_inputs(
     energy_rate_kwh: float,
     demand_rate_kw: float,
     annual_deliveries: float,
+    opex_load: float | None = None,
+    fitout_index: float = 1.0,
+    property_tax_rate: float | None = None,
 ) -> CostInputs:
-    """Combine the assumptions table with resolved public inputs into :class:`CostInputs`."""
+    """Combine the assumptions table with resolved public inputs into :class:`CostInputs`.
+
+    Omitted optional arguments keep the assumptions-file values, so an older
+    caller (and the golden fixtures) is unchanged.
+    """
     a = parse_assumptions(assumptions)
     sqft = a.facility.sqft
     rent = v.non_negative("rent_psf_month", rent_psf_month)
     wage = v.non_negative("wage_annual", wage_annual)
+    load = a.facility.opex_load if opex_load is None else v.non_negative("opex_load", opex_load)
+    index = v.positive("fitout_index", fitout_index)
+    tax_rate = (
+        a.property_tax.effective_rate
+        if property_tax_rate is None
+        else v.non_negative("property_tax_rate", property_tax_rate)
+    )
     headcount = staffing_headcount(annual_deliveries, a)
 
-    base_lease = rent * MONTHS_PER_YEAR * sqft * (1.0 + a.facility.opex_load)
+    base_lease = rent * MONTHS_PER_YEAR * sqft * (1.0 + load)
     base_labor = headcount * wage * a.labor.wage_load
     other_opex = a.other_opex.pct_of_lease_and_labor * (base_lease + base_labor)
 
     return CostInputs(
         sqft=sqft,
         rent_psf_month=rent,
-        opex_load=a.facility.opex_load,
+        opex_load=load,
         wage_annual=wage,
         wage_load=a.labor.wage_load,
         headcount=headcount,
@@ -180,9 +233,9 @@ def build_cost_inputs(
         property_tax_annual=(
             0.0
             if a.property_tax.included_in_nnn
-            else a.property_tax.assessed_value_psf * sqft * a.property_tax.effective_rate
+            else a.property_tax.assessed_value_psf * sqft * tax_rate
         ),
-        capex_total=math.fsum(upfront_capex(a, sqft)),
+        capex_total=math.fsum(upfront_capex(a, sqft, fitout_index=index)),
         capex_years=a.capex.life_years,
         other_opex_annual=other_opex,
     )

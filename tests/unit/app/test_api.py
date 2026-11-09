@@ -68,12 +68,26 @@ def test_94402_matches_estimate_and_carries_the_dashboard_fields() -> None:
     standalone = result["dcf"]["standalone"]  # type: ignore[index]
     assert baseline.dcf is not None
     assert standalone["npv"] == pytest.approx(baseline.dcf.standalone.npv)
-    assert standalone["npv"] == pytest.approx(11.304e6, abs=0.05e6)  # type: ignore[index]
     assert result["tornado"][0]["driver"] == "deliveries"  # type: ignore[index]
     base = result["scenarios"]["base"]  # type: ignore[index]
     assert base["standalone"]["npv"] == pytest.approx(standalone["npv"], abs=1.0)  # type: ignore[index]
     assert result["catchment"]["gravity"]["zips"]  # type: ignore[index]
     assert result["nearby_centers"]  # type: ignore[index]
+
+
+def test_78701_scenario_base_matches_estimate() -> None:
+    result = build_ui_result("78701")
+    baseline = estimate("78701")
+    assert baseline.dcf is not None
+    base = result["scenarios"]["base"]  # type: ignore[index]
+    assert base["standalone"]["npv"] == pytest.approx(baseline.dcf.standalone.npv, abs=1.0)  # type: ignore[index]
+    assert result["cost_per_delivery"] == pytest.approx(baseline.cost_per_delivery)  # type: ignore[index]
+    energy = {row.name: row for row in baseline.provenance}["energy_rate_kwh"]
+    assert energy.source == "eia861"
+    assert energy.geography_id == "1015"
+    assert energy.fallback is False
+    tornado = result["tornado"][0]  # type: ignore[index]
+    assert tornado["npv_base"] == pytest.approx(baseline.dcf.standalone.npv, abs=1.0)  # type: ignore[index]
 
 
 def test_get_result_caches_and_runs_on_a_worker(monkeypatch: pytest.MonkeyPatch) -> None:

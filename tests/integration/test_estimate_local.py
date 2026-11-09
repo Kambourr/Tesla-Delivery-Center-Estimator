@@ -34,8 +34,15 @@ def test_austin_78701_uses_its_own_wage_rent_and_national_demand() -> None:
     assert deliveries.fallback is True
     assert deliveries.geography_level == "national"
     energy = inputs["energy_rate_kwh"]
-    assert energy.fallback is True
-    assert energy.source == "pge_schedule_b10"
+    assert energy.fallback is False
+    assert energy.source == "eia861"
+    assert energy.geography_level == "utility"
+    assert energy.geography_id == "1015"
+    assert energy.value == pytest.approx(0.104451, abs=1e-6)
+    tax = inputs["property_tax_rate"]
+    assert tax.fallback is False
+    assert tax.geography_level == "county"
+    assert "Austin" in tax.detail
     assert result.estimated_annual_deliveries > 0
     assert result.cost_per_delivery > 0
     assert result.nearby_centers

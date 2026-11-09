@@ -6,6 +6,7 @@ All notable changes to this project are recorded here.
 
 ### Changed
 
+- Electricity, commercial property tax, and fit-out are local. The ladder is a utility tariff (PG&E Schedule B-10 on PG&E territory), then the EIA-861 utility average, then the state price, then the U.S. price. An average sets the demand charge to 0. The Lincoln Institute rate for the studied city shifts the NNN load. Fit-out uses the BEA goods price parity. Wage, rent, and each ZIP's own demand are unchanged. `MODEL_VERSION` is `2026.11.5-local-costs`.
 - An observed industrial broker seed is used directly. The ACS rent factor
   no longer scales a CBSA that already has a broker comp. `94402` is the
   Kidder Mathews rate, $25.68 per square foot per year. ZIPs with no rent
@@ -20,7 +21,6 @@ All notable changes to this project are recorded here.
   SOC 49-3023 wage (national row for micropolitan and non-metro), the rent
   resolver, CEC Tesla totals in California, and the Cox/KBB residual
   allocation elsewhere. Each input is on `EstimateResult.provenance`.
-  Energy and demand charges stay the PG&E B-10 fallback for every ZIP.
   San Mateo 94402 moves off the old $2.14 / fallback-wage / 2025-extract
   case. The published 4,400-delivery model is unchanged. See `docs/STATUS.md`.
 - `dce precompute` stores a `dce.ui_result.v1` document per ZIP, built by

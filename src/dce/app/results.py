@@ -4,14 +4,14 @@ Headline cost, deliveries, catchment, and both DCF views come from
 :func:`dce.orchestrator.estimate` with its own defaults, including the base
 handover factor. This module does not rebuild ZIP demand or pick a
 handover factor of its own. Low / base / high cards and the NPV tornado
-come from ``dce.scenarios``, using that estimate's volume and the parsed
-assumption file's base prices. Do not import ``dce.extract.pdf_llm``.
+come from ``dce.scenarios``, using that estimate's volume and the same
+resolved prices (rent, wage, electricity, NNN load, and fit-out). Do not import ``dce.extract.pdf_llm``.
 """
 
 from __future__ import annotations
 
 import math
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 
 import yaml
@@ -20,7 +20,7 @@ from dce.app.mapdata import load_centers, lookup_centroid
 from dce.config import assumptions_path
 from dce.model.assumptions import ModelAssumptions, parse_assumptions
 from dce.model.costs import build_cost_inputs
-from dce.model.dcf import DcfResult
+from dce.model.dcf import DcfInputs, DcfResult, build_dcf_inputs
 from dce.model.types import (
     CatchmentCaseSummary,
     CatchmentSummary,
@@ -84,6 +84,7 @@ class _Prepared:
     result: EstimateResult
     lat: float
     lon: float
+    dcf: DcfInputs
 
 
 def build_ui_result(
@@ -111,6 +112,7 @@ def build_ui_result(
         catchment=prepared.catchment,
         provenance=prepared.result.provenance,
         nearby_centers=prepared.result.nearby_centers,
+        dcf=prepared.dcf,
     )
     bars = dcf_tornado(
         TornadoInputs(
@@ -119,6 +121,7 @@ def build_ui_result(
             steady_deliveries=prepared.steady,
             scenario=prepared.scenario,
             benefit_mode="standalone",
+            dcf=prepared.dcf,
         )
     )
     result = prepared.result
@@ -265,9 +268,10 @@ def ui_result_problems(payload: object) -> list[str]:
 def _prepare(zip_code: str, *, data_dir: Path | None = None) -> _Prepared:
     """Take the headline from ``estimate`` and the prices the scenarios need.
 
-    ``estimate`` applies the base handover factor and the ZIP's own rent
-    and wage. The scenario grid uses those same prices, read back from
-    the result's provenance, so the base card matches the headline.
+    ``estimate`` applies the base handover factor and the ZIP's own rent,
+    wage, electricity, property tax, and fit-out index. The scenario grid
+    uses those same prices, read back from the result's provenance, so the
+    base card matches the headline.
     """
     result = estimate(zip_code, data_dir=data_dir)
     if result.dcf is None or result.catchment is None:
@@ -275,6 +279,7 @@ def _prepare(zip_code: str, *, data_dir: Path | None = None) -> _Prepared:
     assumptions = parse_assumptions(_load_assumptions())
     steady = result.catchment.gravity.deliveries_per_year
     values = {row.name: row.value for row in result.provenance}
+    fitout = _required(result.geo.zip_code, "fitout_index", values)
     costs = build_cost_inputs(
         assumptions,
         rent_psf_month=_required(result.geo.zip_code, "rent_psf_month", values),
@@ -282,6 +287,15 @@ def _prepare(zip_code: str, *, data_dir: Path | None = None) -> _Prepared:
         energy_rate_kwh=_required(result.geo.zip_code, "energy_rate_kwh", values),
         demand_rate_kw=_required(result.geo.zip_code, "demand_rate_kw", values),
         annual_deliveries=steady,
+        opex_load=_required(result.geo.zip_code, "opex_load", values),
+        fitout_index=fitout,
+    )
+    dcf = replace(
+        build_dcf_inputs(assumptions),
+        fitout_psf=assumptions.capex.fitout_psf * fitout,
+        status_quo_rent_psf_month=_required(
+            result.geo.zip_code, "status_quo_rent_psf_month", values
+        ),
     )
     point = lookup_centroid(result.geo.zcta) or lookup_centroid(result.geo.zip_code)
     if point is None:
@@ -296,6 +310,7 @@ def _prepare(zip_code: str, *, data_dir: Path | None = None) -> _Prepared:
         result=result,
         lat=point[0],
         lon=point[1],
+        dcf=dcf,
     )
 
 

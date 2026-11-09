@@ -1,7 +1,7 @@
 # Status
 
 **As of:** 2026-11-09  
-**Phase:** M0 bootstrap implemented on `cursor/m0-repo-bootstrap-c1ab`, opened as a pull request against `main`. Not merged.
+**Phase:** M0 bootstrap implemented on `cursor/m0-repo-bootstrap-c1ab`. Pull request: https://github.com/Kambourr/Tesla-Delivery-Center-Estimator/pull/1 — not merged.
 
 | Milestone | Status |
 |---|---|

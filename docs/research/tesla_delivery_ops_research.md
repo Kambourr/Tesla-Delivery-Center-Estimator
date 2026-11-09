@@ -223,4 +223,6 @@ Replace "everything within 15 miles of the ZIP" with **demand allocated among co
 
 ## DCF extension (added 2026-11-08)
 
+Demand calibration (is the catchment too low?) is in [`demand_calibration.md`](demand_calibration.md), with code in `data/demand_calibration.py`.
+
 The discounted-cash-flow design, the input table with sources, and the illustrative San Mateo NPV/IRR/payback are in [`dcf_design.md`](dcf_design.md), with code in `data/dcf_san_mateo.py`. The proximity-elasticity check is in `data/proximity_elasticity.py`.

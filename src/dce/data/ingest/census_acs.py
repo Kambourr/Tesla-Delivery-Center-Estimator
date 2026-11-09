@@ -6,6 +6,8 @@ Allowlisted host: ``api.census.gov``. One call reads the detailed tables and
 one reads the subject table. Variables:
 
 * ``B01003_001E`` population
+* ``B11001_001E`` households (total). The non-California demand fallback
+  weights ZIPs by this count.
 * ``B19013_001E`` median household income
 * ``B25046_001E`` aggregate vehicles available
 * ``B25077_001E`` median home value (the rent model reads this later;
@@ -35,6 +37,7 @@ CENSUS_ACS_SOURCE_ID = "census_acs"
 ACS_TTL_DAYS = TTL_18_MONTHS_DAYS
 ACS_DEMO_YEAR = 2024
 POPULATION_VARIABLE = "B01003_001E"
+HOUSEHOLDS_VARIABLE = "B11001_001E"
 INCOME_VARIABLE = "B19013_001E"
 VEHICLES_VARIABLE = "B25046_001E"
 HOME_VALUE_VARIABLE = "B25077_001E"
@@ -43,6 +46,7 @@ _ZCTA_COLUMN = "zip code tabulation area"
 _DETAILED_VARIABLES = (
     "NAME",
     POPULATION_VARIABLE,
+    HOUSEHOLDS_VARIABLE,
     INCOME_VARIABLE,
     VEHICLES_VARIABLE,
     HOME_VALUE_VARIABLE,
@@ -76,6 +80,7 @@ class ZctaAcs:
     vehicles_available: float | None
     mean_commute: float | None
     median_home_value: float | None
+    households: float | None = None
 
 
 class CensusAcsError(IngestError):
@@ -157,6 +162,7 @@ def zcta_acs_from_variables(zcta: str, year: int, values: Mapping[str, str | Non
         vehicles_available=_estimate(values.get(VEHICLES_VARIABLE)),
         mean_commute=_estimate(values.get(COMMUTE_VARIABLE)),
         median_home_value=_estimate(values.get(HOME_VALUE_VARIABLE)),
+        households=_estimate(values.get(HOUSEHOLDS_VARIABLE)),
     )
 
 

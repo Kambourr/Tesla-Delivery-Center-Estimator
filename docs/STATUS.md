@@ -1,7 +1,7 @@
 # Status
 
 **As of:** 2026-11-09
-**Phase:** Catchment allocation (delivery centers, CEC ZEV sales, gravity and nearest-center). Pull request [#6](https://github.com/Kambourr/Tesla-Delivery-Center-Estimator/pull/6) is open and not merged.
+**Phase:** Integration. `estimate(zip)` runs catchment, cost, and both DCF views. Not merged.
 
 | Milestone | Status |
 |---|---|
@@ -9,30 +9,50 @@
 | M1 SQLite + ZIP stub | Done. Merged as #2 (`312d501`) |
 | M2 Public loaders | Done. Merged as #4 (`9f8937b`) |
 | M3 Cost/demand model | Done. Merged as #3 (`e03407a`) |
-| Catchment | Implemented on `cursor/catchment-centers-f980`. Not merged |
+| M3.5a Catchment | Done. Merged as #6 (`21b005a`) |
+| M3.5b DCF | Done. Merged as #5 (`e2cd901`) |
+| Integration (`estimate`) | Implemented on this branch. Not merged |
 | M4 Scenarios + robustness | Not started |
 | M5 Map | Not started |
 | M6 Rent fallback + rates | Not started |
 | M7 Tkinter GUI + macOS .app | Not started |
 | M8 Polish | Not started |
 
-## Done in the catchment work
+## Done in this integration
 
-- `delivery_centers.py` reads `data/seed/tesla_delivery_centers_2026-11-08.csv`. That snapshot is the nine Bay Area delivery centers from the 2026-11-08 research list, plus the North San Jose hub (`location_type` `hub`, not on the Find Us list that day). Coordinates are Census 2024 Gazetteer ZCTA internal points, which are the points the research distances used (Colma is 12.2 miles from 94402). The loader does not fetch tesla.com.
-- `zev_sales.py` downloads the CEC New ZEV Sales workbook from `energy.ca.gov` (allowlisted). The ZIP sheet is fuel-only. Tesla deliveries for a California ZIP are Electric sales times Tesla's share of Electric sales on the county sheet, for one calendar year or a trailing run of quarters. `as_of` is the last day of the newest quarter (the 2026-10-13 file is `2026-09-30`). Outside California, `allocate_state_tesla_volume` splits a state Tesla total by `households * (income / 80000) ** 0.3 * (ev_share / 0.03) ** 0.5`. A ZIP missing those inputs is left out.
-- `zcta_gazetteer.py` reads Census Gazetteer ZCTA internal points. The national ZIP is on `www2.census.gov`. Tests use `tests/fixtures/geo/gazetteer_2024_sample.txt`.
-- `geo/catchment.py` is pure. `catchment_features(geo, centers, demand, beta=2)` returns gravity (base) and nearest-center (low). Drive distance is straight-line miles times 1.25, and pairs beyond 60 miles are out of range. `radius_miles` is used only when no existing centers are passed.
-- Schema version 3 adds `delivery_center`, `zcta_centroid`, `zev_sales_zip`, and `zev_sales_county`. Upserts live in `storage/repository.py`. `dce.data.persist` writes the registry `as_of`.
-- The San Mateo 94402 fixture (2025 CEC ZIP Electric sales within 55 miles, times the 9-county Tesla share 49,704 / 94,131) reproduces the research nearest-center result: 4,370 deliveries a year, 20 ZCTAs, mean about 6.6 miles, most of it from Colma and Sunnyvale. Gravity at beta 2 with the 60-mile cap is about 5,520, inside the research's "about 5,700".
+- `dce.orchestrator.estimate(zip)` resolves the ZIP, builds the gravity catchment (nearest-center is the low case), feeds the gravity deliveries per year into the cost model, and runs `run_dcf_views`. The default discount rate is Tesla WACC 13.6%. `EstimateResult` carries the catchment (zips, deliveries per year, volume taken from each center), cost per delivery, the top 3 drivers, and both DCF views with NPV, IRR, simple and discounted payback, and the yearly cash-flow table.
+- CLI: `dce estimate 94402` prints a text summary. `dce estimate 94402 --json` prints the full result, including both yearly tables.
+- ACS `B11001_001E` households are on the loader, schema version 4, and the San Mateo demo cache (94401–94404). The non-California fallback (`non_california_zip_demand`) weights ZIPs by that count. A ZIP with no households is left out. Fixture test, no network.
+- Jacob confirmed, and the assumptions file already had: property tax inside NNN rent (`included_in_nnn: true`), expansion rent $1.74 per square foot per month, low-case DCF horizon 8 years.
+
+San Mateo 94402, fixtures only, gravity volume 5,523 deliveries a year:
+
+| | Research case at 4,400 | This pipeline at 5,523 |
+|---|---|---|
+| Cost per delivery | $562 | $501 |
+| Standalone NPV @13.6% | +$9.68M (published +$9.7M) | +$13.92M |
+| Standalone IRR | 66.3% (published 66%) | 85.8% |
+| Simple / discounted payback | 1.66 / 1.97 yr (published 1.7 / 2.0) | 1.31 / 1.51 yr |
+| Incremental NPV | −$2.65M (published −$2.8M) | −$2.62M |
+
+The published standalone case uses 4,400 deliveries, which is the nearest-center figure rounded. This pipeline feeds gravity, so standalone NPV, IRR, and payback move. Incremental NPV stays inside −$2.8M ± $0.25M because that lens scales the avoided cost with the same volume. Top drivers are labor, lease, and straight-line capex. The research prose band of about $590–$660 per delivery is the rough range around the 4,400-delivery case; the model that matches the research cash-flow table to $1k produces $562 there and $501 at 5,523.
+
+## Gravity gap (5,523 vs about 5,720)
+
+Not a bug in the cap, the centroid, or rounding. The committed fixture reproduces the research radius table (15 miles: 42 ZCTAs, 18,623 BEV, about 9,833 Tesla) and the nearest-center result (4,370 deliveries, 20 ZCTAs, Colma 12.23 straight-line miles). Rounding the Tesla share 49,704 / 94,131 to 0.528 changes gravity by 0.3 deliveries.
+
+The 60-mile drive cap is the ADR-0004 rule. Opening it moves gravity from 5,523 to 5,494, farther from 5,720. A 55-mile straight-line cap gives 5,548. Huff beta 1.5 / 2 / 3 on this fixture is 5,794 / 5,523 / 5,078, each about 150–200 below the research text (5,970 / 5,720 / 5,230).
+
+Nearest-center never sees a far center, so Vallejo, Los Gatos, Corte Madera, and Gilroy do not change the 4,370. Gravity gives each of them a fraction of every in-range ZIP. That fractional share is about 1,150 deliveries here and about 1,350 in the research figure (5,720 − 4,370). Dropping Vallejo alone raises gravity to 5,801, which overshoots 5,720. The research script is not in the repo, so that unpublished filter or distance function cannot be recovered. This code keeps ADR-0004: equal attractiveness, beta 2, straight-line × 1.25, 60-mile cap, all nine delivery centers. The North San Jose hub stays out of the allocation. It is not on the Find Us delivery list in the snapshot; adding it does not change the nearest total and lowers gravity to about 5,167.
 
 ## Not in this change
 
-- The other 120-odd US delivery centers. The Find Us page is not on the allowlist.
-- Rooftop coordinates. A Census geocode of Colma is about 11.6 miles from 94402, not the research 12.2.
-- Drive-time routing. The 1.25 circuity factor is the proxy.
-- Wiring catchment deliveries into `estimate_annual_deliveries` or the DCF. `src/dce/model/` was left alone.
-- A map polygon. M5 still owns Folium.
+- The national delivery-center list. Another change owns `data/seed/` and `delivery_centers.py`.
+- `resolve_rent` and the EIA / OpenEI loaders. San Mateo rent ($2.14 /sf/month, Kidder Mathews) and PG&E B-10 rates ($0.2875 /kWh, $20.50 /kW-month) come from `data/demo/san_mateo/operating_inputs.json`. The wage is `labor.fallback_wage_hourly` because the demo OEWS row is SOC 49-3023, not the delivery-role mix.
+- A non-California `estimate(zip)`. ZIP resolution still knows only 94401–94404. The household allocator is implemented and tested; `estimate` calls it only when the state is not California and a state Tesla total is passed in.
+- The map. `map_path` is `None`. M5 still owns Folium.
+- Drive-time routing and rooftop coordinates.
 
 ## Next
 
-M4 or M5, after this pull request merges. The catchment return type is not yet the `GeoDataFrame` named in `docs/MODULE_CONTRACTS.md`. That contract note is in the pull request, not edited here.
+M4 (scenario grid, including DCF shocks) or M6 (rent fallback and rates), so `estimate` stops reading the San Mateo operating-input file. M5 still owns the map.

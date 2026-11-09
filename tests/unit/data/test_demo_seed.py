@@ -44,6 +44,7 @@ def test_fixture_load_94402_acs_oews_and_dmv_without_network(
         acs = get_zcta_acs(conn, "94402", 2024)
         assert acs is not None
         assert acs.population == 25475
+        assert acs.households == 10125
         assert acs.median_hh_income == 172522
         assert acs.vehicles_available == 18262
         assert acs.mean_commute == 26.2
@@ -122,6 +123,7 @@ def test_demo_script_exits_zero_without_keys(tmp_path: Path) -> None:
         acs = get_zcta_acs(conn, "94402", 2024)
         assert acs is not None
         assert acs.population == 25475
+        assert acs.households == 10125
         assert acs.median_hh_income == 172522
     finally:
         conn.close()

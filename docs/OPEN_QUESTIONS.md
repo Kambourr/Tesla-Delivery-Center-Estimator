@@ -22,14 +22,16 @@
 - **Staffing and SOCs** (was 2). Minimum 10 FTE, 300 deliveries per FTE, and the delivery-role SOC mix in `labor.wage_mix`. Values are ASSUMPTION build-ups for Jacob to tune.
 - **Vehicle mix** (was 3). Model Y 0.70 / Model 3 0.27 / Cybertruck 0.03 / S, X 0.
 - **Capex** (was 5). $100 /SF hard fit-out + 20% soft/contingency + $780k equipment, life 10 years (range in the YAML).
+- **Property tax vs NNN (Jacob, 2026-11-09).** `property_tax.included_in_nnn: true`. The landlord's property tax stays inside `opex_load`. The property-tax component is 0.
+- **Expansion rent (Jacob, 2026-11-09).** `dcf.incremental.status_quo_rent_psf_month` is $1.74 per square foot per month (South San Francisco, Kidder Mathews).
+- **Low-case DCF horizon (Jacob, 2026-11-09).** `dcf.horizon_years.low` is 8 years. The base horizon stays 10.
 
 ## Still open — product / modeling
 
 - **Delivery-center property type for rent** — industrial / flex / auto-service blend weights in the rent model.
-- **Property tax vs NNN.** The default treats the landlord's property tax as inside `opex_load` (`property_tax.included_in_nnn: true`). Confirm, or set it to false to charge it separately.
-- **Incremental lens inputs.** `constraint_share` at Colma/Sunnyvale (0.5 / 0.75 / 1.0) decides the incremental verdict. Also open: the status-quo expansion rent ($1.74, South SF), whether equipment belongs in the expansion annuity, proximity uplift (0 / 1 / 3%), and whether to include the $250 order fee in the standalone fee.
+- **Incremental lens inputs.** `constraint_share` at Colma/Sunnyvale (0.5 / 0.75 / 1.0) decides the incremental verdict. Also open: whether equipment belongs in the expansion annuity, proximity uplift (0 / 1 / 3%), and whether to include the $250 order fee in the standalone fee.
 - **Discount rate.** Corporate WACC 13.6% (default) or a project rate near 9.7%.
-- **Horizon and terminal value.** 10-year lease and no TV (default), Tesla's 7.7-year average (the YAML low rounds it to 8), or renewal.
+- **Horizon and terminal value.** The 10-year base and the 8-year low are confirmed. Terminal value is still none by default; renewal is still a toggle.
 - **Tax.** California non-conformity (39-year / 7-year straight line, lease-end write-off) needs a tax advisor. A single 27.98% rate is the simpler alternative.
 - **Freight.** A per-mile function of factory-to-site distance would generalize the standalone lens beyond the Bay Area.
 

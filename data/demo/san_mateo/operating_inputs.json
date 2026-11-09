@@ -1,0 +1,13 @@
+{
+  "rent_psf_month": 2.14,
+  "rent_citation": "Kidder Mathews, Peninsula Industrial Market Report, Q3 2026, San Mateo submarket asking NNN rent. https://kidder.com/market-reports/peninsula-industrial-market-report/",
+  "energy_rate_kwh": 0.2875,
+  "demand_rate_kw": 20.5,
+  "energy_citation": "PG&E Schedule B-10 rates effective 2026-03-01, the rates used in docs/research/dcf_design.md section 2.",
+  "as_of": "2026-11-08",
+  "notes": [
+    "Resolved San Mateo operating inputs for estimate(zip) until the rent fallback and the rate loaders are wired. The user does not type them.",
+    "Wage is not in this file. The estimator uses labor.fallback_wage_hourly because the demo OEWS row is SOC 49-3023, which is service-center staff, not the delivery-role mix.",
+    "Public sources only. Nothing here is Tesla internal data."
+  ]
+}

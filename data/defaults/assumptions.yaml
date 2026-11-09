@@ -99,7 +99,8 @@ property_tax:
   effective_rate: 0.011       # 1.1% of assessed value per year, placeholder
   # Industrial rents are NNN, so the landlord's property tax is already in
   # opex_load. true sets the property_tax component to 0 to avoid counting it
-  # twice; this is how the dcf §4 San Mateo figures were built. Open question.
+  # twice; this is how the dcf §4 San Mateo figures were built.
+  # Jacob confirmed included_in_nnn on 2026-11-09.
   included_in_nnn: true
 
 capex:
@@ -156,6 +157,7 @@ demand:
 dcf:
   # Years of operation. 10 = lease term. Low is Tesla's 7.7-year weighted
   # remaining lease term (10-K FY2025) rounded up to whole years.
+  # Jacob confirmed the low case of 8 years on 2026-11-09.
   horizon_years: {low: 8, base: 10, high: 15}
   # Headline lens. The app always shows standalone AND incremental (ADR-0005);
   # gp_allocation is an upper bound only, never a decision metric.
@@ -186,7 +188,7 @@ dcf:
     constraint_share: {low: 0.5, base: 0.75, high: 1.0}
     # NNN rent, USD/SF/month, an existing nearby center would pay to expand.
     # Kidder Mathews Peninsula Industrial Q3 2026, South SF submarket (Colma
-    # sits next to it).
+    # sits next to it). Jacob confirmed $1.74 on 2026-11-09.
     status_quo_rent_psf_month: 1.74
     # California overtime pay multiplier (Labor Code §510).
     overtime_multiplier: 1.5

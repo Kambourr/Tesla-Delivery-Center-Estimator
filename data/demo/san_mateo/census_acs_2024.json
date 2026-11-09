@@ -7,15 +7,16 @@
   "notes": [
     "Published 2024 ACS 5-year estimates for ZCTAs 94401-94404.",
     "api.census.gov returns these variables and requires CENSUS_API_KEY. This file is the demo cache so CI does not need that key.",
-    "B01003_001E population. B19013_001E median household income. B25046_001E aggregate vehicles available.",
+    "B01003_001E population. B11001_001E total households. B19013_001E median household income. B25046_001E aggregate vehicles available.",
+    "B11001_001E for 94401-94404 is 13026, 10125, 16414, and 14717. Those are the published 2024 ACS 5-year estimates (data.census.gov table ACSDT5Y2024.B11001, read 2026-11-09). Occupied housing units (B25003_001E) match B11001 for 94402.",
     "B25077_001E median home value. 2000001 is the Census top-code and means $2,000,000 or more.",
     "S0801_C01_046E is mean travel time to work in minutes for workers who did not work from home."
   ],
   "table": [
-    ["NAME", "B01003_001E", "B19013_001E", "B25046_001E", "B25077_001E", "S0801_C01_046E", "zip code tabulation area"],
-    ["ZCTA5 94401", "35295", "122227", "22598", "1184500", "25.7", "94401"],
-    ["ZCTA5 94402", "25475", "172522", "18262", "2000001", "26.2", "94402"],
-    ["ZCTA5 94403", "43276", "174917", "29828", "1746300", "26.3", "94403"],
-    ["ZCTA5 94404", "35881", "192332", "24371", "1714400", "29.0", "94404"]
+    ["NAME", "B01003_001E", "B11001_001E", "B19013_001E", "B25046_001E", "B25077_001E", "S0801_C01_046E", "zip code tabulation area"],
+    ["ZCTA5 94401", "35295", "13026", "122227", "22598", "1184500", "25.7", "94401"],
+    ["ZCTA5 94402", "25475", "10125", "172522", "18262", "2000001", "26.2", "94402"],
+    ["ZCTA5 94403", "43276", "16414", "174917", "29828", "1746300", "26.3", "94403"],
+    ["ZCTA5 94404", "35881", "14717", "192332", "24371", "1714400", "29.0", "94404"]
   ]
 }

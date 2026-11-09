@@ -19,7 +19,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 if TYPE_CHECKING:
     # Only for the annotation on EstimateResult.dcf; dce.model.dcf imports
@@ -95,12 +95,55 @@ class Driver:
 
 
 @dataclass(frozen=True)
+class CatchmentZipVolume:
+    """Deliveries the candidate handles in one ZIP, and its share of that ZIP."""
+
+    zip_code: str
+    deliveries_per_year: float
+    share: float
+
+
+@dataclass(frozen=True)
+class CenterVolumeTaken:
+    """Deliveries the candidate takes from one existing center."""
+
+    center_id: str
+    name: str
+    deliveries_per_year: float
+
+
+@dataclass(frozen=True)
+class CatchmentCaseSummary:
+    """Gravity (base) or nearest-center (low) allocation for one candidate."""
+
+    method: Literal["gravity", "nearest"]
+    beta: float | None
+    zips: tuple[CatchmentZipVolume, ...]
+    deliveries_per_year: float
+    taken_from: tuple[CenterVolumeTaken, ...]
+
+
+@dataclass(frozen=True)
+class CatchmentSummary:
+    """Both catchment cases. Gravity deliveries are the DCF steady state."""
+
+    zip_code: str
+    beta: float
+    gravity: CatchmentCaseSummary
+    nearest: CatchmentCaseSummary
+
+
+@dataclass(frozen=True)
 class EstimateResult:
     """Full result for one ZIP and one scenario.
 
     ``components`` is the static annualized view (capex straight-line).
-    ``dcf`` is the optional cash-flow view: the standalone lens (headline)
-    and the incremental lens (check), with capex as year-0 cash (ADR-0005).
+    ``catchment`` is the gravity allocation (base) and the nearest-center
+    allocation (low). ``estimated_annual_deliveries`` is the gravity total
+    after ``scenario.delivery_shock``; that is the ``$/delivery`` denominator.
+    ``dcf`` is the cash-flow view at the unshocked gravity total: the
+    standalone lens (headline) and the incremental lens (check), with capex
+    as year-0 cash (ADR-0005).
     """
 
     geo: GeoContext
@@ -111,4 +154,5 @@ class EstimateResult:
     components: dict[str, float]
     drivers: list[Driver]
     map_path: str | None
+    catchment: CatchmentSummary | None = None
     dcf: DcfViews | None = None

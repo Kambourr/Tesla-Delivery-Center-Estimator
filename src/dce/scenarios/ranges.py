@@ -1,7 +1,7 @@
 """Low / base / high ranges the scenario layer reads, plus the rent range.
 
 Every range comes from :attr:`dce.model.assumptions.ModelAssumptions.ranges`
-(``data/defaults/assumptions.yaml``, schema 2) except rent. Rent is not in
+(``data/defaults/assumptions.yaml``, schema 3) except rent. Rent is not in
 the assumptions file because it arrives as a resolved number (ADR-0003), so
 the research rent spread is hard-coded here as ratios to the base rent.
 
@@ -54,6 +54,7 @@ RENT_RATIO_KEY = "facility.rent_multiplier"
 
 # Dotted paths in ModelAssumptions.ranges.
 DELIVERIES = "demand.base_annual_deliveries"
+HANDOVER = "demand.handover_factor"
 WAGE = "labor.fallback_wage_hourly"
 WAGE_LOAD = "labor.wage_load"
 DELIVERIES_PER_FTE = "labor.staffing.deliveries_per_fte"

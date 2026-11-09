@@ -29,9 +29,12 @@ A ZIP whose coordinates or deliveries are missing is skipped. The candidate
 ZIP itself must have both. This module does not read files, SQL, or the
 network.
 
-San Mateo 94402 on the committed Bay Area fixture is about 5,523 gravity
-deliveries a year, not the research text's about 5,720. Nearest-center is
-4,370, which matches the research, and the §4.4 radius table matches too.
+San Mateo 94402 on the committed Bay Area fixture (BEV times the 9-county
+share, nine research centers) is about 5,523 gravity deliveries a year,
+not the research text's about 5,720. Nearest-center is 4,370, which matches
+the research, and the §4.4 radius table matches too. ``estimate`` does not
+use that series: it passes county-anchored demand, the base handover
+factor, and the US delivery list.
 The 60-mile drive cap, the Gazetteer centroids, and rounding the Tesla
 share to 0.528 do not explain the 200 deliveries. Opening the cap moves
 the total slightly farther from 5,720. The gap is the fractional Huff

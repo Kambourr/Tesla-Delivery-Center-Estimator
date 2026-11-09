@@ -122,7 +122,7 @@ def test_top3_shares_sum_to_at_most_one(golden: dict[str, Any], scenario_id: str
 
 def test_golden_matches_independent_hand_arithmetic(golden: dict[str, Any]) -> None:
     """Re-derive the base case with plain arithmetic, no dce imports, so the golden is not
-    only the model checking itself. Numbers mirror assumptions.yaml 2026.11.1 and the
+    only the model checking itself. Numbers mirror assumptions.yaml 2026.11.2 and the
     frozen inputs."""
     score = (
         (750_000 / 500_000) ** 0.5
@@ -141,7 +141,7 @@ def test_golden_matches_independent_hand_arithmetic(golden: dict[str, Any]) -> N
     total = lease + labor + utilities + property_tax + capex + other_opex
 
     base = golden["cases"]["base"]
-    assert golden["assumptions_version"] == "2026.11.1"
+    assert golden["assumptions_version"] == "2026.11.2"
     assert base["estimated_annual_deliveries"] == pytest.approx(deliveries, rel=1e-12)
     assert base["annualized_total_cost"] == pytest.approx(total, abs=0.005)
     assert base["cost_per_delivery"] == round(total / deliveries, 2)

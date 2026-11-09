@@ -8,10 +8,13 @@ One call runs the whole pipeline. The only required argument is a 5-digit
 US ZIP. The steps are:
 
 1. Resolve the ZIP to county, CBSA, and state.
-2. Build the gravity catchment (beta 2). Nearest-center is the low case.
-3. Feed the gravity deliveries per year into the cost model.
-4. Run both DCF benefit views at that steady volume. The default discount
-   rate is the Tesla WACC on the assumptions table, 13.6%.
+2. Build ZIP demand: California county Tesla totals times the base handover
+   factor (1.10). The competing sites are the US Find Us delivery list.
+3. Build the gravity catchment (beta 2). Nearest-center is the low case.
+4. Feed the gravity deliveries per year into the cost model.
+5. Run both DCF benefit views at that steady volume. The default discount
+   rate is the Tesla WACC on the assumptions table, 13.6%. The building
+   stays 25,000 square feet.
 
 Inputs come from the committed seed and the San Mateo demo cache. There is
 no network call and no prompt. ``overrides`` may carry ``rent_psf_month``
@@ -72,7 +75,11 @@ def estimate(
     features = catchment_features(
         geo,
         delivery_center_sites(),
-        build_catchment_demand(geo),
+        build_catchment_demand(
+            geo,
+            handover_factor=assumptions.demand.handover_factor,
+            tesla_ev_share=assumptions.demand.fallback_tesla_ev_share,
+        ),
     )
     steady = features.gravity.total_deliveries_per_year
     shocked = apply_delivery_shock(steady, chosen)

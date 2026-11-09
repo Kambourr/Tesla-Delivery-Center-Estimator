@@ -13,7 +13,9 @@ from dce.model.types import Scenario
 from dce.orchestrator import EstimateDataError, estimate
 
 # Research illustrative case (dcf_design.md §4) uses 4,400 steady deliveries,
-# the nearest-center figure rounded. This pipeline feeds gravity instead.
+# the old nearest-center figure rounded. This pipeline feeds gravity after
+# the county Tesla anchor, the base handover factor 1.10, and the US
+# delivery list. The building stays 25,000 SF.
 RESEARCH_STEADY = 4_400.0
 RENT = 2.14
 ENERGY = 0.2875
@@ -51,10 +53,10 @@ def test_estimate_94402_matches_research_adjusted_for_gravity_volume(
 
     The published standalone case is NPV +$9.7M, IRR about 66%, simple
     payback about 1.7 years, at 4,400 deliveries. Incremental is about
-    −$2.8M. Substituting the gravity volume this run actually produces
-    (about 5,523) raises the standalone NPV, IRR, and shortens payback.
-    Incremental stays near −$2.8M because that lens scales cost and benefit
-    together. The dollar checks below are that adjusted case.
+    −$2.8M. This run feeds gravity after the county anchor and handover
+    factor 1.10 on the US delivery list (about 5,808). That raises
+    standalone NPV and IRR and shortens payback versus 4,400. Incremental
+    stays near −$2.8M because that lens scales cost and benefit together.
     """
 
     def fail(url: str, **_kwargs: object) -> object:
@@ -68,8 +70,8 @@ def test_estimate_94402_matches_research_adjusted_for_gravity_volume(
     assert result.dcf is not None
     gravity = result.catchment.gravity.deliveries_per_year
     nearest = result.catchment.nearest.deliveries_per_year
-    assert nearest == pytest.approx(4370, abs=1)
-    assert gravity == pytest.approx(5522.8, abs=1)
+    assert nearest == pytest.approx(4389.2, abs=1)
+    assert gravity == pytest.approx(5808.3, abs=1)
     assert result.estimated_annual_deliveries == pytest.approx(gravity)
     assert [row.center_id for row in result.catchment.gravity.taken_from[:2]] == [
         "colma",
@@ -81,7 +83,7 @@ def test_estimate_94402_matches_research_adjusted_for_gravity_volume(
     assert taken == pytest.approx(gravity, abs=1)
 
     assert [driver.name for driver in result.drivers] == ["labor", "lease", "capex"]
-    assert result.cost_per_delivery == pytest.approx(500.94, abs=0.05)
+    assert result.cost_per_delivery == pytest.approx(489.19, abs=0.05)
     assert result.dcf.standalone.discount_rate == pytest.approx(0.136)
     assert result.map_path is None
 
@@ -106,13 +108,13 @@ def test_estimate_94402_matches_research_adjusted_for_gravity_volume(
     assert incremental.simple_payback_years is None
     assert incremental.discounted_payback_years is None
 
-    # Gravity 5,523 versus the research case at 4,400. These are the adjusted
-    # figures the pipeline must keep producing.
-    assert standalone.npv == pytest.approx(13.92e6, abs=0.05e6)
-    assert standalone.irr == pytest.approx(0.858, abs=0.01)
-    assert standalone.simple_payback_years == pytest.approx(1.31, abs=0.05)
-    assert standalone.discounted_payback_years == pytest.approx(1.51, abs=0.05)
-    assert incremental.npv == pytest.approx(-2.62e6, abs=0.05e6)
+    # Gravity 5,808 versus the research case at 4,400. These are the adjusted
+    # figures the pipeline must keep producing. Building size is unchanged.
+    assert standalone.npv == pytest.approx(15.00e6, abs=0.05e6)
+    assert standalone.irr == pytest.approx(0.906, abs=0.01)
+    assert standalone.simple_payback_years == pytest.approx(1.24, abs=0.05)
+    assert standalone.discounted_payback_years == pytest.approx(1.43, abs=0.05)
+    assert incremental.npv == pytest.approx(-2.61e6, abs=0.05e6)
     assert incremental.npv == pytest.approx(-2.8e6, abs=0.25e6)
     assert len(standalone.years) == 11
     assert standalone.years[0].capex == pytest.approx(3_780_000)

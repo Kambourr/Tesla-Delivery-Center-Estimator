@@ -6,13 +6,14 @@
 #
 # Versioning
 #   schema_version       Shape of this file. Bump only when keys change, and
-#                        teach parse_assumptions the new shape.
+#                        teach parse_assumptions the new shape. 3 adds
+#                        demand.handover_factor and demand.fallback_tesla_ev_share.
 #   assumptions_version  The default VALUES. Bump on any value change and
 #                        regenerate tests/fixtures/model/golden_m3.json (see the
 #                        README next to it). The golden test checks this string
 #                        first so a silent edit cannot slip through.
 #
-# Ranges (schema 2). A number may be written as {low, base, high}. The model
+# Ranges (schema 3). A number may be written as {low, base, high}. The model
 # runs on `base`; low/high feed the M4 scenarios and the NPV tornado.
 # low <= base <= high by input value (not by effect on NPV).
 #
@@ -22,9 +23,9 @@
 # Jacob's to tune. Nothing here is Tesla internal data.
 # Rent is NOT here: it arrives as a resolved number (ADR-0003).
 
-schema_version: 2
-assumptions_version: "2026.11.1"
-as_of: "2026-11-08"
+schema_version: 3
+assumptions_version: "2026.11.2"
+as_of: "2026-11-09"
 
 facility:
   # Plan A1. Footprint, SF. ops §5: Colma building 12,840 SF; Port Coquitlam
@@ -151,14 +152,37 @@ demand:
   # Clamp on the score so an outlier ZIP cannot produce absurd volumes.
   score_min: 0.0
   score_max: 4.0
+  # Handover factor applied to every ZIP after the county Tesla anchor
+  # (docs/research/demand_calibration.md). Registrations are not handovers.
+  # Jacob approved 1.00 / 1.10 / 1.30 on 2026-11-09. Base is the default.
+  #   low 1.00: CEC new registrations are the handovers.
+  #   base 1.10: CNCDA 2025 registrations 179,656 / CEC 2025 sales 169,650
+  #     = 1.059, rounded up. ASSUMPTION: the extra ~4 points are used and
+  #     CPO handovers. Tesla's FY2025 10-K mentions higher used-vehicle
+  #     volume and gives no unit count
+  #     (https://www.sec.gov/Archives/edgar/data/1318605/000162828026003952/tsla-20251231.htm,
+  #     read 2026-11-09).
+  #   high 1.30: ASSUMPTION. A larger used/CPO share (about +15%) plus the
+  #     2026 Tesla-share uptick. No public count of used-car handovers.
+  handover_factor: {low: 1.00, base: 1.10, high: 1.30}
+  # Tesla share of EV sales where a make split is missing. Non-California
+  # ZIPs: Cox/KBB Q4 2025, Tesla US sales 589,160 were 46.2% of US EV sales
+  # (https://www.coxautoinc.com/wp-content/uploads/2026/01/Q4-2025-Kelley-Blue-Book-EV-Sales-Report.pdf,
+  # read 2026-11-09). A California county with no CEC Tesla row keeps the
+  # 2025 9-county share 49,704 / 94,131 instead; that fraction lives in
+  # dce.data.catchment_demand so it is not rounded here.
+  fallback_tesla_ev_share: 0.462
 
 # Discounted cash flow (ADR-0005, dcf §2). End-of-year cash flows; year 0
 # holds capex and pre-opening.
 dcf:
-  # Years of operation. 10 = lease term. Low is Tesla's 7.7-year weighted
-  # remaining lease term (10-K FY2025) rounded up to whole years.
-  # Jacob confirmed the low case of 8 years on 2026-11-09.
-  horizon_years: {low: 8, base: 10, high: 15}
+  # Years of operation. 10 = the lease term (capex.life_years). Low is
+  # Tesla's 7.7-year weighted remaining lease term (10-K FY2025) rounded
+  # up to whole years. Jacob confirmed the low case of 8 years on
+  # 2026-11-09, and on the same day set the high case to 10 so the decision
+  # scenarios do not assume a renewal past the lease. Terminal mode stays
+  # "none".
+  horizon_years: {low: 8, base: 10, high: 10}
   # Headline lens. The app always shows standalone AND incremental (ADR-0005);
   # gp_allocation is an upper bound only, never a decision metric.
   benefit_mode: standalone

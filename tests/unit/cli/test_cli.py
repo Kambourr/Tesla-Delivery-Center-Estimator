@@ -36,7 +36,7 @@ def test_estimate_json_includes_both_cash_flow_tables(capsys: pytest.CaptureFixt
     assert main(["estimate", "94402", "--json"]) == 0
     payload = json.loads(capsys.readouterr().out)
     assert payload["geo"]["zip_code"] == "94402"
-    assert payload["catchment"]["gravity"]["deliveries_per_year"] == pytest.approx(5522.8, abs=1)
+    assert payload["catchment"]["gravity"]["deliveries_per_year"] == pytest.approx(5808.3, abs=1)
     assert payload["dcf"]["standalone"]["npv"] > 0
     assert payload["dcf"]["incremental"]["npv"] < 0
     assert len(payload["dcf"]["standalone"]["years"]) == 11

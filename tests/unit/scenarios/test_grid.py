@@ -95,7 +95,7 @@ def test_outcomes_low_is_bad_and_high_is_good(assumptions: ModelAssumptions) -> 
     low, base, high = outcome_scenarios(assumptions)
     assert (low.scenario_id, base.scenario_id, high.scenario_id) == ("low", "base", "high")
 
-    assert low.scenario.delivery_shock == pytest.approx(3_000 / 4_500 - 1)
+    assert low.scenario.delivery_shock == pytest.approx((3_000 / 4_500) * (1.00 / 1.10) - 1)
     assert low.scenario.rent_shock == pytest.approx(2.95 / 2.14 - 1)
     assert low.scenario.wage_shock == pytest.approx(31.09 / 25.91 - 1)
     assert low.scenario.wage_shock == pytest.approx(0.20, abs=1e-3)
@@ -104,20 +104,26 @@ def test_outcomes_low_is_bad_and_high_is_good(assumptions: ModelAssumptions) -> 
     assert base.scenario == Scenario(dict(assumptions.vehicle_mix), 0.0)
     assert base.dcf == DcfShocks(discount_rate=0.136, horizon_years=10, fee_per_delivery=1_390)
 
-    assert high.scenario.delivery_shock == pytest.approx(6_500 / 4_500 - 1)
+    assert high.scenario.delivery_shock == pytest.approx((6_500 / 4_500) * (1.30 / 1.10) - 1)
     assert high.scenario.rent_shock == pytest.approx(1.74 / 2.14 - 1)
     assert high.scenario.wage_shock == pytest.approx(20.73 / 25.91 - 1)
-    assert high.dcf == DcfShocks(discount_rate=0.097, horizon_years=15, fee_per_delivery=1_640)
+    assert high.dcf == DcfShocks(discount_rate=0.097, horizon_years=10, fee_per_delivery=1_640)
 
 
 def test_outcome_volumes_hit_research_deliveries_at_the_range_base(
     assumptions: ModelAssumptions,
 ) -> None:
-    """At the 4,500 range base the low / base / high volumes are 3,000 / 4,500 / 6,500."""
+    """At the 4,500 range base, volumes are that base times the delivery and handover ratios."""
     costs = san_mateo_costs(assumptions, 4_500.0)
     results = run_scenario_grid(GEO, 4_500.0, costs, outcome_scenarios(assumptions), assumptions)
     volumes = [res.result.estimated_annual_deliveries for res in results]
-    assert volumes == pytest.approx([3_000.0, 4_500.0, 6_500.0])
+    assert volumes == pytest.approx(
+        [
+            4_500.0 * (3_000 / 4_500) * (1.00 / 1.10),
+            4_500.0,
+            4_500.0 * (6_500 / 4_500) * (1.30 / 1.10),
+        ]
+    )
 
 
 def test_rent_ratio_cites_kidder_mathews() -> None:
@@ -150,30 +156,30 @@ def test_outcome_goldens_san_mateo(assumptions: ModelAssumptions, costs: CostInp
     low, base, high = (grid[sid].result for sid in ("low", "base", "high"))
     assert low.dcf is not None and base.dcf is not None and high.dcf is not None
 
-    assert low.cost_per_delivery == pytest.approx(862.75, abs=0.01)
+    assert low.cost_per_delivery == pytest.approx(949.03, abs=0.01)
     assert base.cost_per_delivery == pytest.approx(561.94, abs=0.01)
-    assert high.cost_per_delivery == pytest.approx(399.43, abs=0.01)
+    assert high.cost_per_delivery == pytest.approx(370.81, abs=0.01)
 
     s_low, s_base, s_high = low.dcf.standalone, base.dcf.standalone, high.dcf.standalone
-    assert s_low.npv == pytest.approx(-0.438e6, abs=0.005e6)
+    assert s_low.npv == pytest.approx(-1.227e6, abs=0.005e6)
     assert s_base.npv == pytest.approx(9.678e6, abs=0.005e6)
-    assert s_high.npv == pytest.approx(42.011e6, abs=0.005e6)
-    assert s_low.irr == pytest.approx(0.1248, abs=1e-3)
+    assert s_high.npv == pytest.approx(37.999e6, abs=0.005e6)
+    assert s_low.irr == pytest.approx(0.0518, abs=1e-3)
     assert s_base.irr == pytest.approx(0.6633, abs=1e-3)
-    assert s_high.irr == pytest.approx(1.3826, abs=1e-3)
-    assert s_low.simple_payback_years == pytest.approx(5.21, abs=0.01)
+    assert s_high.irr == pytest.approx(1.6288, abs=1e-3)
+    assert s_low.simple_payback_years == pytest.approx(6.78, abs=0.01)
     assert s_low.discounted_payback_years is None  # never pays back at 16.3% in 8 years
-    assert s_high.discounted_payback_years == pytest.approx(0.91, abs=0.01)
+    assert s_high.discounted_payback_years == pytest.approx(0.76, abs=0.01)
 
     assert (s_low.discount_rate, s_base.discount_rate, s_high.discount_rate) == (
         0.163,
         0.136,
         0.097,
     )
-    assert [len(s.years) for s in (s_low, s_base, s_high)] == [9, 11, 16]
+    assert [len(s.years) for s in (s_low, s_base, s_high)] == [9, 11, 11]
     assert s_low.npv < s_base.npv < s_high.npv
-    assert low.dcf.incremental.npv == pytest.approx(-2.972e6, abs=0.005e6)
-    assert high.dcf.incremental.npv == pytest.approx(-2.525e6, abs=0.005e6)
+    assert low.dcf.incremental.npv == pytest.approx(-3.016e6, abs=0.005e6)
+    assert high.dcf.incremental.npv == pytest.approx(-2.045e6, abs=0.005e6)
 
 
 def test_base_outcome_equals_baseline(assumptions: ModelAssumptions, costs: CostInputs) -> None:

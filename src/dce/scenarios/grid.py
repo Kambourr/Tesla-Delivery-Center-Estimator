@@ -12,21 +12,25 @@ Contract
     ``low``, ``base``, ``high``. ``low`` is the bad outcome and ``high`` the
     good one, so each driver takes whichever range end hurts (or helps) NPV:
 
-    ===========  ===========================  =====  ==========================
-    driver       low (bad)                    base   high (good)
-    ===========  ===========================  =====  ==========================
-    deliveries   3,000 / 4,500 = −33.3%       0      6,500 / 4,500 = +44.4%
-    rent         2.95 / 2.14 = +37.9%         0      1.74 / 2.14 = −18.7%
-    wage         31.09 / 25.91 = +20%         0      20.73 / 25.91 = −20%
-    fee          $1,250                       1,390  $1,640
-    WACC         16.3%                        13.6%  9.7%
-    horizon      8 years                      10     15 years
-    ===========  ===========================  =====  ==========================
+    ===========  ================================  =====  =================================
+    driver       low (bad)                         base   high (good)
+    ===========  ================================  =====  =================================
+    deliveries   (3,000 / 4,500) × (1.00 / 1.10)   0      (6,500 / 4,500) × (1.30 / 1.10)
+    rent         2.95 / 2.14 = +37.9%              0      1.74 / 2.14 = −18.7%
+    wage         31.09 / 25.91 = +20%              0      20.73 / 25.91 = −20%
+    fee          $1,250                            1,390  $1,640
+    WACC         16.3%                             13.6%  9.7%
+    horizon      8 years                           10     10 years (the lease)
+    ===========  ================================  =====  =================================
 
     Deliveries, rent, and wage are ratios to the range base, applied as
     ``Scenario`` shocks, so they scale the catchment volume, the resolved
-    rent, and the resolved wage of whatever ZIP is being estimated. Fee,
-    WACC, and horizon are absolute :class:`DcfShocks`.
+    rent, and the resolved wage of whatever ZIP is being estimated. The
+    delivery ratio stays a fraction of that ZIP's own volume. It is composed
+    with the handover factor (1.00 / 1.10 / 1.30) because the catchment
+    volume is already at the base factor, 1.10. The low case keeps its bad
+    rent, wage, fee, WACC, and 8-year horizon. Fee, WACC, and horizon are
+    absolute :class:`DcfShocks`. The high horizon is the lease term.
 
 ``run_scenario_grid(geo, steady_deliveries, costs, scenarios, assumptions, *, catchment=None)``
     One :class:`ScenarioResult` per scenario, in input order. Each result is
@@ -169,6 +173,7 @@ def outcome_scenarios(
     a = parse_assumptions(assumptions)
     mix = _check_mix(a.vehicle_mix if base_mix is None else base_mix)
     deliveries = r.require(a.ranges, r.DELIVERIES)
+    handover = r.require(a.ranges, r.HANDOVER)
     wage = r.require(a.ranges, r.WAGE)
     fee = r.require(a.ranges, r.FEE)
     wacc = r.require(a.ranges, r.DISCOUNT_RATE)
@@ -182,7 +187,7 @@ def outcome_scenarios(
             mix,
             wage_shock=r.ratio_shock(wage, wage.high),
             rent_shock=r.ratio_shock(rent, rent.high),
-            delivery_shock=r.ratio_shock(deliveries, deliveries.low),
+            delivery_shock=_delivery_case_shock(deliveries, deliveries.low, handover, handover.low),
         ),
         DcfShocks(
             discount_rate=wacc.high,
@@ -207,7 +212,9 @@ def outcome_scenarios(
             mix,
             wage_shock=r.ratio_shock(wage, wage.low),
             rent_shock=r.ratio_shock(rent, rent.low),
-            delivery_shock=r.ratio_shock(deliveries, deliveries.high),
+            delivery_shock=_delivery_case_shock(
+                deliveries, deliveries.high, handover, handover.high
+            ),
         ),
         DcfShocks(
             discount_rate=wacc.low,
@@ -286,6 +293,24 @@ def run_scenario_grid(
 
 
 # -- internals -----------------------------------------------------------------------
+
+
+def _delivery_case_shock(
+    deliveries: r.ValueRange,
+    volume_end: float,
+    handover: r.ValueRange,
+    handover_end: float,
+) -> float:
+    """Return the shock that scales one ZIP's volume, then its handover factor.
+
+    The catchment volume is already at the base handover factor, so the
+    second ratio moves that volume from base H to the case's H. Both pieces
+    are ratios of the ZIP's own volume, not a national delivery count.
+    """
+    return compose_shocks(
+        r.ratio_shock(deliveries, volume_end),
+        r.ratio_shock(handover, handover_end),
+    )
 
 
 def _scenario(

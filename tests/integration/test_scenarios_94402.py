@@ -60,7 +60,9 @@ def test_grid_baseline_reproduces_estimate_94402() -> None:
     high = results["high"].result.dcf
     assert low is not None and high is not None
     assert low.standalone.npv < base.dcf.standalone.npv < high.standalone.npv
-    assert results["low"].result.estimated_annual_deliveries == pytest.approx(steady * 2 / 3)
+    assert results["low"].result.estimated_annual_deliveries == pytest.approx(
+        steady * (3_000 / 4_500) * (1.00 / 1.10)
+    )
 
     stability = driver_rank_stability(list(results.values()), "baseline")
     assert all(-1.0 <= rho <= 1.0 for rho in stability.values())

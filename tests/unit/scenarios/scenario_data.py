@@ -18,7 +18,7 @@ REPO = Path(__file__).resolve().parents[3]
 ASSUMPTIONS_YAML = REPO / "data" / "defaults" / "assumptions.yaml"
 
 # The goldens in this folder were computed on this version of the defaults.
-ASSUMPTIONS_VERSION = "2026.11.1"
+ASSUMPTIONS_VERSION = "2026.11.2"
 
 STEADY = 4_400.0  # nearest-center capture 4,370, rounded (research §4.4)
 RENT = 2.14  # Kidder Mathews Peninsula Industrial Q3 2026, San Mateo

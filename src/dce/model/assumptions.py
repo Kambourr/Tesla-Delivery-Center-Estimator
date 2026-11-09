@@ -9,7 +9,7 @@ Parsing is strict. An unknown key, a missing key, a wrong type, or an
 unsupported ``schema_version`` raises :class:`AssumptionsError`, so a typo
 in the YAML fails loudly instead of silently using a default.
 
-Ranges (schema 2)
+Ranges (schema 3)
 -----------------
 A numeric key may be either a plain number or a mapping with exactly
 ``low``, ``base`` and ``high`` (``low <= base <= high``, ordered by the input
@@ -18,7 +18,10 @@ value, not by its effect on cost or NPV). The typed field always holds the
 in :attr:`ModelAssumptions.ranges` under its dotted path (for example
 ``"dcf.discount_rate"``) for the M4 scenarios and the NPV tornado. Vector
 inputs with ranges (the ramp and the within-quarter month split) carry their
-``low``/``base``/``high`` tuples on their own dataclasses.
+``low``/``base``/``high`` tuples on their own dataclasses. Schema 3 adds
+``demand.handover_factor`` (low 1.00 / base 1.10 / high 1.30) and
+``demand.fallback_tesla_ev_share`` (the non-California Tesla share of EV
+sales). Schema 2 is no longer accepted.
 """
 
 from __future__ import annotations
@@ -34,7 +37,7 @@ from dce.model import _validate as v
 from dce.model.errors import AssumptionsError, InvalidInputError
 from dce.model.types import Assumptions
 
-SUPPORTED_SCHEMA_VERSIONS: frozenset[int] = frozenset({2})
+SUPPORTED_SCHEMA_VERSIONS: frozenset[int] = frozenset({3})
 
 BenefitMode = Literal["standalone", "incremental", "gp_allocation"]
 TerminalMode = Literal["none", "renewal"]
@@ -139,6 +142,8 @@ class DemandAssumptions:
     mean_commute: DemandFactor
     score_min: float
     score_max: float
+    handover_factor: float
+    fallback_tesla_ev_share: float
 
 
 @dataclass(frozen=True)
@@ -342,7 +347,18 @@ class _Parser:
 
     def _demand(self, value: object) -> DemandAssumptions:
         s = _section(value, "demand")
-        _exact_keys("demand", s, {"base_annual_deliveries", "factors", "score_min", "score_max"})
+        _exact_keys(
+            "demand",
+            s,
+            {
+                "base_annual_deliveries",
+                "factors",
+                "score_min",
+                "score_max",
+                "handover_factor",
+                "fallback_tesla_ev_share",
+            },
+        )
         factors = _section(s["factors"], "demand.factors")
         _exact_keys(
             "demand.factors",
@@ -363,6 +379,8 @@ class _Parser:
             mean_commute=_factor(factors, "mean_commute"),
             score_min=score_min,
             score_max=score_max,
+            handover_factor=self.num(s, "handover_factor", "demand", v.positive),
+            fallback_tesla_ev_share=self.num(s, "fallback_tesla_ev_share", "demand", _share),
         )
 
     def _dcf(self, value: object) -> DcfAssumptions:
@@ -526,6 +544,14 @@ def _fraction(name: str, value: float) -> float:
     out = v.non_negative(name, value)
     if out > 1.0:
         raise AssumptionsError(f"{name} is a fraction and must be <= 1; got {value!r}")
+    return out
+
+
+def _share(name: str, value: float) -> float:
+    """A Tesla share of EV sales: greater than 0 and at most 1."""
+    out = v.positive(name, value)
+    if out > 1.0:
+        raise AssumptionsError(f"{name} is a share of EV sales and must be <= 1; got {value!r}")
     return out
 
 

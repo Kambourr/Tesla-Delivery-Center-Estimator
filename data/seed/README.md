@@ -15,7 +15,14 @@ M0 ships no rows. Add files here only when a milestone curates them.
   centers from the 2026-11-08 Find Us list used by the catchment research,
   plus the North San Jose hub (`location_type` `hub`, not on that list).
   `lat`/`lon` are Census 2024 Gazetteer ZCTA internal points for the center
-  ZIP. The loader does not fetch tesla.com.
+  ZIP. The loader does not fetch tesla.com. The US build script reads it
+  and copies its rows unchanged.
+- `tesla_delivery_centers_us_2026-11-08.csv`: 123 US Tesla delivery
+  locations (120 `delivery`, 1 `hub`, 2 `possible_handover`) in 27 states,
+  built by `scripts/build_us_delivery_centers.py` from public sources only.
+  Each row carries `source` and `confidence`. This is the file
+  `load_delivery_centers` reads. Sources, access dates, licences, and
+  confidence rules are in `docs/DATA_SOURCES.md` section 10.
 
 The app reads these through `dce.data.rent_defaults.read_rent_seed` and
 `dce.storage`. Refresh scripts may update a user database later. They must

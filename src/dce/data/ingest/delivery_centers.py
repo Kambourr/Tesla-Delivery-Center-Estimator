@@ -26,8 +26,9 @@ North San Jose ``hub``) are carried over unchanged. Their ``lat`` and
 research distances were measured from.
 
 ``source`` lists the evidence for a row as ``;``-separated source ids.
-``confidence`` is ``high``, ``medium``, or ``low`` (the build script
-defines each). ``as_of`` is the snapshot date, ``2026-11-08``, on every row.
+``confidence`` is ``high``, ``medium``, or ``low``. The rules are in the
+build script and ``docs/DATA_SOURCES.md`` section 10. Rows in Texas are
+``low`` because the live list showed no Texas centers on 2026-11-08. ``as_of`` is the snapshot date, ``2026-11-08``, on every row.
 
 No SQLite and no network. Persistence is :mod:`dce.data.persist`.
 """

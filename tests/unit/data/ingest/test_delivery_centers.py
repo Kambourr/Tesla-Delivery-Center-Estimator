@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import csv
 from collections import Counter
+from itertools import combinations
 
 import pytest
 
@@ -75,6 +76,13 @@ def test_us_snapshot_sanity() -> None:
     assert states["CA"] >= 25
     coordinates = Counter((round(row.lat, 5), round(row.lon, 5)) for row in rows)
     assert [point for point, count in coordinates.items() if count > 1] == []
+    # No two rows within 1 km: a near-duplicate would be the same site geocoded twice.
+    close = [
+        (a.center_id, b.center_id)
+        for a, b in combinations(rows, 2)
+        if straight_line_miles(a.lat, a.lon, b.lat, b.lon) < 0.62
+    ]
+    assert close == []
     addresses = Counter((row.address.lower(), row.zip_code) for row in rows)
     assert [key for key, count in addresses.items() if count > 1] == []
     outside = [row.center_id for row in rows if not _in_us(row)]
@@ -94,6 +102,8 @@ def test_every_row_names_its_sources_and_confidence() -> None:
         if row.location_type == "possible_handover":
             assert row.confidence == "low"
             assert "tesla_findus_wayback_20241214" not in row.sources
+    # Texas had no centers on the live list on 2026-11-08 (research section 1.1).
+    assert {row.confidence for row in rows if row.state == "TX"} == {"low"}
     levels = Counter(row.confidence for row in rows)
     assert levels["high"] > levels["medium"] + levels["low"]
     assert levels["low"] >= 1

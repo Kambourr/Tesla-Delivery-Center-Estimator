@@ -35,9 +35,11 @@ Confidence:
 - ``high``: on the Find Us delivery list and present in the 2026-10-17 All
   the Places run, or a row from the 2026-11-08 research list.
 - ``medium``: on the delivery list, not in the 2026 run, but an OSM Tesla
-  shop is within 300 m. The North San Jose hub is also ``medium`` because
-  it was not on the Find Us list.
-- ``low``: on the 2024 delivery list with no 2026 evidence, or a 2026 Tesla
+  shop has the same house number and ZIP or is within 300 m. The North San
+  Jose hub is also ``medium`` because it was not on the Find Us list.
+- ``low``: on the 2024 delivery list with no 2026 evidence; or in a state
+  that the 2026-11-08 research read of the live list showed with no
+  delivery centers (:data:`STATES_OFF_LIVE_LIST`, Texas); or a 2026 Tesla
   site whose own name or Find Us slug says "delivery" but that is not on any
   delivery list (``location_type`` ``possible_handover``).
 """
@@ -116,6 +118,10 @@ USER_AGENT = (
 NOMINATIM_DELAY_SECONDS = 1.1
 MAX_BYTES = 20_000_000
 MATCH_METERS = 300.0
+# States with zero entries on the live Find Us delivery list when it was read
+# in a browser on 2026-11-08 (docs/research/tesla_delivery_ops_research.md
+# section 1.1). A 2024 list row in one of these states is capped at ``low``.
+STATES_OFF_LIVE_LIST = frozenset({"TX"})
 
 COLUMNS = (
     "center_id",
@@ -596,6 +602,9 @@ def build_rows(
         if osm_hit:
             sources.append(SOURCE_OSM)
         confidence = "high" if atp_hits else "medium" if osm_hit else "low"
+        if item.state in STATES_OFF_LIVE_LIST:
+            confidence = "low"
+            notes.append(f"low confidence {item.slug}: {item.state} had no live-list centers")
         lat, lon, basis = point_and_basis
         rows.append(
             SeedRow(

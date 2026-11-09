@@ -1,7 +1,10 @@
 # ADR-0001: Tkinter and a browser map
 
-- Status: accepted
+- Status: superseded by [ADR-0006](0006-pywebview-maplibre.md)
 - Date: 2026-11-09
+
+The shell decision below was replaced later the same day. The record stays
+so the earlier choice is still visible. Do not build the Tkinter shell.
 
 ## Context
 

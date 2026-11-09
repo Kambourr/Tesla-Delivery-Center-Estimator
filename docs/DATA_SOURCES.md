@@ -156,7 +156,7 @@ rent_resolved_cache (
 
 ### 10. Existing US Tesla delivery centers (catchment competitors)
 
-**Output:** `data/seed/tesla_delivery_centers_us_2026-11-08.csv`, built by `scripts/build_us_delivery_centers.py` and read by `dce.data.ingest.delivery_centers.load_delivery_centers`. `as_of` is `2026-11-08` on every row. The loader never uses the network. Only the build script does, and only when a curator runs it.
+**Output:** `data/seed/tesla_delivery_centers_us_2026-11-08.csv`, built by `scripts/build_us_delivery_centers.py`. `dce.data.ingest.delivery_centers.load_us_delivery_centers` returns every row. `load_delivery_centers` returns only the ten Bay Area research rows (`dce_research_20261108`), because the M3.5a 94402 goldens were calibrated on those nine delivery centers. With the national list, Stockton, Seaside, and Sacramento fall inside the 60-mile cap and move 94402 gravity from 5,522.8 to 5,483.3 deliveries a year. `as_of` is `2026-11-08` on every row. The loader never uses the network. Only the build script does, and only when a curator runs it.
 
 **Why no live tesla.com fetch.** `tesla.com` answers HTTP 403 to scripted requests, and it is not on the public-data allowlist. The script never contacts it. It reads public copies and public datasets only. Tesla internal data is never used.
 

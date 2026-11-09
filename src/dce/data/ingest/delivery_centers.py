@@ -3,8 +3,17 @@
 Contract
 --------
 The live Find Us page is not on the public-data allowlist, so this loader
-does not fetch it. ``load_delivery_centers`` reads the CSV committed at
-``data/seed/tesla_delivery_centers_us_2026-11-08.csv``.
+does not fetch it. Both loaders read the CSV committed at
+``data/seed/tesla_delivery_centers_us_2026-11-08.csv``:
+
+- :func:`load_us_delivery_centers` returns every row (123 on 2026-11-08).
+- :func:`load_delivery_centers` returns only the ten Bay Area research rows
+  (source :data:`RESEARCH_SOURCE_ID`). The M3.5a catchment goldens for
+  94402 were calibrated on those nine delivery centers. With the national
+  list, Stockton, Seaside, and Sacramento also fall inside the 60-mile cap
+  and move the 94402 gravity total from 5,522.8 to 5,483.3 a year. Moving a
+  caller to the national list therefore needs a golden update too.
+
 ``scripts/build_us_delivery_centers.py`` builds that file from public
 sources only (``docs/DATA_SOURCES.md`` section 10):
 
@@ -28,7 +37,8 @@ research distances were measured from.
 ``source`` lists the evidence for a row as ``;``-separated source ids.
 ``confidence`` is ``high``, ``medium``, or ``low``. The rules are in the
 build script and ``docs/DATA_SOURCES.md`` section 10. Rows in Texas are
-``low`` because the live list showed no Texas centers on 2026-11-08. ``as_of`` is the snapshot date, ``2026-11-08``, on every row.
+``low`` because the live list showed no Texas centers on 2026-11-08.
+``as_of`` is the snapshot date, ``2026-11-08``, on every row.
 
 No SQLite and no network. Persistence is :mod:`dce.data.persist`.
 """
@@ -56,6 +66,7 @@ CITATION_URL = (
     "https://www.tesla.com/findus/list/deliverycenters/United+States"
 )
 CONFIDENCE_LEVELS = ("high", "medium", "low")
+RESEARCH_SOURCE_ID = "dce_research_20261108"
 _LOCATION_TYPES = frozenset({"delivery", "store", "service", "hub", "possible_handover"})
 _SOURCE_ID = re.compile(r"[a-z0-9_]+")
 _LICENSE = (
@@ -132,14 +143,24 @@ def snapshot_path() -> Path:
 def bay_area_snapshot_path() -> Path:
     """Return the 2026-11-08 Bay Area research CSV, which the build script reads.
 
-    That file has no ``source`` or ``confidence`` columns, so
-    :func:`load_delivery_centers` does not read it.
+    That file has no ``source`` or ``confidence`` columns, so the loaders do
+    not read it. Its rows are in the US snapshot unchanged.
     """
     return bundled_seed_dir() / BAY_AREA_SNAPSHOT_FILENAME
 
 
 def load_delivery_centers(path: Path | None = None) -> tuple[DeliveryCenter, ...]:
-    """Read the snapshot CSV. Does not use the network."""
+    """Return the Bay Area research rows of the snapshot. Does not use the network.
+
+    These are the nine delivery centers and the North San Jose hub that the
+    2026-11-08 catchment research used, read from the US snapshot. Use
+    :func:`load_us_delivery_centers` for every US row.
+    """
+    return tuple(row for row in load_us_delivery_centers(path) if RESEARCH_SOURCE_ID in row.sources)
+
+
+def load_us_delivery_centers(path: Path | None = None) -> tuple[DeliveryCenter, ...]:
+    """Read every row of the US snapshot CSV. Does not use the network."""
     source = snapshot_path() if path is None else path
     try:
         text = source.read_text(encoding="utf-8")

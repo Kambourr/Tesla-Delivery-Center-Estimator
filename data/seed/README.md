@@ -20,8 +20,9 @@ M0 ships no rows. Add files here only when a milestone curates them.
 - `tesla_delivery_centers_us_2026-11-08.csv`: 123 US Tesla delivery
   locations (120 `delivery`, 1 `hub`, 2 `possible_handover`) in 27 states,
   built by `scripts/build_us_delivery_centers.py` from public sources only.
-  Each row carries `source` and `confidence`. This is the file
-  `load_delivery_centers` reads. Sources, access dates, licences, and
+  Each row carries `source` and `confidence`. `load_us_delivery_centers`
+  returns every row; `load_delivery_centers` returns the ten research rows
+  the catchment goldens use. Sources, access dates, licences, and
   confidence rules are in `docs/DATA_SOURCES.md` section 10.
 
 The app reads these through `dce.data.rent_defaults.read_rent_seed` and

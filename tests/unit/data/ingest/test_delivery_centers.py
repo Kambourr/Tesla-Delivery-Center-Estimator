@@ -16,6 +16,7 @@ from dce.data.ingest.delivery_centers import (
     bay_area_snapshot_path,
     delivery_center_citation_url,
     load_delivery_centers,
+    load_us_delivery_centers,
     parse_delivery_centers,
     snapshot_path,
 )
@@ -63,7 +64,7 @@ def _in_us(row: DeliveryCenter) -> bool:
 
 
 def test_us_snapshot_sanity() -> None:
-    rows = load_delivery_centers()
+    rows = load_us_delivery_centers()
     assert snapshot_path().name == "tesla_delivery_centers_us_2026-11-08.csv"
     # Row count: 118 on the 2024-12-14 list, plus Los Gatos, Santa Rosa,
     # the San Jose hub, and two possible handovers. Allow a rebuild some room.
@@ -93,7 +94,7 @@ def test_us_snapshot_sanity() -> None:
 
 
 def test_every_row_names_its_sources_and_confidence() -> None:
-    rows = load_delivery_centers()
+    rows = load_us_delivery_centers()
     for row in rows:
         assert row.confidence in CONFIDENCE_LEVELS
         assert set(row.sources) <= _KNOWN_SOURCES, row.center_id
@@ -141,8 +142,19 @@ def test_bay_area_research_rows_are_carried_over_unchanged() -> None:
     assert miles == pytest.approx(12.23, abs=0.02)
 
 
+def test_default_loader_returns_the_research_rows_from_the_us_file() -> None:
+    research = load_delivery_centers()
+    assert {row.center_id for row in research} == _BAY_AREA_IDS
+    everything = {row.center_id: row for row in load_us_delivery_centers()}
+    assert all(everything[row.center_id] == row for row in research)
+    # These real Find Us centers fall inside the 60-mile cap for outlying
+    # San Mateo demand ZCTAs, so they stay out of the research set.
+    assert {"stockton-ca", "seaside-ca", "sacramento-ca"} <= set(everything)
+    assert not {"stockton-ca", "seaside-ca", "sacramento-ca"} & {r.center_id for r in research}
+
+
 def test_new_rows_outside_the_bay_area() -> None:
-    by_id = {row.center_id: row for row in load_delivery_centers()}
+    by_id = {row.center_id: row for row in load_us_delivery_centers()}
     seaside = by_id["seaside-ca"]
     assert seaside.address == "1901 Del Monte Blvd"
     assert seaside.location_type == "delivery"

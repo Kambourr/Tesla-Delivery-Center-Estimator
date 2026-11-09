@@ -6,6 +6,24 @@ All notable changes to this project are recorded here.
 
 ### Added
 
+- Catchment allocation. A candidate ZIP competes with existing Tesla delivery
+  centers instead of taking every ZIP inside a fixed radius. Drive distance
+  is straight-line miles times 1.25, capped at 60 miles. The base case is
+  Huff gravity with beta 2. The low case is the nearest center. For San
+  Mateo 94402 the fixture reproduces about 4,370 nearest-center deliveries
+  a year over 20 ZCTAs (mostly from Colma and Sunnyvale) and about 5,520
+  gravity deliveries, inside the research band of about 4,400 to 5,700.
+- A committed 2026-11-08 snapshot of the Bay Area Tesla delivery centers
+  (plus the North San Jose hub) in `data/seed/`, with storage upserts.
+  Coordinates are Census 2024 ZCTA internal points. The loader does not
+  call tesla.com.
+- A California Energy Commission New ZEV Sales loader on `energy.ca.gov`.
+  ZIP rows are fuel counts. Tesla's make share comes from the county sheet.
+  Outside California, state Tesla volume is split across ZIPs by households,
+  income, and EV share using the existing demand elasticities. A ZIP with
+  no data is skipped.
+- Census Gazetteer ZCTA centroids, schema version 3 (`delivery_center`,
+  `zcta_centroid`, `zev_sales_zip`, `zev_sales_county`).
 - M2 public loaders for Census ACS 5-year ZCTA facts, BLS OEWS metro wages
   (SOC 49-3023), and California DMV light-duty fuel counts by ZIP. Fetch stays
   on `api.census.gov`, `api.bls.gov`, and `data.ca.gov`. SQL upsert and

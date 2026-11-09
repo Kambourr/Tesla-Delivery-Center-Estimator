@@ -327,6 +327,317 @@ def _ev_from_row(row: sqlite3.Row | tuple[object, ...]) -> EvZipRecord:
 def _optional_float(value: object) -> float | None:
     if value is None:
         return None
+    return _required_float(value)
+
+
+@dataclass(frozen=True)
+class DeliveryCenterRecord:
+    """One ``delivery_center`` row. ``as_of`` is ISO text. Coordinates are decimal degrees."""
+
+    center_id: str
+    name: str
+    address: str
+    city: str
+    state: str
+    zip_code: str
+    lat: float
+    lon: float
+    location_type: str
+    as_of: str
+    coordinate_basis: str
+
+
+@dataclass(frozen=True)
+class ZctaCentroidRecord:
+    """One ``zcta_centroid`` row. ``vintage`` is the gazetteer year."""
+
+    zcta: str
+    lat: float
+    lon: float
+    vintage: str
+    as_of: str
+
+
+@dataclass(frozen=True)
+class ZevZipSalesRecord:
+    """One ``zev_sales_zip`` row. ``vehicles`` is a whole count. ``source`` is cec or fallback."""
+
+    zip_code: str
+    state: str
+    data_year: int
+    quarter: int
+    fuel_type: str
+    vehicles: int
+    as_of: str
+    source: str
+
+
+@dataclass(frozen=True)
+class ZevCountySalesRecord:
+    """One ``zev_sales_county`` row. Models are already summed into ``vehicles``."""
+
+    county: str
+    state: str
+    data_year: int
+    quarter: int
+    fuel_type: str
+    make: str
+    vehicles: int
+    as_of: str
+    source: str
+
+
+def list_delivery_centers(conn: sqlite3.Connection, as_of: str) -> tuple[DeliveryCenterRecord, ...]:
+    """Return every center for one snapshot date, ordered by ``center_id``."""
+    query = (
+        "SELECT center_id, name, address, city, state, zip, lat, lon, "
+        "location_type, as_of, coordinate_basis "
+        "FROM delivery_center WHERE as_of = ? ORDER BY center_id"
+    )
+    return tuple(_delivery_center_from_row(row) for row in conn.execute(query, (as_of,)))
+
+
+def upsert_delivery_center(
+    conn: sqlite3.Connection, record: DeliveryCenterRecord, *, commit: bool = True
+) -> None:
+    """Insert or replace one delivery-center row."""
+    conn.execute(
+        """
+        INSERT INTO delivery_center (
+            center_id, name, address, city, state, zip, lat, lon,
+            location_type, as_of, coordinate_basis
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(center_id, as_of) DO UPDATE SET
+            name = excluded.name,
+            address = excluded.address,
+            city = excluded.city,
+            state = excluded.state,
+            zip = excluded.zip,
+            lat = excluded.lat,
+            lon = excluded.lon,
+            location_type = excluded.location_type,
+            coordinate_basis = excluded.coordinate_basis
+        """,
+        (
+            record.center_id,
+            record.name,
+            record.address,
+            record.city,
+            record.state,
+            record.zip_code,
+            record.lat,
+            record.lon,
+            record.location_type,
+            record.as_of,
+            record.coordinate_basis,
+        ),
+    )
+    if commit:
+        conn.commit()
+
+
+def get_zcta_centroid(
+    conn: sqlite3.Connection, zcta: str, vintage: str
+) -> ZctaCentroidRecord | None:
+    """Return one ZCTA internal point, or ``None`` when it was never stored."""
+    query = (
+        "SELECT zcta, lat, lon, vintage, as_of FROM zcta_centroid WHERE zcta = ? AND vintage = ?"
+    )
+    row = conn.execute(query, (zcta, vintage)).fetchone()
+    if row is None:
+        return None
+    return _centroid_from_row(row)
+
+
+def upsert_zcta_centroid(
+    conn: sqlite3.Connection, record: ZctaCentroidRecord, *, commit: bool = True
+) -> None:
+    """Insert or replace one ZCTA centroid."""
+    conn.execute(
+        """
+        INSERT INTO zcta_centroid (zcta, lat, lon, vintage, as_of)
+        VALUES (?, ?, ?, ?, ?)
+        ON CONFLICT(zcta, vintage) DO UPDATE SET
+            lat = excluded.lat,
+            lon = excluded.lon,
+            as_of = excluded.as_of
+        """,
+        (record.zcta, record.lat, record.lon, record.vintage, record.as_of),
+    )
+    if commit:
+        conn.commit()
+
+
+def get_zev_zip_sales(
+    conn: sqlite3.Connection,
+    zip_code: str,
+    data_year: int,
+    quarter: int,
+    fuel_type: str,
+    source: str,
+) -> ZevZipSalesRecord | None:
+    """Return one ZIP sales row, or ``None`` when it was never stored."""
+    query = (
+        "SELECT zip, state, data_year, quarter, fuel_type, vehicles, as_of, source "
+        "FROM zev_sales_zip WHERE zip = ? AND data_year = ? AND quarter = ? "
+        "AND fuel_type = ? AND source = ?"
+    )
+    row = conn.execute(query, (zip_code, data_year, quarter, fuel_type, source)).fetchone()
+    if row is None:
+        return None
+    return _zev_zip_from_row(row)
+
+
+def upsert_zev_zip_sales(
+    conn: sqlite3.Connection, record: ZevZipSalesRecord, *, commit: bool = True
+) -> None:
+    """Insert or replace one ZIP sales row."""
+    conn.execute(
+        """
+        INSERT INTO zev_sales_zip (
+            zip, state, data_year, quarter, fuel_type, vehicles, as_of, source
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(zip, data_year, quarter, fuel_type, source) DO UPDATE SET
+            state = excluded.state,
+            vehicles = excluded.vehicles,
+            as_of = excluded.as_of
+        """,
+        (
+            record.zip_code,
+            record.state,
+            record.data_year,
+            record.quarter,
+            record.fuel_type,
+            record.vehicles,
+            record.as_of,
+            record.source,
+        ),
+    )
+    if commit:
+        conn.commit()
+
+
+def get_zev_county_sales(
+    conn: sqlite3.Connection,
+    county: str,
+    data_year: int,
+    quarter: int,
+    fuel_type: str,
+    make: str,
+    source: str,
+) -> ZevCountySalesRecord | None:
+    """Return one county make row, or ``None`` when it was never stored."""
+    query = (
+        "SELECT county, state, data_year, quarter, fuel_type, make, vehicles, as_of, source "
+        "FROM zev_sales_county WHERE county = ? AND data_year = ? AND quarter = ? "
+        "AND fuel_type = ? AND make = ? AND source = ?"
+    )
+    row = conn.execute(query, (county, data_year, quarter, fuel_type, make, source)).fetchone()
+    if row is None:
+        return None
+    return _zev_county_from_row(row)
+
+
+def upsert_zev_county_sales(
+    conn: sqlite3.Connection, record: ZevCountySalesRecord, *, commit: bool = True
+) -> None:
+    """Insert or replace one county make row."""
+    conn.execute(
+        """
+        INSERT INTO zev_sales_county (
+            county, state, data_year, quarter, fuel_type, make, vehicles, as_of, source
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(county, data_year, quarter, fuel_type, make, source) DO UPDATE SET
+            state = excluded.state,
+            vehicles = excluded.vehicles,
+            as_of = excluded.as_of
+        """,
+        (
+            record.county,
+            record.state,
+            record.data_year,
+            record.quarter,
+            record.fuel_type,
+            record.make,
+            record.vehicles,
+            record.as_of,
+            record.source,
+        ),
+    )
+    if commit:
+        conn.commit()
+
+
+def _delivery_center_from_row(row: sqlite3.Row | tuple[object, ...]) -> DeliveryCenterRecord:
+    (
+        center_id,
+        name,
+        address,
+        city,
+        state,
+        zip_code,
+        lat,
+        lon,
+        location_type,
+        as_of,
+        coordinate_basis,
+    ) = row
+    return DeliveryCenterRecord(
+        center_id=str(center_id),
+        name=str(name),
+        address=str(address),
+        city=str(city),
+        state=str(state),
+        zip_code=str(zip_code),
+        lat=_required_float(lat),
+        lon=_required_float(lon),
+        location_type=str(location_type),
+        as_of=str(as_of),
+        coordinate_basis=str(coordinate_basis),
+    )
+
+
+def _centroid_from_row(row: sqlite3.Row | tuple[object, ...]) -> ZctaCentroidRecord:
+    zcta, lat, lon, vintage, as_of = row
+    return ZctaCentroidRecord(
+        zcta=str(zcta),
+        lat=_required_float(lat),
+        lon=_required_float(lon),
+        vintage=str(vintage),
+        as_of=str(as_of),
+    )
+
+
+def _zev_zip_from_row(row: sqlite3.Row | tuple[object, ...]) -> ZevZipSalesRecord:
+    zip_code, state, data_year, quarter, fuel_type, vehicles, as_of, source = row
+    return ZevZipSalesRecord(
+        zip_code=str(zip_code),
+        state=str(state),
+        data_year=_required_int(data_year),
+        quarter=_required_int(quarter),
+        fuel_type=str(fuel_type),
+        vehicles=_required_int(vehicles),
+        as_of=str(as_of),
+        source=str(source),
+    )
+
+
+def _zev_county_from_row(row: sqlite3.Row | tuple[object, ...]) -> ZevCountySalesRecord:
+    county, state, data_year, quarter, fuel_type, make, vehicles, as_of, source = row
+    return ZevCountySalesRecord(
+        county=str(county),
+        state=str(state),
+        data_year=_required_int(data_year),
+        quarter=_required_int(quarter),
+        fuel_type=str(fuel_type),
+        make=str(make),
+        vehicles=_required_int(vehicles),
+        as_of=str(as_of),
+        source=str(source),
+    )
+
+
+def _required_float(value: object) -> float:
     if isinstance(value, bool) or not isinstance(value, (int, float)):
         raise TypeError(f"Expected a number from SQLite, got {value!r}.")
     return float(value)

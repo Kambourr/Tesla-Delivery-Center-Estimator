@@ -9,7 +9,7 @@
 
 Unsigned student Mac apps: document **right-click → Open** the first time (Gatekeeper). Codesign and notarization are out of scope for the class project.
 
-**CI (M0):** GitHub Actions on `macos-latest`, plus an `ubuntu-latest` test job for the same suite. Steps: install the package, `pytest`, `python -m dce --help`. **No secrets.** The M0 workflow does not run PyInstaller.
+**CI (M0):** GitHub Actions on `macos-latest` and `ubuntu-latest`. Steps: install the package, ruff, mypy, `pytest`, `python -m dce --help`. **No secrets.** The workflow does not run PyInstaller. Tool config lives in `pyproject.toml`. See `docs/adr/0002-macos-pyinstaller.md`.
 
 ## Zero manual input
 
@@ -20,16 +20,18 @@ An **optional advanced rent override** may be offered later for a sensitivity ch
 ## Runtime shape
 
 ```
-[Tkinter GUI | CLI]
+[dce.app Tkinter | dce.cli]
         │
         ▼
-   Orchestrator estimate(zip)
+   dce.orchestrator.estimate(zip)
         │
-        ├─► Data layer (bundled seed + optional refresh → SQLite)
-        ├─► Rent resolver (fallback chain; no required rent field)
-        ├─► Model layer (pure; deterministic)
-        ├─► Map layer → Folium HTML → system browser
-        └─► Extract layer (optional PDF→JSON; isolated; never on the calc path)
+        ├─► dce.storage          SQLite only
+        ├─► dce.data.ingest      fetch_* (refresh only)
+        ├─► dce.data             rent resolver + staleness
+        ├─► dce.model            pure calc, no I/O
+        ├─► dce.scenarios        grid on top of the model, no I/O
+        ├─► dce.geo              HTML map → system browser
+        └─► dce.extract          optional PDF→JSON; never on the calc path
 ```
 
 ## GUI decision
@@ -47,13 +49,15 @@ Do not add PySide6. Do not embed a web engine. On Debian/Ubuntu, Tkinter's C mod
 
 ## Layers
 
-1. **GUI / CLI** — ZIP entry only; scenario presets; staleness and rent-confidence badges; "Open map" launches the HTML file in the system browser.
-2. **Orchestrator** — `estimate(zip, scenario=None, overrides=None) -> EstimateResult`.
-3. **Rent resolver** — fallback chain in DATA_SOURCES §8; writes `rent_resolved_cache`. Reads SQLite only.
-4. **Data** — bundled seed always present so first launch is offline; allowlisted HTTP only on explicit refresh; per-source `as_of` and staleness.
-5. **Model** — demand, costs, drivers, scenarios, robustness. No I/O, no network, no LLM.
-6. **Map** — catchment geometry → Folium HTML file → OS browser.
-7. **Extract** — optional PDF extraction. `pdf_llm` is the only module that may call an LLM. Nothing in `model/` or the GUI calculate path may import it.
+1. **App / CLI** (`dce.app`, `dce.cli`) — ZIP entry only; scenario presets; staleness and rent-confidence badges; "Open map" launches the HTML file in the system browser. ADR-0001.
+2. **Orchestrator** — `estimate(zip, scenario=None, overrides=None) -> EstimateResult`. The only composition root.
+3. **Storage** — connection, migrations, repository. The only SQL.
+4. **Ingest** — `fetch_*` for allowlisted hosts. Returns dataclasses. No SQL.
+5. **Rent resolver** (`dce.data.rent_resolver`) — fallback chain in DATA_SOURCES §8 and ADR-0003. Reads SQLite only.
+6. **Model** — demand, costs, drivers. No I/O, no network, no LLM.
+7. **Scenarios** — mix and wage grid, Spearman checks. Calls the model. No I/O.
+8. **Geo** — catchment and Folium HTML, then the OS browser.
+9. **Extract** — optional PDF extraction. `pdf_llm` is the only module that may call an LLM. Nothing in `model/`, `scenarios/`, or the calculate path may import it.
 
 ## Determinism
 

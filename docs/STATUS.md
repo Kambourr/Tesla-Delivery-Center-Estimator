@@ -17,12 +17,10 @@
 
 ## Done in M0
 
-- Package `dce` with stub modules. Each docstring states that module's contract. No calculations, no SQLite writes, no network.
-- `pyproject.toml` pins numpy, pandas, shapely, pyproj, pyogrio, geopandas, folium, and PyYAML. Pytest is the `dev` extra. PyInstaller is the `packaging` extra and is not installed by CI.
-- `.gitignore`, `.env.example` (Census, BLS, EIA, HUD only), README quickstart.
-- One smoke test: `python -m dce --help` exits 0.
-- CI workflow runs install + pytest + CLI help on `macos-latest` and `ubuntu-latest`. No secrets.
-- Planning docs aligned to Jacob's 2026-11-09 decisions (Tkinter, macOS `.app`, automatic rent, bundled seed, LLM isolation).
+- Package `dce` split into ingest, storage, model, scenarios, geo, app, and cli. Stubs are typed. No calculations, no SQLite writes, no network.
+- `pyproject.toml` pins the runtime stack and is the config for ruff, mypy, and pytest-cov. Makefile, pre-commit, and CI run lint, typecheck, and tests.
+- ADRs 0001–0003, `CONTRIBUTING.md`, `CHANGELOG.md`, `data/seed/README.md`, and a `LICENSE` placeholder (license not chosen).
+- CI on `macos-latest` and `ubuntu-latest`. No secrets.
 
 ## Not in M0
 

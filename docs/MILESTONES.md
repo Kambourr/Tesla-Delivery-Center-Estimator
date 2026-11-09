@@ -5,11 +5,11 @@ Each milestone is sized for one coding agent. Acceptance is binary.
 Decisions locked on 2026-11-09 (see PLAN and ARCHITECTURE): Tkinter, macOS Apple Silicon `.app` as the primary artifact, zero required inputs with automatic rent, bundled SQLite seed, LLM only in `dce.extract.pdf_llm`.
 
 ## M0 — Repo bootstrap (no product logic)
-**Deliver:** Skeleton matching `REPO_STRUCTURE.md`; `pyproject.toml` with pinned dependencies (pandas, geopandas, folium, and the geo stack; Tkinter is stdlib and is not pip-installed); `dce` package of stub modules whose docstrings state each contract; `docs/` aligned to the locked decisions; `.env.example` with `CENSUS_API_KEY`, `BLS_API_KEY`, `EIA_API_KEY`, `HUD_TOKEN` only; `.gitignore`; README quickstart; pytest with one passing smoke test; CI on `macos-latest` (and `ubuntu-latest`) that installs and runs tests. No secrets.
-**Accept:** `pip install -e .` works; `python -m dce --help` prints the stub CLI and exits 0; `pytest` passes; the workflow file is valid YAML and does not reference secrets. No network calls from package code.
+**Deliver:** Skeleton matching `REPO_STRUCTURE.md`; layered `src/dce` stubs with typed signatures; `pyproject.toml` as the config for pinned deps, ruff, mypy, and pytest-cov; pre-commit; Makefile; `CONTRIBUTING.md`; ADRs 0001–0003; `data/seed/README.md`; CI on `macos-latest` and `ubuntu-latest` that lints, typechecks, and tests. No secrets.
+**Accept:** `pip install -e .` works; `python -m dce --help` prints the stub CLI and exits 0; `pytest` passes; `ruff` and `mypy` pass; the workflow file is valid YAML and does not reference secrets. No network calls from package code.
 
 ## M1 — SQLite schema + config + ZIP resolve stub
-**Deliver:** `schema.sql`, migrations, `config.py` paths (`~/Library/Application Support/DeliveryCenterEstimator` on macOS, `%LOCALAPPDATA%\DeliveryCenterEstimator` on Windows, `~/.local/share/delivery-center-estimator` on Linux), `GeoContext` resolution stub using a local HUD sample fixture for 9440x.
+**Deliver:** `storage/schema.sql`, `storage/migrate.py`, `storage/repository.py`, `config.py` paths (`~/Library/Application Support/DeliveryCenterEstimator` on macOS, `%LOCALAPPDATA%\DeliveryCenterEstimator` on Windows, `~/.local/share/delivery-center-estimator` on Linux), `geo/resolve.py` using a local HUD sample fixture for 9440x.
 **Accept:** Creating the DB is idempotent; a unit test inserts and reads `source_registry`; resolving `94402` returns county `06081` and a CBSA from the fixture. No network.
 
 ## M2 — Public loaders (Census ACS ZCTA, OEWS metro, CA EV ZIP)
@@ -21,11 +21,11 @@ Decisions locked on 2026-11-09 (see PLAN and ARCHITECTURE): Tkinter, macOS Apple
 **Accept:** Given frozen inputs, `$/delivery` matches golden JSON to 2 decimals; top-3 shares sum to at most 1.0; zero deliveries raises a clean error.
 
 ## M4 — Scenarios (±20% wage, vehicle mix) + robustness
-**Deliver:** `scenarios.py`, `robustness.py`; CLI `estimate --scenario-grid`.
+**Deliver:** `scenarios/grid.py`, `scenarios/robustness.py`; CLI `estimate --scenario-grid`.
 **Accept:** Grid emits baseline + wage±20% + alternate mix; Spearman driver-rank vs baseline is in [−1, 1]; a test proves wage+20% does not change lease dollars.
 
 ## M5 — Map (geopandas catchment + Folium HTML)
-**Deliver:** Demo GeoPackage for San Mateo block groups / ZCTAs; `catchment.py`, `folium_map.py`. HTML is a file the GUI will open in the system browser. Offline note in the README (polygons must not depend on a live tile server).
+**Deliver:** Demo GeoPackage for San Mateo block groups / ZCTAs; `geo/catchment.py`, `geo/folium_map.py`. HTML is a file the GUI will open in the system browser. Offline note in the README (polygons must not depend on a live tile server).
 **Accept:** `94402` writes HTML with at least one polygon layer and a center marker; a test checks the file exists and contains a Folium / GeoJSON snippet.
 
 ## M6 — Rent fallback, crosswalks, and rates (still no scraping)

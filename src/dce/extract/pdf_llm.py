@@ -25,6 +25,6 @@ from __future__ import annotations
 from pathlib import Path
 
 
-def extract_tariff_json(pdf_path: Path, cache: Path) -> dict:
+def extract_tariff_json(pdf_path: Path, cache: Path) -> dict[str, object]:
     """Extract tariff fields with an LLM and cache the JSON. Not implemented in M0."""
     raise NotImplementedError("dce.extract.pdf_llm.extract_tariff_json is a stub (M0)")

@@ -7,6 +7,4 @@ refresh sources.
 
 from __future__ import annotations
 
-raise SystemExit(
-    "scripts/check_staleness.py is an M0 stub. It does not read a database."
-)
+raise SystemExit("scripts/check_staleness.py is an M0 stub. It does not read a database.")

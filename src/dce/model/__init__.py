@@ -1,8 +1,10 @@
-"""Deterministic cost, demand, scenario, and robustness math.
+"""Deterministic cost and demand math.
 
-Pure functions: dataclasses in, dataclasses or plain numbers out. No file
-I/O, no SQLite, no network, no GUI, and no import of ``dce.extract.pdf_llm``
-or ``requests``.
+Pure functions: frozen dataclasses in, numbers or dataclasses out. No file
+I/O, no SQLite, no network, no GUI, and no import of ``dce.extract``,
+``dce.storage``, ``dce.data``, ``dce.geo``, ``dce.app``, ``dce.cli``, or
+``dce.scenarios``.
 
-Milestone M0 defines types and stub signatures only.
+Scenario expansion lives in ``dce.scenarios`` so this package stays a
+single calculation pass.
 """

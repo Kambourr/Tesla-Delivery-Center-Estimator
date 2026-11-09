@@ -6,6 +6,4 @@ When implemented, this script may download allowlisted public files into
 
 from __future__ import annotations
 
-raise SystemExit(
-    "scripts/fetch_demo_cache.py is an M0 stub. It does not fetch anything."
-)
+raise SystemExit("scripts/fetch_demo_cache.py is an M0 stub. It does not fetch anything.")

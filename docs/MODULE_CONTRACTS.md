@@ -1,6 +1,6 @@
 # Module Contracts
 
-Pure model functions must not import `requests`, GUI, or `extract.pdf_llm`.
+Pure model functions must not import `requests`, the GUI, storage, ingest, or `extract.pdf_llm`. Scenario expansion lives in `dce.scenarios` and is also pure. Shared dataclasses stay in `dce.model.types` so the model does not import `scenarios`.
 
 ## `dce.model.types`
 
@@ -67,54 +67,63 @@ class EstimateResult:
 ## Signatures
 
 ```python
-# demand.py
-def estimate_annual_deliveries(demand: DemandInputs, assumptions: dict) -> float: ...
+# model/demand.py
+def estimate_annual_deliveries(demand: DemandInputs, assumptions: Assumptions) -> float: ...
 
-# costs.py
+# model/costs.py
 def annualized_components(costs: CostInputs, scenario: Scenario) -> dict[str, float]: ...
 def cost_per_delivery(components: dict[str, float], deliveries: float) -> float: ...
 
-# drivers.py
+# model/drivers.py
 def top_drivers(components: dict[str, float], n: int = 3) -> list[Driver]: ...
 
-# scenarios.py
+# scenarios/grid.py
 def expand_default_scenarios(base_mix: dict[str, float]) -> list[Scenario]: ...
 def run_scenario_grid(geo, demand, costs, scenarios, assumptions) -> list[EstimateResult]: ...
 
-# robustness.py
+# scenarios/robustness.py
 def spearman_rank_corr(ranks_a: list[str], ranks_b: list[str]) -> float: ...
 def driver_rank_stability(results: list[EstimateResult], baseline_id: str) -> dict[str, float]: ...
 
-# map/folium_map.py
+# geo/folium_map.py
 def render_customer_map(geo: GeoContext, scored_features: "GeoDataFrame", out_path: Path) -> Path: ...
 
-# data/registry.py
-def staleness_status(as_of: date, ttl_days: int, today: date) -> Literal["fresh","aging","stale","missing"]: ...
+# geo/resolve.py
+def resolve_zip(zip_code: str) -> GeoContext: ...
 
-# extract/pdf_llm.py  (optional; never imported by model)
-def extract_tariff_json(pdf_path: Path, cache: Path) -> dict: ...
+# data/registry.py
+def staleness_status(as_of: date | None, ttl_days: int, today: date) -> Literal["fresh","aging","stale","missing"]: ...
+
+# storage/repository.py
+def get_source(conn, source_id: str) -> SourceRecord | None: ...
+def upsert_source(conn, record: SourceRecord) -> None: ...
+
+# extract/pdf_llm.py  (optional; never imported by model or scenarios)
+def extract_tariff_json(pdf_path: Path, cache: Path) -> dict[str, object]: ...
 ```
 
 ## Rent resolver
 
 ```python
+# data/ingest/*.py — fetch_* returns a frozen dataclass and does not open SQLite.
+
 # data/rent_resolver.py
 # Reads SQLite/seed only. No network. No LoopNet/Crexi.
-def resolve_rent(zip_code: str, conn) -> RentResolution: ...
+def resolve_rent(zip_code: str, conn: sqlite3.Connection) -> RentResolution: ...
 ```
 
 Fallback chain, first hit wins: ZIP-adjusted CBSA industrial (broker seed × frozen ACS income/density/home-value model, calibrated on the GSA Lease Inventory) → county → raw CBSA → state → national → HUD SAFMR or ZORI proxy with confidence `low`.
 
 `RentResolution` carries `rent_psf_year`, `rent_psf_month`, `property_type`, `tier`, `confidence`, `as_of`, and `citation`. ZIP → CBSA is the HUD crosswalk.
 
-# Orchestrator
+## Orchestrator
 
 ```python
-def estimate(zip_code: str, scenario: Scenario | None = None, overrides: dict | None = None) -> EstimateResult: ...
+def estimate(zip_code: str, scenario: Scenario | None = None, overrides: Mapping[str, object] | None = None) -> EstimateResult: ...
 ```
 
 Loads from the bundled seed and SQLite (optional refresh if missing/stale and online), resolves rent, calls the model, optionally writes a map. `overrides` may include an optional advanced rent override. ZIP alone must succeed. Never imports `extract.pdf_llm`.
 
-# GUI
+## GUI and CLI
 
-Tkinter in `gui/app.py`. Required field is the ZIP. "Open map" uses `webbrowser.open` on the Folium HTML file. No PySide6 and no embedded web engine. The calculate path must not import `extract.pdf_llm`.
+Tkinter in `dce.app`. Required field is the ZIP. "Open map" uses `webbrowser.open` on the Folium HTML file. No PySide6 and no embedded web engine. The calculate path must not import `extract.pdf_llm`. CLI lives in `dce.cli` and calls `orchestrator.estimate`.

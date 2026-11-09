@@ -34,6 +34,7 @@ Milestone M0: the dataclass is the contract; ``resolve_rent`` raises
 
 from __future__ import annotations
 
+import sqlite3
 from dataclasses import dataclass
 
 
@@ -51,6 +52,6 @@ class RentResolution:
     citation: str
 
 
-def resolve_rent(zip_code: str, conn: object) -> RentResolution:
+def resolve_rent(zip_code: str, conn: sqlite3.Connection) -> RentResolution:
     """Resolve industrial asking rent from SQLite only. Not implemented in M0."""
     raise NotImplementedError("dce.data.rent_resolver.resolve_rent is a stub (M0)")

@@ -17,6 +17,6 @@ from __future__ import annotations
 from pathlib import Path
 
 
-def extract_tariff_json(pdf_path: Path, cache: Path) -> dict:
+def extract_tariff_json(pdf_path: Path, cache: Path) -> dict[str, object]:
     """Parse a known tariff PDF into JSON. Not implemented in M0."""
     raise NotImplementedError("dce.extract.pdf_manual.extract_tariff_json is a stub (M0)")

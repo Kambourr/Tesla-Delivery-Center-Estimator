@@ -16,9 +16,9 @@ Milestone M0: raises ``NotImplementedError``.
 
 from __future__ import annotations
 
-from dce.model.types import DemandInputs
+from dce.model.types import Assumptions, DemandInputs
 
 
-def estimate_annual_deliveries(demand: DemandInputs, assumptions: dict) -> float:
+def estimate_annual_deliveries(demand: DemandInputs, assumptions: Assumptions) -> float:
     """Return estimated annual deliveries. Not implemented in M0."""
     raise NotImplementedError("dce.model.demand.estimate_annual_deliveries is a stub (M0)")

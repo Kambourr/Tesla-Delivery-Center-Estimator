@@ -15,5 +15,31 @@ not on the estimate path.
 Refresh cadence for the seed is quarterly. Aging after 2 quarters, stale
 after 4.
 
-Milestone M0: stub. ``data/seed/`` is empty. No network calls.
+``read_rent_seed`` parses the curated file and returns rows. It does not
+open SQLite and it does not download anything. The repository upserts the
+rows. See ``data/seed/README.md`` for provenance.
+
+Milestone M0: stub. ``data/seed/`` has no rent rows yet.
 """
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from pathlib import Path
+
+
+@dataclass(frozen=True)
+class CbsaRentSeed:
+    """One metro industrial asking-rent headline from a cited public report."""
+
+    cbsa: str
+    property_type: str
+    rent_psf_year: float
+    as_of: str
+    citation: str
+    broker: str
+
+
+def read_rent_seed(path: Path) -> tuple[CbsaRentSeed, ...]:
+    """Read the bundled rent seed file. Not implemented in M0."""
+    raise NotImplementedError("dce.data.rent_defaults.read_rent_seed is a stub (M0)")

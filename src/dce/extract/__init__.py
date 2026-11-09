@@ -1,8 +1,6 @@
-"""Optional PDF extraction. Isolated from the cost model.
+"""Optional PDF extraction, isolated from the cost model.
 
-``pdf_manual`` is the default path (regex / tables for known PG&E schedules).
-``pdf_llm`` may call an LLM API and must cache ``pdf_hash -> json``.
-``dce.model`` and the GUI calculate path must not import ``pdf_llm``.
-
-Milestone M0: stubs. No network calls.
+``pdf_manual`` is the default path. ``pdf_llm`` is the only module that may
+call an LLM, and only to fill ``extract_cache``. ``dce.model``,
+``dce.scenarios``, and the calculate path must not import ``pdf_llm``.
 """

@@ -25,10 +25,10 @@ M0 (repository skeleton, no product logic) is the open pull request. Start **M1*
 ## M1 task
 
 1. Keep `src/dce` importable. `python -m dce --help` must keep working.
-2. Implement `db/schema.sql`, `connection.py`, and `migrate.py` for the DATA_DICTIONARY tables (at least `source_registry`, `zcta_acs`, `oews_wage`, `ev_zip`, `utility_rate`, `rent_default`, `extract_cache`). Creating the database is idempotent.
+2. Implement `storage/schema.sql`, `storage/connection.py`, `storage/migrate.py`, and `storage/repository.py` for the DATA_DICTIONARY tables (at least `source_registry`, `zcta_acs`, `oews_wage`, `ev_zip`, `utility_rate`, `rent_default`, `extract_cache`). Creating the database is idempotent. SQL stays in `storage`.
 3. The physical rent tables in DATA_SOURCES §8 (`rent_cbsa`, `rent_zip_obs`, `rent_model_coeffs`, `rent_resolved_cache`) belong to M6. Do not implement `resolve_rent` in M1.
 4. `config.py`: macOS `~/Library/Application Support/DeliveryCenterEstimator`, Windows `%LOCALAPPDATA%\DeliveryCenterEstimator`, Linux `~/.local/share/delivery-center-estimator`.
-5. Stub `util/geo_zip.py`: `resolve_zip("94402")` using `tests/fixtures/hud_9440x.json` → `GeoContext` (county `06081` and a CBSA from the fixture). No network.
+5. Implement `geo/resolve.py`: `resolve_zip("94402")` using `tests/fixtures/hud_9440x.json` → `GeoContext` (county `06081` and a CBSA from the fixture). No network. Do not put this in the model.
 6. Unit tests for migrate and resolve. Leave the M0 smoke test passing.
 7. Update `docs/STATUS.md` when done.
 

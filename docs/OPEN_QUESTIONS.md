@@ -29,3 +29,4 @@
 10. **Deadline** — practicum / portfolio date.
 11. **Windows EXE** — whether to schedule it after the macOS `.app`. Not part of M0–M7 acceptance.
 12. **Scenario id on `EstimateResult`.** `driver_rank_stability` takes a `baseline_id`, and the data dictionary lists `scenario_id`, but the dataclass in `MODULE_CONTRACTS.md` has no id field. Add it when M4 implements scenarios.
+13. **License.** `LICENSE` is a placeholder and grants nothing. Choose MIT, Apache-2.0, or another license, or leave the repo private with all rights reserved. Do not fill in license text until then.

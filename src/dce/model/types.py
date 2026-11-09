@@ -11,7 +11,13 @@ override). The model does not look up rent itself.
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
+
+# Assumption tables mix numbers, strings, and nested presets. Callers pass a
+# mapping; the model reads the keys it knows. Not a pydantic model: the
+# shapes are small and already frozen dataclasses.
+Assumptions = Mapping[str, object]
 
 
 @dataclass(frozen=True)

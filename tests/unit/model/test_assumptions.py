@@ -13,9 +13,9 @@ from dce.model.errors import AssumptionsError, InvalidInputError, ModelError
 
 def test_shipped_yaml_parses(raw_assumptions: dict[str, Any]) -> None:
     parsed = parse_assumptions(raw_assumptions)
-    assert parsed.schema_version == 2
-    assert parsed.assumptions_version == "2026.11.1"
-    assert parsed.as_of == "2026-11-08"
+    assert parsed.schema_version == 3
+    assert parsed.assumptions_version == "2026.11.2"
+    assert parsed.as_of == "2026-11-09"
     assert parsed.facility.sqft == 25_000
     assert parsed.facility.opex_load == pytest.approx(0.15)
     assert parsed.labor.wage_load == pytest.approx(1.35)
@@ -24,6 +24,8 @@ def test_shipped_yaml_parses(raw_assumptions: dict[str, Any]) -> None:
     assert parsed.capex.life_years == 10
     assert parsed.property_tax.included_in_nnn is True
     assert parsed.demand.base_annual_deliveries == 4_500
+    assert parsed.demand.handover_factor == pytest.approx(1.10)
+    assert parsed.demand.fallback_tesla_ev_share == pytest.approx(0.462)
     assert parsed.dcf.discount_rate == pytest.approx(0.136)
     assert parsed.dcf.benefit_mode == "standalone"
     assert parsed.dcf.horizon_years == 10
@@ -34,6 +36,8 @@ def test_ranges_keep_low_base_high(raw_assumptions: dict[str, Any]) -> None:
     ranges = parse_assumptions(raw_assumptions).ranges
     assert ranges["dcf.discount_rate"] == ValueRange(low=0.097, base=0.136, high=0.163)
     assert ranges["demand.base_annual_deliveries"] == ValueRange(3_000, 4_500, 6_500)
+    assert ranges["demand.handover_factor"] == ValueRange(1.00, 1.10, 1.30)
+    assert ranges["dcf.horizon_years"] == ValueRange(8, 10, 10)
     assert ranges["labor.wage_load"] == ValueRange(1.30, 1.35, 1.43)
     assert ranges["labor.staffing.deliveries_per_fte"] == ValueRange(200, 300, 450)
     assert "facility.opex_load" not in ranges  # a plain number has no range
@@ -87,6 +91,7 @@ def _mutated(raw: dict[str, Any], path: tuple[str, ...], value: object) -> dict[
     ("path", "value", "message"),
     [
         (("schema_version",), 1, "not supported"),
+        (("schema_version",), 2, "not supported"),
         (("schema_version",), "1", "integer"),
         (("facility", "sqft"), 0, "> 0"),
         (("facility", "sqft"), "25000", "number"),

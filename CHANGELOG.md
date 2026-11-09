@@ -6,15 +6,31 @@ All notable changes to this project are recorded here.
 
 ### Added
 
+- County Tesla calibration and a handover factor. California ZIP demand is
+  BEV times that county's 2025 CEC Tesla total (49,704 / 94,131 only where
+  the extract has no CEC row), then times 1.00 / 1.10 / 1.30. Base 1.10 is
+  the default. 1.10 and 1.30 are assumptions: no public count of used-car
+  handovers. Outside California, EV registrations with no make split use
+  the Cox/KBB 2025 Tesla share of US EV sales, 46.2%.
+- `estimate(zip)` competes with the US Find Us delivery list (120
+  `delivery` rows). The hub and possible-handover rows stay out. San Mateo
+  94402 at the base handover factor is 5,808 gravity deliveries a year and
+  4,389 nearest-center. Cost per delivery is about $489. Standalone NPV is
+  about +$15.0M, IRR about 91%, discounted payback about 1.4 years.
+  Incremental NPV is about −$2.6M. The building stays 25,000 square feet.
+- The M4 high scenario horizon is 10 years, the lease term, not 15. Low and
+  high deliveries stay a ratio of each ZIP's own volume, composed with the
+  handover factor. The low case keeps its 8-year horizon and its other bad
+  shocks.
 - `estimate(zip)` runs the whole pipeline with no manual input: ZIP resolution,
   gravity catchment (nearest-center is the low case), cost per delivery with
   the top 3 drivers, and both DCF views (standalone delivery-fee is the
   headline, incremental-to-Tesla is the check) at Tesla WACC 13.6%. The CLI
   is `dce estimate 94402`, with `--json` for the full cash-flow tables.
-  San Mateo gravity is 5,523 deliveries a year. At that volume, standalone
-  NPV is about +$13.9M, IRR about 86%, simple payback about 1.3 years, and
-  incremental NPV about −$2.6M. The published +$9.7M / 66% / 1.7 years is
-  the same model at the research case of 4,400 deliveries.
+  Before the county anchor and the US center list, San Mateo gravity was
+  5,523 deliveries a year (standalone NPV about +$13.9M). The calibrated
+  figures are in the bullets above. The published +$9.7M / 66% / 1.7 years
+  is the same model at the research case of 4,400 deliveries.
 - ACS household counts (`B11001_001E`) on the Census loader, schema version
   4, and the San Mateo demo cache, so the non-California demand fallback
   can weight ZIPs. A ZIP with no households is skipped.

@@ -16,10 +16,11 @@ totals, then reports:
 2. Extract coverage and implied Tesla volume by county, against the CEC
    county Tesla counts quoted in ``docs/research/tesla_delivery_ops_research.md``
    section 4.2.
-3. Calibration cases (low / base / high): candidate deliveries, Colma after
-   the candidate, and standalone and incremental NPV from ``dce.model.dcf``.
+3. Calibration cases (low / base / high) on the nine research centers.
+4. The production path: county anchor, handover 1.00 / 1.10 / 1.30, and the
+   US delivery list, with cost per delivery and both DCF lenses.
 
-Nothing here changes ``src/dce`` or ``assumptions.yaml``. County membership
+County membership
 of each ZCTA below is a hand list (ZCTA to its main county); a ZCTA that
 straddles a county line is counted once in its main county.
 """
@@ -43,6 +44,7 @@ from dce.data.catchment_demand import (
     bay_area_zip_demand,
     delivery_center_sites,
 )
+from dce.data.ingest.delivery_centers import load_delivery_centers
 from dce.data.operating_inputs import load_san_mateo_operating_inputs
 from dce.geo.catchment import (
     DRIVE_CIRCUITY,
@@ -54,7 +56,7 @@ from dce.geo.catchment import (
 )
 from dce.geo.resolve import resolve_zip
 from dce.model.assumptions import parse_assumptions
-from dce.model.costs import build_cost_inputs
+from dce.model.costs import annualized_components, build_cost_inputs, cost_per_delivery
 from dce.model.dcf import run_dcf_views
 from dce.model.types import Scenario
 
@@ -191,8 +193,13 @@ def dcf_npvs(steady: float) -> tuple[float, float, float | None]:
     """Standalone NPV, incremental NPV, standalone IRR at ``steady`` deliveries.
 
     Same path as ``dce.orchestrator.estimate`` (demo rent and rates, baseline
-    scenario), with the steady volume substituted.
+    scenario), with the steady volume substituted. Building size stays 25,000 SF.
     """
+    metrics = _metrics(steady)
+    return metrics["sa_npv"], metrics["inc_npv"], metrics["sa_irr"]
+
+
+def _metrics(steady: float) -> dict[str, float | None]:
     raw = yaml.safe_load(assumptions_path().read_text(encoding="utf-8"))
     a = parse_assumptions(raw)
     rates = load_san_mateo_operating_inputs()
@@ -208,13 +215,28 @@ def dcf_npvs(steady: float) -> tuple[float, float, float | None]:
         annual_deliveries=steady,
     )
     views = run_dcf_views(costs, a, steady_deliveries=steady, scenario=scenario)
-    return views.standalone.npv, views.incremental.npv, views.standalone.irr
+    components = annualized_components(costs, scenario)
+    return {
+        "cpd": cost_per_delivery(components, steady),
+        "sa_npv": views.standalone.npv,
+        "sa_irr": views.standalone.irr,
+        "sa_disc": views.standalone.discounted_payback_years,
+        "inc_npv": views.incremental.npv,
+        "inc_irr": views.incremental.irr,
+        "inc_disc": views.incremental.discounted_payback_years,
+    }
 
 
 def main() -> None:
     geo = resolve_zip(CANDIDATE_ZIP)
-    demand = list(bay_area_zip_demand())
-    centers = list(delivery_center_sites())
+    # Historical diagnosis: uniform 9-county share and the nine research centers.
+    # Production estimate() uses the county anchor, H = 1.10, and the US list.
+    demand = list(bay_area_zip_demand(handover_factor=1.0, county_anchor=False))
+    centers = [
+        CenterSite(row.center_id, row.name, row.lat, row.lon)
+        for row in load_delivery_centers()
+        if row.location_type == "delivery"
+    ]
     candidate_row = next(r for r in demand if r.zip_code == CANDIDATE_ZIP)
     assert candidate_row.lat is not None and candidate_row.lon is not None
     candidate = CenterSite("candidate", "San Mateo candidate", candidate_row.lat, candidate_row.lon)
@@ -295,6 +317,30 @@ def main() -> None:
             f"{label:30} candidate grav {g:6,.0f} near {n:6,.0f} | Colma grav {colma_before:6,.0f}"
             f" -> {colma_after:6,.0f}, near-before {colma_near:6,.0f} | NPV standalone"
             f" {sa / 1e6:+6.2f}M IRR {irr_text} incremental {inc / 1e6:+6.2f}M"
+        )
+
+    # Approved production path: county anchor, handover 1.00/1.10/1.30, US delivery list.
+    # Building size is unchanged. These are the estimate() low/base/high volumes.
+    print("\n== Production (US delivery list, county anchor) ==")
+    us_centers = list(delivery_center_sites())
+    print(f"US delivery centers: {len(us_centers)}")
+    for label, factor in (("low", 1.00), ("base", 1.10), ("high", 1.30)):
+        rows = bay_area_zip_demand(handover_factor=factor)
+        features = catchment_features(geo, us_centers, rows)
+        before = center_volumes(rows, us_centers, method="gravity")
+        after = center_volumes(rows, [*us_centers, candidate], method="gravity")
+        metrics = _metrics(features.gravity.total_deliveries_per_year)
+        sa_irr = metrics["sa_irr"]
+        inc_irr = metrics["inc_irr"]
+        print(
+            f"{label} H={factor:.2f} grav {features.gravity.total_deliveries_per_year:,.4f}"
+            f" near {features.nearest.total_deliveries_per_year:,.4f}"
+            f" colma {before.get('colma', 0):,.4f} -> {after.get('colma', 0):,.4f}"
+            f" cpd {metrics['cpd']:,.4f}"
+            f" sa_npv {metrics['sa_npv']:,.2f} sa_irr {sa_irr}"
+            f" sa_disc {metrics['sa_disc']}"
+            f" inc_npv {metrics['inc_npv']:,.2f} inc_irr {inc_irr}"
+            f" inc_disc {metrics['inc_disc']}"
         )
 
 

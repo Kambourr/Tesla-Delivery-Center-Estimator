@@ -36,13 +36,13 @@ GOLDEN_TORNADO = [
     ("deliveries", 3.930, 17.063),
     ("fee", 7.190, 14.119),
     ("inbound_freight", 6.249, 11.010),
-    ("horizon", 7.894, 12.647),
     ("deliveries_per_fte", 6.971, 11.273),
     ("wacc", 8.300, 12.160),
     ("growth", 8.027, 10.929),
     ("fitout", 8.299, 10.597),
     ("wage", 8.673, 10.682),
     ("rent", 8.470, 10.274),
+    ("horizon", 7.894, 9.678),
     ("ramp", 8.984, 10.177),
     ("equipment", 9.364, 9.887),
     ("wage_load", 9.357, 9.878),
@@ -114,7 +114,7 @@ def test_ratio_driver_inputs_scale_the_resolved_values(bars: list[TornadoBar]) -
     assert by["rent"].input_base == pytest.approx(2.14)
     assert by["wage"].input_base == pytest.approx(25.91)
     assert by["horizon"].input_at_npv_low == 8
-    assert by["horizon"].input_at_npv_high == 15
+    assert by["horizon"].input_at_npv_high == 10
     assert by["ramp"].input_at_npv_low == 0.60
     assert by["ramp"].input_at_npv_high == 0.90
 

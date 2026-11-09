@@ -25,13 +25,15 @@
 - **Property tax vs NNN (Jacob, 2026-11-09).** `property_tax.included_in_nnn: true`. The landlord's property tax stays inside `opex_load`. The property-tax component is 0.
 - **Expansion rent (Jacob, 2026-11-09).** `dcf.incremental.status_quo_rent_psf_month` is $1.74 per square foot per month (South San Francisco, Kidder Mathews).
 - **Low-case DCF horizon (Jacob, 2026-11-09).** `dcf.horizon_years.low` is 8 years. The base horizon stays 10.
+- **High-case DCF horizon (Jacob, 2026-11-09).** `dcf.horizon_years.high` is 10 years, the lease term. The decision scenarios do not assume a renewal past year 10.
+- **Demand calibration (Jacob, 2026-11-09).** ZIP demand uses CEC county Tesla totals, then a handover factor of 1.00 / 1.10 / 1.30. Base 1.10 is the default. 1.10 and 1.30 are assumptions. `estimate` competes with the US Find Us delivery list, not the ten Bay Area research rows. Building size stays 25,000 square feet.
 
 ## Still open — product / modeling
 
 - **Delivery-center property type for rent** — industrial / flex / auto-service blend weights in the rent model.
 - **Incremental lens inputs.** `constraint_share` at Colma/Sunnyvale (0.5 / 0.75 / 1.0) decides the incremental verdict. Also open: whether equipment belongs in the expansion annuity, proximity uplift (0 / 1 / 3%), and whether to include the $250 order fee in the standalone fee.
 - **Discount rate.** Corporate WACC 13.6% (default) or a project rate near 9.7%.
-- **Horizon and terminal value.** The 10-year base and the 8-year low are confirmed. Terminal value is still none by default; renewal is still a toggle.
+- **Horizon and terminal value.** The 8-year low and the 10-year base and high are confirmed (the high case matches the lease). Terminal value is still none by default; renewal is still a toggle.
 - **Tax.** California non-conformity (39-year / 7-year straight line, lease-end write-off) needs a tax advisor. A single 27.98% rate is the simpler alternative.
 - **Freight.** A per-mile function of factory-to-site distance would generalize the standalone lens beyond the Bay Area.
 

@@ -12,6 +12,7 @@ Modules
 ``demand``       annual delivery proxy
 ``costs``        annualized components, ``$/delivery``, ``CostInputs`` builder
 ``drivers``      top-N cost drivers with shares
+``dcf``          10-year DCF: NPV, IRR, paybacks, standalone and incremental lenses
 ``errors``       typed errors; every one is a ``ValueError``
 
 Scenario expansion lives in ``dce.scenarios`` so this package stays a

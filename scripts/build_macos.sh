@@ -115,29 +115,69 @@ pyinstaller_status=$?
 set -e
 
 APP="dist/DeliveryCenterEstimator.app"
-# PyInstaller's own ad-hoc signature fails with "resource fork, Finder
-# information, or similar detritus not allowed" when the checkout lives on
-# the Desktop. Strip those attributes and sign again.
+INSTALLED="${HOME}/Applications/DeliveryCenterEstimator.app"
+# iCloud Desktop is a File Provider domain. It puts
+# com.apple.file-provider-domain-id and com.apple.fileprovider.detached back
+# onto the bundle immediately, so codesign --verify --deep --strict fails
+# there with "resource fork, Finder information, or similar detritus not
+# allowed". Sign a copy under $TMPDIR, where that verify passes, then copy
+# the signed bundle out.
+signed_ok=0
+has_file_provider_xattr() {
+  local path="$1"
+  local attr
+  for attr in com.apple.file-provider-domain-id com.apple.fileprovider.detached; do
+    if xattr -p "${attr}" "${path}" >/dev/null 2>&1; then
+      return 0
+    fi
+  done
+  return 1
+}
+repo_on_file_provider() {
+  local path="${PWD}"
+  while [[ -n "${path}" && "${path}" != "/" ]]; do
+    if has_file_provider_xattr "${path}"; then
+      return 0
+    fi
+    path="$(dirname "${path}")"
+  done
+  return 1
+}
 if [[ -d "${APP}" ]]; then
-  xattr -cr "${APP}"
-  codesign --force --deep -s - "${APP}"
-  codesign --verify --deep --strict "${APP}"
-fi
-if [[ "${pyinstaller_status}" -ne 0 ]]; then
-  if [[ ! -d "${APP}" ]] || ! codesign --verify --deep --strict "${APP}" >/dev/null 2>&1; then
-    echo "PyInstaller exited ${pyinstaller_status}." >&2
-    exit "${pyinstaller_status}"
+  sign_root="$(mktemp -d "${TMPDIR:-/tmp}/dce-sign.XXXXXX")"
+  signed_tmp="${sign_root}/DeliveryCenterEstimator.app"
+  ditto --norsrc --noextattr --noacl "${APP}" "${signed_tmp}"
+  codesign --force --deep -s - "${signed_tmp}"
+  codesign --verify --deep --strict "${signed_tmp}"
+  signed_ok=1
+  rm -rf "${APP}"
+  ditto "${signed_tmp}" "${APP}"
+  mkdir -p "${HOME}/Applications"
+  rm -rf "${INSTALLED}"
+  ditto "${signed_tmp}" "${INSTALLED}"
+  codesign --verify --deep --strict "${INSTALLED}"
+  rm -rf "${sign_root}"
+  if repo_on_file_provider || has_file_provider_xattr "${APP}" \
+    || has_file_provider_xattr "${APP}/Contents/MacOS/DeliveryCenterEstimator"; then
+    echo "Checked out on a File Provider path. Strict codesign verify passed under \$TMPDIR and at ${INSTALLED}. Not verifying ${APP}."
+  else
+    codesign --verify --deep --strict "${APP}"
   fi
 fi
+if [[ "${pyinstaller_status}" -ne 0 && "${signed_ok}" -ne 1 ]]; then
+  echo "PyInstaller exited ${pyinstaller_status}." >&2
+  exit "${pyinstaller_status}"
+fi
 echo "Built ${APP}"
+echo "Installed ${INSTALLED}"
 echo "Gatekeeper: right-click the app and choose Open the first time."
 
 if [[ "${APP_BUNDLE}" == "1" ]]; then
   mkdir -p dist
   SMOKE_JSON="dist/smoke.json"
-  BIN="${APP}/Contents/MacOS/DeliveryCenterEstimator"
+  BIN="${INSTALLED}/Contents/MacOS/DeliveryCenterEstimator"
   DCE_SMOKE_OUT="${PWD}/${SMOKE_JSON}" "${BIN}" --smoke
-  DCE_APP_PATH="${APP}" \
+  DCE_APP_PATH="${INSTALLED}" \
     DCE_RESULTS_DB="${RESULTS_DB}" \
     DCE_SMOKE_JSON="${SMOKE_JSON}" \
     "${PYTHON}" - <<'PY'

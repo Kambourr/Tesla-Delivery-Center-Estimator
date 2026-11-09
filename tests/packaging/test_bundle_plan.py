@@ -35,12 +35,19 @@ def test_build_script_uses_the_venv_and_signs_the_bundle() -> None:
     assert ".venv/bin/python" in script
     assert "chflags nohidden" in script
     assert "PYTHONPATH" in script
-    assert "xattr -cr" in script
+    assert "ditto --norsrc --noextattr --noacl" in script
+    assert "mktemp -d" in script
     assert "codesign --force --deep -s -" in script
     assert "codesign --verify --deep --strict" in script
+    assert "com.apple.file-provider-domain-id" in script
+    assert "Applications/DeliveryCenterEstimator.app" in script
+    assert 'BIN="${INSTALLED}/Contents/MacOS/DeliveryCenterEstimator"' in script
     assert "tippecanoe is required" in script
     assert "brew install tippecanoe" in script
     assert "brew install tippecanoe" in readme
+    assert "com.apple.file-provider-domain-id" in readme
+    assert "~/Applications/DeliveryCenterEstimator.app" in readme
+    assert "File Provider" in readme
 
 
 def test_build_script_refuses_to_start_off_apple_silicon() -> None:

@@ -43,11 +43,17 @@ PyInstaller. When `PYTHON` is unset it uses `.venv/bin/python` if that file
 is executable, and otherwise `python3`. It clears the macOS hidden flag on
 the venv's `.pth` files and puts `src` on `PYTHONPATH`, because Python 3.14
 skips a hidden `.pth` and then cannot import the editable install. After
-PyInstaller it strips extended attributes from the bundle (`xattr -cr`) and
-signs it ad hoc (`codesign --force --deep -s -`), then checks that signature
-with `codesign --verify --deep --strict`. Gatekeeper: right-click
-`dist/DeliveryCenterEstimator.app` and choose Open the first time. The app
-is not notarized and this repo does not create a release.
+PyInstaller it copies the bundle with `ditto --norsrc --noextattr --noacl`
+into a `mktemp` directory under `$TMPDIR`, signs that copy ad hoc
+(`codesign --force --deep -s -`), and checks it with
+`codesign --verify --deep --strict`. The signed bundle is copied to `dist/`
+and to `~/Applications/DeliveryCenterEstimator.app`. A checkout on iCloud
+Desktop is a File Provider path: macOS puts
+`com.apple.file-provider-domain-id` and `com.apple.fileprovider.detached`
+back on `dist/`, so strict verify is not run there. The `~/Applications`
+copy is outside iCloud, strict verify is run there, and `--smoke` runs that
+copy. Gatekeeper: right-click the app and choose Open the first time. The
+app is not notarized and this repo does not create a release.
 
 ## What is inside the app
 

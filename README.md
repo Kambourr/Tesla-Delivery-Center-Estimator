@@ -4,7 +4,7 @@ Desktop app that answers: **what if Tesla opens a delivery center in ZIP X?**
 
 It will estimate cost per delivery, the top three cost drivers, and a customer-base map. It uses **public data only**. It never uses Tesla internal data, and it never scrapes LoopNet or Crexi.
 
-**Status:** milestone M0 (repository skeleton). The CLI is a stub. There is no cost model, GUI, data fetch, or seed database yet.
+**Status:** milestone M1 (SQLite schema, OS data paths, and local ZIP resolution for 94401–94404). The CLI is still a stub. There is no cost model, GUI, network loader, or bundled seed database yet.
 
 ## Locked decisions
 

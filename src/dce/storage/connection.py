@@ -4,13 +4,12 @@ Contract
 --------
 ``get_connection(user_data_dir) -> sqlite3.Connection``
 
-Open (and, in a later milestone, create) ``dce.sqlite`` under the user data
-directory from :mod:`dce.config`. Enable foreign keys. On first launch, copy
-bundled seed tables so the app answers a ZIP with no network.
+Create ``dce.sqlite`` under the directory from :mod:`dce.config` when it
+is missing, enable foreign keys, and apply migrations. A second call on
+the same directory leaves existing rows in place. Copying the bundled
+seed into that database is a later milestone.
 
 Do not download anything. Do not read API keys.
-
-Milestone M0: raises ``NotImplementedError``.
 """
 
 from __future__ import annotations
@@ -18,7 +17,14 @@ from __future__ import annotations
 import sqlite3
 from pathlib import Path
 
+from dce.config import DB_FILENAME
+from dce.storage.migrate import migrate
+
 
 def get_connection(user_data_dir: Path) -> sqlite3.Connection:
-    """Open the user database. Not implemented in M0."""
-    raise NotImplementedError("dce.storage.connection.get_connection is a stub (M0)")
+    """Open the user database, creating it and applying migrations."""
+    user_data_dir.mkdir(parents=True, exist_ok=True)
+    conn = sqlite3.connect(user_data_dir / DB_FILENAME)
+    conn.execute("PRAGMA foreign_keys = ON")
+    migrate(conn)
+    return conn

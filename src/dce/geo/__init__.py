@@ -5,6 +5,6 @@ The Tkinter shell opens that file in the system browser. This package does
 not embed a web view and does not calculate cost. Network tile downloads
 are out of scope; prefer geometry with no external tile URLs.
 
-``resolve_zip`` reads a local fixture or cached crosswalk. The HUD download
-itself lives in ``dce.data.ingest.hud_crosswalk``.
+``resolve_zip`` reads the local HUD fixture ``tests/fixtures/hud_9440x.json``.
+The HUD download itself lives in ``dce.data.ingest.hud_crosswalk``.
 """

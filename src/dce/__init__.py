@@ -14,8 +14,8 @@ Layers (see ``CONTRIBUTING.md``):
 - ``app`` is the Tkinter shell. ``cli`` is the headless entry.
 - ``extract.pdf_llm`` is the only module that may call an LLM.
 
-Milestone M0 is a skeleton. Importing this package does no I/O and makes
-no network calls.
+Milestone M1 adds the SQLite schema, OS data paths, and local ZIP
+resolution. Importing this package does no I/O and makes no network calls.
 
 Hard rules:
 

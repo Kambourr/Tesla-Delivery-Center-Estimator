@@ -79,6 +79,13 @@ def test_scenarios_do_not_import_io() -> None:
             assert hit is None, f"{path.relative_to(SRC)} imports {module}"
 
 
+def test_zip_resolve_does_not_use_sql_or_network() -> None:
+    banned = ("sqlite3", "requests", "urllib", "httpx", "http.client")
+    for module in _imported_modules(SRC / "geo" / "resolve.py"):
+        hit = _hits(module, banned)
+        assert hit is None, f"geo/resolve.py imports {module}"
+
+
 def test_pdf_llm_stays_inside_extract() -> None:
     for path in _python_files(SRC):
         if path.name == "pdf_llm.py":

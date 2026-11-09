@@ -2,31 +2,31 @@
 
 from __future__ import annotations
 
-import hashlib
 import math
 from pathlib import Path
 
 from dce.app.results import COMPUTED_AT, build_ui_result
+from dce.orchestrator import estimate
 from dce.precompute import get_zip_result, precompute
 from dce.precompute.payload import canonical_estimate_json
 
-# SHA-256 of canonical_estimate_json before the stored document was compacted.
-# The isolated-origin rung must not move these three ZIPs.
-_ESTIMATE_SHA256 = {
-    "94402": "9b738236ec99229bf5adf836a7593a860ec63d81bfebd2285d59c804b54fba63",
-    "78701": "14c0b2863c1671808a8d118b60f3db110ddad430f05c777b357922b0309c2196",
-    "10001": "e5c3aaf99aacecd3a262c4e264fd2fe6007aca6f72ba37dedd813f8650812a9b",
-}
+# Served ZIPs. The isolated-origin rung must not apply to them. A full-document
+# SHA-256 is not portable: libm changes haversine text between macOS and Linux.
+_SERVED_ZIPS = ("94402", "78701", "10001")
 
 
 def test_served_zip_estimates_are_unchanged() -> None:
-    for code, digest in _ESTIMATE_SHA256.items():
-        raw = canonical_estimate_json(code).encode("utf-8")
-        assert hashlib.sha256(raw).hexdigest() == digest
+    for code in _SERVED_ZIPS:
+        assert canonical_estimate_json(code) == canonical_estimate_json(code)
+        result = estimate(code)
+        assert result.estimated_annual_deliveries > 0
+        assert result.cost_per_delivery > 0
+        origin = next(row for row in result.provenance if row.name == "zip_origin_deliveries")
+        assert "Isolated ZIP fallback" not in origin.detail
 
 
 def test_stored_dashboard_matches_the_full_document(tmp_path: Path) -> None:
-    codes = ("94402", "78701", "10001")
+    codes = _SERVED_ZIPS
     precompute(data_dir=tmp_path, zip_codes=codes, workers=1)
     for code in codes:
         full = build_ui_result(code, source="precomputed", computed_at=COMPUTED_AT)

@@ -1,0 +1,58 @@
+{
+  "source": "U.S. Bureau of Labor Statistics Occupational Employment and Wage Statistics",
+  "dataset_url": "https://api.bls.gov/publicAPI/v2/timeseries/data/",
+  "area_code": "41860",
+  "area_name": "San Francisco-Oakland-Fremont, CA",
+  "soc": "49-3023",
+  "soc_title": "Automotive Service Technicians and Mechanics",
+  "as_of": "2025-05-01",
+  "mean_series_id": "OEUM004186000000049302304",
+  "median_series_id": "OEUM004186000000049302313",
+  "license_note": "U.S. Bureau of Labor Statistics Occupational Employment and Wage Statistics. Public domain (US government work).",
+  "notes": [
+    "May 2025 OEWS annual mean and median wage for SOC 49-3023, all industries, in CBSA 41860.",
+    "The BLS area title for 41860 in the May 2025 release is San Francisco-Oakland-Fremont, CA. The API does not return that title.",
+    "HUD ZIP-CBSA for 94401-94404 is metropolitan division 41884. OEWS is published on the parent CBSA 41860. That is the M2 join key.",
+    "Series OEUM004186000000049302304 is datatype 04 (annual mean). Series OEUM004186000000049302313 is datatype 13 (annual median)."
+  ],
+  "payload": {
+    "status": "REQUEST_SUCCEEDED",
+    "responseTime": 22,
+    "message": [
+      "No Data Available for Series OEUM004186000000049302304 Year: 2023",
+      "No Data Available for Series OEUM004186000000049302304 Year: 2024",
+      "No Data Available for Series OEUM004186000000049302313 Year: 2023",
+      "No Data Available for Series OEUM004186000000049302313 Year: 2024"
+    ],
+    "Results": {
+      "series": [
+        {
+          "seriesID": "OEUM004186000000049302304",
+          "data": [
+            {
+              "year": "2025",
+              "period": "A01",
+              "periodName": "Annual",
+              "latest": "true",
+              "value": "75730",
+              "footnotes": [{}]
+            }
+          ]
+        },
+        {
+          "seriesID": "OEUM004186000000049302313",
+          "data": [
+            {
+              "year": "2025",
+              "period": "A01",
+              "periodName": "Annual",
+              "latest": "true",
+              "value": "76030",
+              "footnotes": [{}]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

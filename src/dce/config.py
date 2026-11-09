@@ -24,8 +24,12 @@ the user database. Assumption defaults will live at
 ``data/defaults/assumptions.yaml``.
 
 Per-source refresh cadences and stale thresholds are specified in
-``docs/DATA_SOURCES.md``. This module will expose them as data. It does not
-decide staleness; ``dce.data.registry.staleness_status`` does.
+``docs/DATA_SOURCES.md``. Staleness is decided by
+``dce.data.registry.staleness_status``. This module does not fetch data.
+
+``api_key`` reads a named public-data key from the environment, then from a
+local ``.env`` at the project root. It never logs the value. A missing key
+is ``None``.
 """
 
 from __future__ import annotations
@@ -76,6 +80,62 @@ def bundled_seed_dir() -> Path:
 def assumptions_path() -> Path:
     """Return ``data/defaults/assumptions.yaml`` (the file arrives in a later milestone)."""
     return _project_root() / "data" / "defaults" / "assumptions.yaml"
+
+
+def demo_data_dir() -> Path:
+    """Return the repository ``data/demo`` directory. Does not create it."""
+    return _project_root() / "data" / "demo"
+
+
+def api_key(name: str) -> str | None:
+    """Return one public-data API key, or ``None`` when it is unset.
+
+    The process environment wins over a local ``.env``. The value is not logged.
+    """
+    if not name.isidentifier():
+        raise ConfigError(f"API key name must be an identifier, got {name!r}.")
+    load_local_env()
+    value = os.environ.get(name, "").strip()
+    return value or None
+
+
+def load_local_env() -> None:
+    """Copy unset keys from the project ``.env`` into the process environment.
+
+    Existing variables are left alone. A missing file is a no-op. Lines that
+    are blank, comments, or not ``NAME=value`` are ignored.
+    """
+    try:
+        path = _project_root() / ".env"
+    except ConfigError:
+        return
+    if not path.is_file():
+        return
+    for line in path.read_text(encoding="utf-8").splitlines():
+        parsed = _parse_env_line(line)
+        if parsed is None:
+            continue
+        key, value = parsed
+        if key not in os.environ:
+            os.environ[key] = value
+
+
+def _parse_env_line(line: str) -> tuple[str, str] | None:
+    text = line.strip()
+    if text == "" or text.startswith("#"):
+        return None
+    if text.startswith("export "):
+        text = text.removeprefix("export ").strip()
+    if "=" not in text:
+        return None
+    name, raw = text.split("=", 1)
+    name = name.strip()
+    if not name.isidentifier():
+        return None
+    value = raw.strip()
+    if len(value) >= 2 and value[0] == value[-1] and value[0] in {'"', "'"}:
+        value = value[1:-1]
+    return name, value
 
 
 def _project_root() -> Path:

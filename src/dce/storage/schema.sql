@@ -15,6 +15,10 @@
 -- The rent milestone adds rent_cbsa, rent_zip_obs, rent_model_coeffs,
 -- and rent_resolved_cache from docs/DATA_SOURCES.md section 8.
 -- This file ships inside the package. Applying it does not use the network.
+--
+-- Version 2 is not in this script. migrate.py adds
+-- zcta_acs.median_home_value once and records schema_migrations.version = 2.
+-- Leaving the ALTER out of this file keeps a second run of the script valid.
 
 CREATE TABLE IF NOT EXISTS schema_migrations (
     version INTEGER PRIMARY KEY,

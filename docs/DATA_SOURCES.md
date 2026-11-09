@@ -169,4 +169,4 @@ API keys stay in a local `.env` (never in git), not inside the user data directo
 
 **Fetch policy:** allowlist hosts only (census.gov, bls.gov, huduser.gov, eia.gov, openei.org, energy.ca.gov, data.ca.gov, pge.com). Idempotent loaders; write `source_registry` row with `fetched_at`, `as_of`, `ttl_days`, `url`.
 
-**Staleness UI:** `fresh` | `aging` | `stale` | `missing` from `now - as_of` vs TTL.
+**Staleness UI:** `fresh` | `aging` | `stale` | `missing` from `now - as_of` vs TTL. M2: `missing` when `as_of` is absent; `fresh` through half of `ttl_days`; `aging` through `ttl_days`; `stale` after that. Eighteen months is 548 days. That half-TTL split is how "aging after 2 quarters, stale after 4" is expressed with one TTL.

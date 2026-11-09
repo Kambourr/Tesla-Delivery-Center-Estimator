@@ -1,0 +1,22 @@
+{
+  "_note": "Synthetic, round-number inputs for the M3 golden test. Shaped like a Bay Area catchment but NOT sourced from any dataset, and not Tesla data. Do not edit without regenerating golden_m3.json (see README.md in this folder).",
+  "demand": {
+    "population": 40000,
+    "median_hh_income": 140000,
+    "ev_stock": 45000,
+    "total_ldv": 600000,
+    "mean_commute": 28,
+    "catchment_population": 750000
+  },
+  "resolved": {
+    "rent_psf_month": 1.58,
+    "wage_annual": 72000,
+    "energy_rate_kwh": 0.28,
+    "demand_rate_kw": 28
+  },
+  "scenarios": {
+    "base": {"vehicle_mix": {"model_y": 0.6, "model_3": 0.4}, "wage_shock": 0.0},
+    "wage_p20": {"vehicle_mix": {"model_y": 0.6, "model_3": 0.4}, "wage_shock": 0.2},
+    "rent_m20": {"vehicle_mix": {"model_y": 0.6, "model_3": 0.4}, "wage_shock": 0.0, "rent_shock": -0.2}
+  }
+}

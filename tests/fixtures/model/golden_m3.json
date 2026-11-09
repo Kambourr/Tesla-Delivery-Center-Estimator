@@ -1,0 +1,96 @@
+{
+  "assumptions_version": "2026.11.0",
+  "cases": {
+    "base": {
+      "annualized_total_cost": 3394805.293893432,
+      "components": {
+        "capex": 287500.0,
+        "labor": 2124488.235086511,
+        "lease": 545100.0,
+        "other_opex": 213567.0588069209,
+        "property_tax": 68750.0,
+        "utilities": 155400.0
+      },
+      "cost_per_delivery": 598.27,
+      "drivers": [
+        {
+          "name": "labor",
+          "share": 0.6258056209904101,
+          "usd": 2124488.235086511
+        },
+        {
+          "name": "lease",
+          "share": 0.16056885529798268,
+          "usd": 545100.0
+        },
+        {
+          "name": "capex",
+          "share": 0.08468821481961111,
+          "usd": 287500.0
+        }
+      ],
+      "estimated_annual_deliveries": 5674.380969782348
+    },
+    "rent_m20": {
+      "annualized_total_cost": 3285785.293893432,
+      "components": {
+        "capex": 287500.0,
+        "labor": 2124488.235086511,
+        "lease": 436079.99999999994,
+        "other_opex": 213567.0588069209,
+        "property_tax": 68750.0,
+        "utilities": 155400.0
+      },
+      "cost_per_delivery": 579.06,
+      "drivers": [
+        {
+          "name": "labor",
+          "share": 0.6465694027649436,
+          "usd": 2124488.235086511
+        },
+        {
+          "name": "lease",
+          "share": 0.13271713182551706,
+          "usd": 436079.99999999994
+        },
+        {
+          "name": "capex",
+          "share": 0.08749810906218163,
+          "usd": 287500.0
+        }
+      ],
+      "estimated_annual_deliveries": 5674.380969782348
+    },
+    "wage_p20": {
+      "annualized_total_cost": 3819702.9409107342,
+      "components": {
+        "capex": 287500.0,
+        "labor": 2549385.8821038133,
+        "lease": 545100.0,
+        "other_opex": 213567.0588069209,
+        "property_tax": 68750.0,
+        "utilities": 155400.0
+      },
+      "cost_per_delivery": 673.15,
+      "drivers": [
+        {
+          "name": "labor",
+          "share": 0.6674304053330288,
+          "usd": 2549385.8821038133
+        },
+        {
+          "name": "lease",
+          "share": 0.14270743260208382,
+          "usd": 545100.0
+        },
+        {
+          "name": "capex",
+          "share": 0.07526763322894717,
+          "usd": 287500.0
+        }
+      ],
+      "estimated_annual_deliveries": 5674.380969782348
+    }
+  },
+  "headcount": 22.697523879129392
+}

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 
 import pytest
@@ -140,5 +141,23 @@ def test_missing_seed_directory_raises_typed_error(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     monkeypatch.setattr("dce.geo.resolve.bundled_seed_dir", lambda: tmp_path)
+    monkeypatch.delattr(sys, "_MEIPASS", raising=False)
     with pytest.raises(CrosswalkFixtureError, match="zip_crosswalk.csv"):
         resolve_zip("94402")
+
+
+def test_frozen_crosswalk_is_read_from_meipass(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    seed = tmp_path / "data" / "seed"
+    seed.mkdir(parents=True)
+    (seed / "zip_crosswalk.csv").write_text(
+        "zip,zcta,county_fips,cbsa,state,tot_ratio\n94402,94402,06081,41884,CA,1\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(sys, "_MEIPASS", str(tmp_path), raising=False)
+    monkeypatch.setattr("dce.geo.resolve.bundled_seed_dir", lambda: tmp_path / "missing")
+    geo = resolve_zip("94402")
+    assert geo.zcta == "94402"
+    assert geo.county_fips == "06081"
+    assert geo.state == "CA"

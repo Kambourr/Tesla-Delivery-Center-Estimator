@@ -138,7 +138,26 @@ def _parse_env_line(line: str) -> tuple[str, str] | None:
     return name, value
 
 
+def bundle_root() -> Path | None:
+    """Return PyInstaller's extraction directory when this process is frozen.
+
+    ``sys._MEIPASS`` is set only inside a packaged app. The spec copies
+    ``data/seed`` there. A checkout has no ``_MEIPASS``, so this returns
+    ``None`` and callers walk up to ``pyproject.toml`` instead.
+    """
+    meipass = getattr(sys, "_MEIPASS", None)
+    if not isinstance(meipass, str) or not meipass:
+        return None
+    root = Path(meipass)
+    if (root / "data" / "seed").is_dir():
+        return root
+    return None
+
+
 def _project_root() -> Path:
+    bundled = bundle_root()
+    if bundled is not None:
+        return bundled
     for parent in Path(__file__).resolve().parents:
         if (parent / "pyproject.toml").is_file() and (parent / "data" / "seed").is_dir():
             return parent

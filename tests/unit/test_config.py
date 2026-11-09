@@ -51,3 +51,24 @@ def test_bundled_paths_stay_inside_the_repository() -> None:
     assert (seed / "README.md").is_file()
     assert assumptions == seed.parent / "defaults" / "assumptions.yaml"
     assert assumptions.name == "assumptions.yaml"
+
+
+def test_frozen_bundle_root_is_meipass(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    seed = tmp_path / "data" / "seed"
+    seed.mkdir(parents=True)
+    defaults = tmp_path / "data" / "defaults"
+    defaults.mkdir()
+    (defaults / "assumptions.yaml").write_text("schema_version: 3\n", encoding="utf-8")
+    monkeypatch.setattr(config.sys, "_MEIPASS", str(tmp_path), raising=False)
+    assert config.bundle_root() == tmp_path
+    assert config.bundled_seed_dir() == seed
+    assert config.assumptions_path() == defaults / "assumptions.yaml"
+    assert config.demo_data_dir() == tmp_path / "data" / "demo"
+
+
+def test_meipass_without_a_seed_directory_is_not_the_bundle(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    monkeypatch.setattr(config.sys, "_MEIPASS", str(tmp_path), raising=False)
+    assert config.bundle_root() is None
+    assert config.bundled_seed_dir().is_dir()

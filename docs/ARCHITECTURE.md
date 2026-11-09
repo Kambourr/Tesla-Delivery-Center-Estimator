@@ -20,7 +20,7 @@ An **optional advanced rent override** may be offered later for a sensitivity ch
 ## Runtime shape
 
 ```
-[dce.app Tkinter | dce.cli]
+[dce.app pywebview + MapLibre | dce.cli]
         │
         ▼
    dce.orchestrator.estimate(zip)
@@ -30,33 +30,26 @@ An **optional advanced rent override** may be offered later for a sensitivity ch
         ├─► dce.data             rent resolver + staleness
         ├─► dce.model            pure calc, no I/O
         ├─► dce.scenarios        grid on top of the model, no I/O
-        ├─► dce.geo              HTML map → system browser
+        ├─► dce.geo              catchment geometry (no browser)
         └─► dce.extract          optional PDF→JSON; never on the calc path
 ```
 
 ## GUI decision
 
-**Tkinter + the system browser.** This is the v1 decision.
+**pywebview + a local MapLibre page.** ADR-0006. This replaces the Tkinter form and the Folium file opened in the system browser.
 
-| | **Tkinter (v1)** | **PySide6 (not v1)** |
-|---|---|---|
-| License | PSF (stdlib). Not a pip dependency. | LGPL v3 |
-| PyInstaller size | Smaller | Larger (Qt, often 100MB+) |
-| Folium map | `webbrowser.open(html_path)` | QWebEngine is fragile to notarize; do not use it |
-| macOS Gatekeeper | Simpler unsigned path | Heavier signing surface |
-
-Do not add PySide6. Do not embed a web engine. On Debian/Ubuntu, Tkinter's C module is the `python3-tk` package; M0 does not import Tkinter, so CI does not need it.
+The window is the OS web view (WKWebView on macOS), not Qt and not an embedded Chromium. The page, MapLibre GL JS, and the PMTiles protocol are files in the app. Basemap tiles may load from OpenFreeMap at runtime. ZIP polygons are local: `data/geo/zcta_bay_area.geojson`, and `data/geo/zcta_us.pmtiles` when `make zcta-boundaries` has built it. Do not add PySide6 or Tkinter. `import dce.app` does not import pywebview, so headless CI does not need a display.
 
 ## Layers
 
-1. **App / CLI** (`dce.app`, `dce.cli`) — ZIP entry only; scenario presets; staleness and rent-confidence badges; "Open map" launches the HTML file in the system browser. ADR-0001.
+1. **App / CLI** (`dce.app`, `dce.cli`) — the map window takes a ZIP. The page calls `estimate(zip)` through the pywebview bridge. ADR-0006. The CLI is the headless entry.
 2. **Orchestrator** — `estimate(zip, scenario=None, overrides=None) -> EstimateResult`. The only composition root.
 3. **Storage** — connection, migrations, repository. The only SQL.
 4. **Ingest** — `fetch_*` for allowlisted hosts. Returns dataclasses. No SQL.
 5. **Rent resolver** (`dce.data.rent_resolver`) — fallback chain in DATA_SOURCES §8 and ADR-0003. Reads SQLite only.
 6. **Model** — demand, costs, drivers, and the 10-year DCF (`dce.model.dcf`, ADR-0005). No I/O, no network, no LLM.
 7. **Scenarios** — mix, wage, discount-rate, and growth grid; Spearman checks; NPV tornado. Calls the model. No I/O.
-8. **Geo** — gravity catchment net of existing delivery centers (ADR-0004) and Folium HTML, then the OS browser.
+8. **Geo** — gravity catchment net of existing delivery centers (ADR-0004) and ZIP resolution. The map the user sees is MapLibre in `dce.app`, not Folium HTML.
 9. **Extract** — optional PDF extraction. `pdf_llm` is the only module that may call an LLM. Nothing in `model/`, `scenarios/`, or the calculate path may import it.
 
 ## Determinism
@@ -77,7 +70,7 @@ Same seed/SQLite + ZIP + scenario ⇒ identical floats. The LLM never feeds the 
 - macOS (primary): `packaging/dce_macos.spec`, `scripts/build_macos.sh`, target `arm64`.
 - Windows (optional, later): `packaging/dce.spec`, `scripts/build_windows.ps1`. Build on Windows only.
 - Bundle `data/seed/` so first launch works offline.
-- M0 specs and build scripts are stubs. They do not invoke PyInstaller.
+- `scripts/build_macos.sh` runs PyInstaller only on macOS arm64. `dce.config.bundle_root` reads `sys._MEIPASS` so the frozen app finds `data/seed` and `data/geo`. CI does not build the `.app`.
 
 ## Rent resolution (locked)
 

@@ -1,8 +1,70 @@
 # -*- mode: python ; coding: utf-8 -*-
-"""M0 placeholder PyInstaller spec for the macOS Apple Silicon .app.
+"""Unsigned macOS Apple Silicon app.
 
-Not a working spec. A later milestone targets arm64 and bundles data/seed
-so the first launch works offline. Build on macOS; do not cross-compile.
+Run this spec only through ``scripts/build_macos.sh`` on an arm64 Mac.
+PyInstaller names below (``Analysis``, ``PYZ``, ``EXE``, ``COLLECT``,
+``BUNDLE``, ``SPECPATH``) are injected by PyInstaller. Do not pass
+``cipher``: PyInstaller 6 removed that argument.
 """
 
-raise SystemExit("packaging/dce_macos.spec is an M0 stub and does not build an .app.")
+from pathlib import Path
+
+root = Path(SPECPATH).resolve().parent
+
+datas = [
+    (str(root / "src" / "dce" / "app" / "web"), "dce/app/web"),
+    (str(root / "data" / "seed"), "data/seed"),
+    (str(root / "data" / "defaults"), "data/defaults"),
+    (str(root / "data" / "demo"), "data/demo"),
+    (str(root / "data" / "geo" / "zcta_bay_area.geojson"), "data/geo"),
+    (str(root / "tests" / "fixtures" / "hud_9440x.json"), "tests/fixtures/hud_9440x.json"),
+]
+pmtiles = root / "data" / "geo" / "zcta_us.pmtiles"
+if pmtiles.is_file():
+    datas.append((str(pmtiles), "data/geo"))
+
+a = Analysis(
+    [str(root / "src" / "dce" / "app" / "__main__.py")],
+    pathex=[str(root / "src")],
+    binaries=[],
+    datas=datas,
+    hiddenimports=["webview", "yaml", "bottle"],
+    noarchive=False,
+)
+pyz = PYZ(a.pure)
+exe = EXE(
+    pyz,
+    a.scripts,
+    [],
+    exclude_binaries=True,
+    name="DeliveryCenterEstimator",
+    debug=False,
+    bootloader_ignore_signals=False,
+    strip=False,
+    upx=False,
+    console=False,
+    disable_windowed_traceback=False,
+    argv_emulation=False,
+    target_arch="arm64",
+    codesign_identity=None,
+    entitlements_file=None,
+)
+coll = COLLECT(
+    exe,
+    a.binaries,
+    a.datas,
+    strip=False,
+    upx=False,
+    name="DeliveryCenterEstimator",
+)
+app = BUNDLE(
+    coll,
+    name="DeliveryCenterEstimator.app",
+    bundle_identifier="edu.deliverycenter.estimator",
+    info_plist={
+        "CFBundleName": "Delivery Center Estimator",
+        "CFBundleDisplayName": "Delivery Center Estimator",
+        "CFBundleShortVersionString": "0.0.0",
+        "NSHighResolutionCapable": True,
+    },
+)

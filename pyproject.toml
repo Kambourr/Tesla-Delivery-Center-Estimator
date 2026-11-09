@@ -20,6 +20,8 @@ dependencies = [
     "geopandas==1.2.0",
     "folium==0.20.0",
     "PyYAML==6.0.3",
+    # OS webview (WKWebView on macOS). Imported only when the window opens.
+    "pywebview==6.2.1",
 ]
 
 [project.optional-dependencies]
@@ -43,7 +45,13 @@ dce = "dce.cli:main"
 where = ["src"]
 
 [tool.setuptools.package-data]
-dce = ["storage/*.sql"]
+dce = [
+    "storage/*.sql",
+    "app/web/*.html",
+    "app/web/*.css",
+    "app/web/*.js",
+    "app/web/vendor/*",
+]
 
 [tool.ruff]
 target-version = "py311"
@@ -56,6 +64,10 @@ ignore = ["E501"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["dce"]
+
+[tool.ruff.lint.per-file-ignores]
+# PyInstaller injects Analysis, PYZ, EXE, COLLECT, BUNDLE, and SPECPATH.
+"packaging/*.spec" = ["F821"]
 
 [tool.mypy]
 python_version = "3.11"
@@ -85,6 +97,8 @@ module = [
     "pyproj",
     "pyproj.*",
     "yaml",
+    "webview",
+    "webview.*",
 ]
 ignore_missing_imports = true
 

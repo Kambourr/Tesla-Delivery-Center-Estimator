@@ -2,7 +2,7 @@
 
 **Owner:** Jacob Kambour (SCU MS Finance & Analytics; Tesla Sales & Delivery Advisor, Bay Area)\
 **Product:** macOS desktop `.app` (Apple Silicon) answering: *What if Tesla opens a delivery center in ZIP code X?* A Windows EXE is an optional later target.\
-**Stack:** Python · pandas · geopandas · Folium · Tkinter · SQLite · PyInstaller (macOS arm64)\
+**Stack:** Python · pandas · geopandas · MapLibre (local) · pywebview · SQLite · PyInstaller (macOS arm64)\
 **Constraint:** PUBLIC DATA ONLY. Never Tesla internal data, never scrape ToS-prohibited sites into the calc path.
 
 ## Goal
@@ -13,7 +13,7 @@ Given any US candidate ZIP code, produce outputs that work offline on first laun
 2. **Estimated cost per delivery** ($/delivery) for a hypothetical delivery center at that ZIP.
 3. **Top three cost drivers** (share of total annualized cost, with labels).
 4. **Scenarios** (wage, vehicle mix, rent, deliveries, discount rate, growth) with a robustness check and an NPV tornado.
-5. **Map** (Folium HTML, opened in the system browser) shading ZCTAs by the candidate's gravity share, with markers for the candidate and the existing centers.
+5. **Map** (MapLibre in the pywebview window, ADR-0006) shading ZCTAs by the candidate's gravity share, with markers for the existing centers.
 6. **10-year DCF.** NPV, IRR, simple and discounted payback, and a yearly cash-flow table, under two benefit views shown together (ADR-0005):
    - **Standalone** delivery-fee contribution (the headline).
    - **Incremental to Tesla**: capacity-constraint share, avoided overtime, and proximity uplift (the check).
@@ -28,7 +28,7 @@ The goal above replaces the original three outputs ($/delivery, top-3 drivers, d
 
 ## Locked decisions (Jacob, 2026-11-09)
 
-1. **GUI is Tkinter.** The Folium map HTML opens in the system browser. PySide6 is not the v1 UI.
+1. **GUI is a pywebview window and a local MapLibre page** (ADR-0006, 2026-11-09). This supersedes Tkinter and a Folium file in the system browser. PySide6 is not the UI.
 2. **Primary artifact is a macOS Apple Silicon `.app`** built with PyInstaller. Windows EXE is optional and later. CI runs tests on `macos-latest` (and may also run them on `ubuntu-latest`). No secrets in CI.
 3. **Zero required manual input.** Typing a US ZIP resolves every input, including rent. Rent is a bundled curated metro industrial asking-rent seed (public CBRE / Cushman / Colliers / JLL market reports, with citations). ZIP maps to CBSA via the HUD crosswalk, then a frozen ACS income / density / home-value model (calibrated with the GSA Lease Inventory) adjusts it. Fallback chain: ZIP-adjusted CBSA → county → CBSA → state → national → HUD SAFMR/ZORI proxy flagged low-confidence. Never scrape LoopNet or Crexi. Rent override is not a required input. An optional advanced override is allowed.
 4. **Bundled seed data in SQLite** so the app works offline even on first launch. Each source has its own refresh cadence and a staleness flag.
@@ -46,7 +46,7 @@ The goal above replaces the original three outputs ($/delivery, top-3 drivers, d
 | Robustness: rank correlation of drivers/ZIPs across scenarios | Automated LoopNet/Crexi scraping |
 | Bundled SQLite seed (offline on first launch) plus optional refresh | Claiming official Tesla site-selection authority |
 | Staleness flags per source in the UI | Windows EXE as the primary artifact |
-| Tkinter shell; Folium HTML in the system browser | LLM anywhere in the cost math path |
+| pywebview window; local MapLibre page (ADR-0006) | LLM anywhere in the cost math path |
 | Optional advanced rent override | PySide6 / embedded web engine; rent as a required input |
 
 ## Non-goals
@@ -122,8 +122,8 @@ Illustrative San Mateo base (research estimate): standalone NPV about +$9.7M, IR
 
 ### Map design
 
-- Folium choropleth of ZCTAs in the gravity catchment. The core polygon is where the candidate share `P_cz ≥ 0.5`; other ZCTAs are shaded by `P_cz`.
-- Markers at the candidate ZIP and at existing delivery centers, labeled with the volume taken from each. Legend. The Tkinter shell opens the HTML file in the system browser (`webbrowser.open`). Do not embed a web engine.
+- MapLibre fill of ZCTAs in the gravity catchment. The selected ZIP is highlighted, and other ZCTAs in the catchment are shaded by share.
+- Markers at existing delivery centers. The page is the pywebview window (ADR-0006). Do not add Tkinter or PySide6.
 - Offline tiles: prefer embedded simplified geometry and no external tile URLs so polygons render offline. A tile basemap may be blank offline if one is added later — document that. A small San Mateo MBTiles file is an open question, not a requirement.
 - Export path: `outputs/maps/{zip}_{timestamp}.html`.
 

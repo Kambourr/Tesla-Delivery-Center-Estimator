@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import csv
 import json
+import sys
 from pathlib import Path
 
 from dce.config import bundled_seed_dir
@@ -84,6 +85,13 @@ def _fixture_path() -> Path:
     path = bundled_seed_dir() / _SEED_NAME
     if path.is_file():
         return path
+    # A frozen app keeps the seed under sys._MEIPASS even when the
+    # development walk from this file cannot see pyproject.toml.
+    meipass = getattr(sys, "_MEIPASS", None)
+    if isinstance(meipass, str) and meipass:
+        frozen = Path(meipass) / "data" / "seed" / _SEED_NAME
+        if frozen.is_file():
+            return frozen
     raise CrosswalkFixtureError(
         f"ZIP crosswalk seed {path.as_posix()} was not found. "
         "Run scripts/build_zip_inputs.py to regenerate data/seed/zip_crosswalk.csv."

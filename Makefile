@@ -5,7 +5,7 @@ else
 PYTHON := python3
 endif
 
-.PHONY: setup lint typecheck test build check zip-inputs zcta-boundaries
+.PHONY: setup lint typecheck test build check app zip-inputs zcta-boundaries
 
 setup:
 	python3 -m venv .venv
@@ -23,9 +23,13 @@ typecheck:
 test:
 	$(PYTHON) -m pytest
 
-# Packaging is a later milestone. The script exits 1 on purpose in M0.
+# macOS arm64 .app. The script exits 1 on any other OS.
 build:
 	./scripts/build_macos.sh
+
+# Open the pywebview map. Needs a display.
+app:
+	$(PYTHON) -m dce.app
 
 check: lint typecheck test
 

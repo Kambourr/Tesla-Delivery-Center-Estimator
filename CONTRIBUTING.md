@@ -30,17 +30,19 @@ in pre-commit because it needs this environment and the geo stack.
 |---|---|---|
 | `dce.data.ingest` | `fetch_*` from allowlisted hosts. Returns frozen dataclasses. | Open SQLite, compute cost, import `dce.model` math |
 | `dce.data` | Staleness, rent seed parsing, `resolve_rent` | Scrape listings, call an LLM |
-| `dce.storage` | Connections, migrations, SQL | HTTP, cost math, Tkinter |
+| `dce.storage` | Connections, migrations, SQL | HTTP, cost math, the window |
 | `dce.model` | One-pass deterministic math | I/O, network, UI, `dce.scenarios`, `dce.extract` |
 | `dce.scenarios` | Mix and shock grid, rank correlation | I/O. Call `dce.model` on values already loaded |
-| `dce.geo` | ZIP resolution from local data, catchment, Folium HTML | Embedded browser, cost math, live tile downloads |
-| `dce.app` | Tkinter. Opens the map with `webbrowser.open` | `dce.extract.pdf_llm`, PySide6 |
+| `dce.geo` | ZIP resolution from local data, catchment geometry | A browser, cost math, live tile downloads |
+| `dce.app` | pywebview window and the local MapLibre page (ADR-0006) | `dce.extract.pdf_llm`, PySide6, Tkinter |
 | `dce.cli` | Argparse. ZIP is the only required input | SQLite of its own, `pdf_llm` |
 | `dce.orchestrator` | Wires the layers for one ZIP | Live LLM calls |
 | `dce.extract` | PDF to JSON. `pdf_llm` is isolated | Being imported by `model` or the calculate path |
 
-`dce.orchestrator.estimate` is the composition root. The CLI and the Tkinter
-shell call it. They do not reach into SQLite themselves.
+`dce.orchestrator.estimate` is the composition root. The CLI and the map
+call it. They do not reach into SQLite themselves. The app reads a
+precomputed ZIP through `get_zip_result` / `get_zip_results` when that
+API exists. It does not create a results table.
 
 Shared result types are frozen dataclasses in `dce.model.types`. Layer-specific
 records (a fetched ACS row, a registry row, a rent resolution) live next to

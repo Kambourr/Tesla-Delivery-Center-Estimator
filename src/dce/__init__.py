@@ -11,7 +11,7 @@ Layers (see ``CONTRIBUTING.md``):
 - ``model`` is pure calculation. No I/O, no network, no UI.
 - ``scenarios`` replays the model. No I/O.
 - ``geo`` builds the catchment map.
-- ``app`` is the Tkinter shell. ``cli`` is the headless entry.
+- ``app`` is the pywebview map. ``cli`` is the headless entry.
 - ``extract.pdf_llm`` is the only module that may call an LLM.
 
 Milestone M1 adds the SQLite schema, OS data paths, and local ZIP

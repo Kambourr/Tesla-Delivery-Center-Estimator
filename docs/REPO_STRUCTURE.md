@@ -46,7 +46,8 @@ delivery-center-estimator/
 │       ├── cli/
 │       │   └── main.py
 │       ├── app/
-│       │   └── main.py            # Tkinter. M0 does not import tkinter.
+│       │   ├── main.py            # pywebview window. Does not import it at package import.
+│       │   └── web/               # local MapLibre page, vendored GL JS and PMTiles
 │       ├── data/
 │       │   ├── registry.py        # staleness. Pure given as_of and today.
 │       │   ├── rent_defaults.py   # read curated seed; no scrapers

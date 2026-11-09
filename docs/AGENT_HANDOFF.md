@@ -12,7 +12,7 @@ The M2 notes below are the record of that milestone. Do not rebuild them.
 ## Locked decisions
 
 - Public data only. No Tesla internal files. No LoopNet, Crexi, CoStar, or other listing scrapes. No paid CRE API.
-- GUI is **Tkinter**. Folium HTML opens in the system browser. Do not add PySide6.
+- GUI is a **pywebview** window and a local **MapLibre** page (ADR-0006). Do not add Tkinter or PySide6. Basemap tiles may load at runtime. ZIP polygons are local (`data/geo`).
 - Primary artifact is a **macOS Apple Silicon `.app`**. Windows is optional and later.
 - The only required input is a US ZIP. Rent resolves automatically (DATA_SOURCES §8). An optional advanced override is allowed and must not be required.
 - Bundled SQLite seed; offline on first launch; per-source staleness flags.
@@ -41,7 +41,7 @@ The M2 notes below are the record of that milestone. Do not rebuild them.
 
 ## Out of scope for M2
 
-Cost and demand math, scenario grid, rent resolution, Folium, Tkinter, PyInstaller, the CEC bulk workbook, and the remaining ingest stubs.
+Cost and demand math, scenario grid, rent resolution, PyInstaller on a Mac, the CEC bulk workbook, and the remaining ingest stubs. The map window is ADR-0006.
 
 ## Done when M3 starts
 

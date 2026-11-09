@@ -77,6 +77,15 @@ def cost_per_delivery(components: dict[str, float], deliveries: float) -> float:
 # model/drivers.py
 def top_drivers(components: dict[str, float], n: int = 3) -> list[Driver]: ...
 
+# M3 additions (pure; same package)
+# model/assumptions.py
+def parse_assumptions(raw: Assumptions | ModelAssumptions) -> ModelAssumptions: ...
+# model/demand.py
+def apply_delivery_shock(deliveries: float, scenario: Scenario) -> float: ...
+# model/costs.py
+def build_cost_inputs(assumptions, *, rent_psf_month, wage_annual, energy_rate_kwh,
+                      demand_rate_kw, annual_deliveries) -> CostInputs: ...
+
 # scenarios/grid.py
 def expand_default_scenarios(base_mix: dict[str, float]) -> list[Scenario]: ...
 def run_scenario_grid(geo, demand, costs, scenarios, assumptions) -> list[EstimateResult]: ...
@@ -101,6 +110,15 @@ def upsert_source(conn, record: SourceRecord) -> None: ...
 # extract/pdf_llm.py  (optional; never imported by model or scenarios)
 def extract_tariff_json(pdf_path: Path, cache: Path) -> dict[str, object]: ...
 ```
+
+## Model clarifications (M3)
+
+- **Assumptions.** Defaults ship in `data/defaults/assumptions.yaml` (`schema_version` for shape, `assumptions_version` for values). The model never reads the file: the caller loads it and passes the mapping. Model functions accept the raw `Assumptions` mapping or a parsed `ModelAssumptions`. Parsing is strict; unknown or missing keys raise.
+- **Units.** `opex_load` is a fraction (0.15 = +15%). `wage_load` is a multiplier (1.30 = +30%) and must be ≥ 1. `demand_rate_kw` is USD per kW per month; the model multiplies by 12.
+- **Shocks.** `wage_shock` scales labor only, `rent_shock` lease only. `delivery_shock` is applied by `apply_delivery_shock`, not inside `estimate_annual_deliveries`, so that contract signature stays scenario-free. `vehicle_mix` does not enter M3 math (M4). Every shock must be > −1.
+- **Other OpEx.** `build_cost_inputs` sets `other_opex_annual` to a percentage of baseline (unshocked) lease + labor, so scenario shocks do not move it.
+- **Drivers.** Ties rank by name ascending. Shares of the returned list sum to ≤ 1.0 under plain float addition.
+- **Errors** (`dce.model.errors`, all `ValueError`): `ModelError` ← `InvalidInputError` ← {`AssumptionsError`, `ZeroDeliveriesError`}. `cost_per_delivery` raises `ZeroDeliveriesError` for deliveries ≤ 0.
 
 ## Rent resolver
 

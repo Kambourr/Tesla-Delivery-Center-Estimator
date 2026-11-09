@@ -49,6 +49,8 @@ def test_model_does_not_import_io_or_other_layers() -> None:
         "folium",
         "geopandas",
         "pathlib",
+        # The caller parses data/defaults/assumptions.yaml and passes a mapping in.
+        "yaml",
     )
     for path in _python_files(SRC / "model"):
         for module in _imported_modules(path):

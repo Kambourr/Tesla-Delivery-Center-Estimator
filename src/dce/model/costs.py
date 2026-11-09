@@ -3,31 +3,163 @@
 Contract
 --------
 ``annualized_components(costs, scenario) -> dict[str, float]``
-    Keys: ``lease``, ``labor``, ``utilities``, ``property_tax``, ``capex``,
-    ``other_opex``. Lease is ``rent_psf_year × sqft × (1 + opex_load)``
-    after converting monthly rent and applying ``scenario.rent_shock``.
-    ``scenario.wage_shock`` scales labor unit cost only. A wage shock must
-    not change lease dollars.
+    Keys, in this order: ``lease``, ``labor``, ``utilities``,
+    ``property_tax``, ``capex``, ``other_opex``. USD per year.
+
+    ============  ==========================================================
+    lease         rent_psf_month × 12 × (1 + rent_shock) × sqft × (1 + opex_load)
+    labor         headcount × wage_annual × (1 + wage_shock) × wage_load
+    utilities     kwh_per_year × energy_rate_kwh
+                  + demand_kw × demand_rate_kw × 12   (monthly demand charge)
+    property_tax  property_tax_annual
+    capex         capex_total / capex_years            (straight line)
+    other_opex    other_opex_annual
+    ============  ==========================================================
+
+    ``opex_load`` is a fraction (0.15 means +15%). ``wage_load`` is a
+    multiplier (1.30 means +30%) and must be at least 1. ``wage_shock``
+    scales labor only and never changes lease dollars; ``rent_shock``
+    scales lease only. ``Scenario.vehicle_mix`` does not enter M3 math (M4
+    maps it to labor minutes and energy). ``delivery_shock`` is applied to
+    deliveries by :func:`dce.model.demand.apply_delivery_shock`.
 
 ``cost_per_delivery(components, deliveries) -> float``
-    ``sum(components) / deliveries``. Zero deliveries raises a clean error
-    (defined in M3, not here).
+    ``sum(components) / deliveries``. ``deliveries <= 0`` raises
+    :class:`~dce.model.errors.ZeroDeliveriesError`.
+
+``build_cost_inputs(assumptions, *, rent_psf_month, wage_annual, energy_rate_kwh,
+demand_rate_kw, annual_deliveries) -> CostInputs``
+    Turns the assumptions table plus resolved public inputs into
+    :class:`CostInputs`. Rent arrives as a number; this module never looks
+    rent up. ``other_opex_annual`` is a percentage of baseline (unshocked)
+    lease + labor, so a scenario shock does not move it.
 
 Pure. No I/O, no network, no LLM.
-
-Milestone M0: both functions raise ``NotImplementedError``.
 """
 
 from __future__ import annotations
 
-from dce.model.types import CostInputs, Scenario
+import math
+from collections.abc import Mapping
+
+from dce.model import _validate as v
+from dce.model.assumptions import ModelAssumptions, parse_assumptions
+from dce.model.errors import InvalidInputError, ZeroDeliveriesError
+from dce.model.types import Assumptions, CostInputs, Scenario
+
+MONTHS_PER_YEAR = 12.0
+
+COMPONENT_KEYS: tuple[str, ...] = (
+    "lease",
+    "labor",
+    "utilities",
+    "property_tax",
+    "capex",
+    "other_opex",
+)
+
+
+def annual_lease(costs: CostInputs, rent_shock: float = 0.0) -> float:
+    """Return annual occupancy cost: rent × sqft × (1 + opex_load), after a rent shock."""
+    rent = v.non_negative("costs.rent_psf_month", costs.rent_psf_month)
+    sqft = v.positive("costs.sqft", costs.sqft)
+    load = v.non_negative("costs.opex_load", costs.opex_load)
+    shocked = rent * MONTHS_PER_YEAR * (1.0 + v.shock("scenario.rent_shock", rent_shock))
+    return shocked * sqft * (1.0 + load)
+
+
+def annual_labor(costs: CostInputs, wage_shock: float = 0.0) -> float:
+    """Return annual loaded labor cost after a wage shock."""
+    headcount = v.non_negative("costs.headcount", costs.headcount)
+    wage = v.non_negative("costs.wage_annual", costs.wage_annual)
+    load = v.positive("costs.wage_load", costs.wage_load)
+    if load < 1.0:
+        raise InvalidInputError(
+            "costs.wage_load is a multiplier (1.30 means +30%) and must be >= 1; "
+            f"got {costs.wage_load!r}"
+        )
+    return headcount * wage * (1.0 + v.shock("scenario.wage_shock", wage_shock)) * load
 
 
 def annualized_components(costs: CostInputs, scenario: Scenario) -> dict[str, float]:
-    """Return annualized dollars by component. Not implemented in M0."""
-    raise NotImplementedError("dce.model.costs.annualized_components is a stub (M0)")
+    """Return annualized USD by component for one scenario."""
+    kwh = v.non_negative("costs.kwh_per_year", costs.kwh_per_year)
+    energy_rate = v.non_negative("costs.energy_rate_kwh", costs.energy_rate_kwh)
+    demand_kw = v.non_negative("costs.demand_kw", costs.demand_kw)
+    demand_rate = v.non_negative("costs.demand_rate_kw", costs.demand_rate_kw)
+    capex_total = v.non_negative("costs.capex_total", costs.capex_total)
+    capex_years = v.positive("costs.capex_years", costs.capex_years)
+
+    return {
+        "lease": annual_lease(costs, scenario.rent_shock),
+        "labor": annual_labor(costs, scenario.wage_shock),
+        "utilities": kwh * energy_rate + demand_kw * demand_rate * MONTHS_PER_YEAR,
+        "property_tax": v.non_negative("costs.property_tax_annual", costs.property_tax_annual),
+        "capex": capex_total / capex_years,
+        "other_opex": v.non_negative("costs.other_opex_annual", costs.other_opex_annual),
+    }
 
 
-def cost_per_delivery(components: dict[str, float], deliveries: float) -> float:
-    """Return annualized total divided by deliveries. Not implemented in M0."""
-    raise NotImplementedError("dce.model.costs.cost_per_delivery is a stub (M0)")
+def annualized_total(components: Mapping[str, float]) -> float:
+    """Return the exact-rounded sum of non-negative component dollars."""
+    if not components:
+        raise InvalidInputError("components must not be empty")
+    values = [v.non_negative(f"components[{name!r}]", usd) for name, usd in components.items()]
+    return math.fsum(values)
+
+
+def cost_per_delivery(components: Mapping[str, float], deliveries: float) -> float:
+    """Return annualized total cost divided by annual deliveries."""
+    count = v.finite("deliveries", deliveries)
+    if count <= 0:
+        raise ZeroDeliveriesError(count)
+    return annualized_total(components) / count
+
+
+def staffing_headcount(
+    annual_deliveries: float, assumptions: Assumptions | ModelAssumptions
+) -> float:
+    """Return FTEs: ``max(min_headcount, deliveries / deliveries_per_fte)`` (assumption A4)."""
+    staffing = parse_assumptions(assumptions).labor.staffing
+    deliveries = v.non_negative("annual_deliveries", annual_deliveries)
+    return max(staffing.min_headcount, deliveries / staffing.deliveries_per_fte)
+
+
+def build_cost_inputs(
+    assumptions: Assumptions | ModelAssumptions,
+    *,
+    rent_psf_month: float,
+    wage_annual: float,
+    energy_rate_kwh: float,
+    demand_rate_kw: float,
+    annual_deliveries: float,
+) -> CostInputs:
+    """Combine the assumptions table with resolved public inputs into :class:`CostInputs`."""
+    a = parse_assumptions(assumptions)
+    sqft = a.facility.sqft
+    rent = v.non_negative("rent_psf_month", rent_psf_month)
+    wage = v.non_negative("wage_annual", wage_annual)
+    headcount = staffing_headcount(annual_deliveries, a)
+
+    base_lease = rent * MONTHS_PER_YEAR * sqft * (1.0 + a.facility.opex_load)
+    base_labor = headcount * wage * a.labor.wage_load
+    other_opex = a.other_opex.pct_of_lease_and_labor * (base_lease + base_labor)
+
+    return CostInputs(
+        sqft=sqft,
+        rent_psf_month=rent,
+        opex_load=a.facility.opex_load,
+        wage_annual=wage,
+        wage_load=a.labor.wage_load,
+        headcount=headcount,
+        kwh_per_year=a.utilities.kwh_per_sqft_year * sqft,
+        energy_rate_kwh=v.non_negative("energy_rate_kwh", energy_rate_kwh),
+        demand_kw=a.utilities.peak_kw_per_sqft * sqft,
+        demand_rate_kw=v.non_negative("demand_rate_kw", demand_rate_kw),
+        property_tax_annual=(
+            a.property_tax.assessed_value_psf * sqft * a.property_tax.effective_rate
+        ),
+        capex_total=a.capex.fitout_psf * sqft,
+        capex_years=a.capex.life_years,
+        other_opex_annual=other_opex,
+    )

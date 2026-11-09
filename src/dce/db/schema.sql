@@ -1,0 +1,12 @@
+-- Delivery-Center Estimator logical schema.
+-- M0 placeholder: no tables yet. Applying this file is a no-op.
+--
+-- M1 creates the tables in docs/DATA_DICTIONARY.md and applies them
+-- idempotently:
+--   source_registry, zcta_acs, oews_wage, ev_zip, utility_rate,
+--   rent_default, extract_cache
+--
+-- The rent milestone adds the physical rent tables in docs/DATA_SOURCES.md
+-- section 8: rent_cbsa, rent_zip_obs, rent_model_coeffs, rent_resolved_cache.
+--
+-- This file ships inside the package. Applying it must not require network.

@@ -97,6 +97,10 @@ def test_m2_loaders_do_not_open_sqlite_or_import_storage() -> None:
         "delivery_centers.py",
         "zev_sales.py",
         "zcta_gazetteer.py",
+        "zip_geography.py",
+        "xlsx_table.py",
+        "hud_crosswalk.py",
+        "census_geo.py",
     )
     ingest = SRC / "data" / "ingest"
     for name in loaders:

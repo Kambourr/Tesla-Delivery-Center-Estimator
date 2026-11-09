@@ -81,6 +81,62 @@ def test_fetch_posts_the_mapped_series_and_keeps_the_key_out_of_the_url(
     assert "bls-secret" not in str(captured["url"])
 
 
+def test_national_series_and_bulk_csv_and_division_table(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from dce.data.ingest.bls_oews import (
+        HUD_DIVISION_TO_OEWS_CBSA,
+        OEWS_NATIONAL_AREA,
+        fetch_oews_area_wages,
+        oews_national_series_id,
+        parse_oews_bulk_csv,
+    )
+
+    assert oews_national_series_id("49-3023", "04") == "OEUN000000000000049302304"
+    assert len(oews_national_series_id("49-3023", "13")) == 25
+    assert HUD_DIVISION_TO_OEWS_CBSA["35614"] == "35620"
+    assert len(HUD_DIVISION_TO_OEWS_CBSA) == 37
+    text = (
+        "AREA,AREA_TITLE,OCC_CODE,OCC_TITLE,A_MEAN,A_MEDIAN,NAICS,O_GROUP\n"
+        "0000000,United States,49-3023,Automotive Service Technicians and Mechanics,"
+        "56420,50620,000000,detailed\n"
+        "0041860,San Francisco-Oakland-Fremont CA,49-3023,Automotive,75730,*,000000,detailed\n"
+        "0041860,San Francisco-Oakland-Fremont CA,49-3023,Automotive,1,1,441100,detailed\n"
+    )
+    rows = {row.area_code: row for row in parse_oews_bulk_csv(text, year=2025)}
+    assert rows[OEWS_NATIONAL_AREA].mean_annual == 56420
+    assert rows[OEWS_NATIONAL_AREA].median_annual == 50620
+    assert rows["41860"].mean_annual == 75730
+    assert rows["41860"].median_annual is None
+
+    def fake_json(url: str, **_kwargs: object) -> object:
+        assert url.startswith("https://api.bls.gov/")
+        return {
+            "status": "REQUEST_SUCCEEDED",
+            "Results": {
+                "series": [
+                    {
+                        "seriesID": "OEUN000000000000049302304",
+                        "data": [{"year": "2025", "period": "A01", "value": "56420"}],
+                    }
+                ]
+            },
+        }
+
+    monkeypatch.setattr(bls_oews, "request_json", fake_json)
+    monkeypatch.setattr(bls_oews, "read_api_key", lambda _name: None)
+    wages = fetch_oews_area_wages(
+        (),
+        (("49-3023", "Automotive Service Technicians and Mechanics"),),
+        datatypes=("04",),
+        national=True,
+        end_year=2025,
+    )
+    assert wages[0].area_code == OEWS_NATIONAL_AREA
+    assert wages[0].mean_annual == 56420
+    assert wages[0].median_annual is None
+
+
 def test_failed_status_raises() -> None:
     with pytest.raises(OewsError, match="REQUEST_FAILED"):
         parse_oews_payload(

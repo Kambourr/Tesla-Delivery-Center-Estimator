@@ -175,6 +175,7 @@ def _zcta_record(row: ZctaAcs) -> ZctaAcsRecord:
         mean_commute=row.mean_commute,
         median_home_value=row.median_home_value,
         households=row.households,
+        median_gross_rent=row.median_gross_rent,
     )
 
 
@@ -304,6 +305,7 @@ def _centroid_record(row: ZctaCentroid) -> ZctaCentroidRecord:
         lon=row.lon,
         vintage=row.vintage,
         as_of=row.as_of,
+        land_sqmi=row.land_sqmi,
     )
 
 

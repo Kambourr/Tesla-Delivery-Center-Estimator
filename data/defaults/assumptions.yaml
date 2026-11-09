@@ -1,0 +1,93 @@
+# Default modeling assumptions for the delivery-center cost model (M3).
+#
+# Read by the caller (orchestrator or tests) and passed to
+# dce.model.assumptions.parse_assumptions, which is strict: unknown, missing,
+# or wrongly typed keys raise AssumptionsError. The model never opens this file.
+#
+# Versioning
+#   schema_version       Shape of this file. Bump only when keys change, and
+#                        teach parse_assumptions the new shape.
+#   assumptions_version  The default VALUES. Bump on any value change and
+#                        regenerate tests/fixtures/model/golden_m3.json (see the
+#                        README next to it). The golden test checks this string
+#                        first so a silent edit cannot slip through.
+#
+# Every value is a tunable placeholder, not Tesla data and not a sourced
+# statistic. "Plan" IDs refer to the assumptions table in docs/PLAN.md.
+# Rent is NOT here: it arrives as a resolved number (ADR-0003).
+
+schema_version: 1
+assumptions_version: "2026.11.0"
+as_of: "2026-11-08"
+
+facility:
+  # Plan A1. Delivery-center footprint, square feet. Industry warehouse proxy.
+  sqft: 25000
+  # Plan A3. Fraction added to base rent for NNN pass-throughs (CAM,
+  # insurance, landlord taxes). 0.15 means +15%.
+  opex_load: 0.15
+  # Plan A8. Catchment radius in miles. Used by dce.geo to build the
+  # catchment; the cost math does not read it. Open question 4.
+  catchment_miles: 15
+
+labor:
+  # Plan A5. Multiplier on base wages for benefits and payroll taxes.
+  # 1.30 means +30%. Must be >= 1.
+  wage_load: 1.30
+  # Plan A4. headcount = max(min_headcount, deliveries / deliveries_per_fte).
+  # Placeholder curve; open question 2 (staffing curve and SOCs).
+  staffing:
+    min_headcount: 8          # FTEs to open the doors at any volume
+    deliveries_per_fte: 250   # annual deliveries one FTE supports
+
+utilities:
+  # Annual electricity use per square foot (kWh / SF / year). Placeholder in
+  # the range of small warehouse and service buildings; excludes customer
+  # vehicle charging.
+  kwh_per_sqft_year: 15
+  # Billing peak demand per square foot (kW / SF). 0.006 gives 150 kW at
+  # 25,000 SF. Demand charges are billed monthly: kW x $/kW-month x 12.
+  peak_kw_per_sqft: 0.006
+
+property_tax:
+  # Annual tax = assessed_value_psf x sqft x effective_rate. Placeholder
+  # county-default style values; see open question on NNN overlap in the PR.
+  assessed_value_psf: 250     # USD / SF
+  effective_rate: 0.011       # 1.1% of assessed value per year
+
+capex:
+  # Plan A6. Fit-out and equipment, USD / SF. Midpoint of the $80-$150 band.
+  # Open question 5.
+  fitout_psf: 115
+  # Plan A7. Straight-line amortization life, years.
+  life_years: 10
+
+other_opex:
+  # Insurance, IT, supplies as a fraction of baseline lease + labor
+  # (plan "Other OpEx"). Computed once from unshocked dollars.
+  pct_of_lease_and_labor: 0.08
+
+demand:
+  # Plan A9. Annual deliveries at a site whose inputs equal every reference
+  # below (score = 1). OPEN DECISION (open question 1); 2,500 is the plan
+  # placeholder.
+  base_annual_deliveries: 2500
+  # score = product over factors of (value / reference) ** elasticity.
+  # References are round placeholders for a "median" US catchment; they are
+  # not sourced statistics. Elasticities are Jacob-tunable.
+  factors:
+    catchment_population:     # people inside the catchment
+      reference: 500000
+      elasticity: 0.5
+    median_hh_income:         # USD, ACS-style median household income
+      reference: 80000
+      elasticity: 0.3
+    ev_share:                 # ev_stock / total_ldv, a fraction
+      reference: 0.03
+      elasticity: 0.5
+    mean_commute:             # minutes; longer commutes lower demand slightly
+      reference: 27
+      elasticity: -0.25
+  # Clamp on the score so an outlier ZIP cannot produce absurd volumes.
+  score_min: 0.0
+  score_max: 4.0

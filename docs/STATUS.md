@@ -84,7 +84,7 @@ Nearest-center never sees a far center, so Vallejo, Los Gatos, Corte Madera, and
 
 ## Precompute
 
-Bay Area sample, 4 workers, on this machine: 434 ZIPs in 6.75 seconds (434 ok, 0 error, 64.3 ZIP/s). The seed has 41,034 resolvable ZIPs, so that rate projects a full run of about 10 minutes 38 seconds. The results database was 45,604,328 bytes. Rent sources: 87 observed industrial (`cbsa_raw`), 313 this ZCTA's ACS gross rent, and 34 the county median of ACS gross rent. Every ZIP in the sample is in PG&E territory, so electricity is Schedule B-10. `make precompute` runs this sample. The full nation is `dce precompute` with no `--sample`. Model version `2026.11.5-local-costs` makes rows from `2026.11.4-rent-ladder` stale. A ZIP with no deliveries inside 60 miles, such as 96799, is still stored as an error.
+Bay Area sample, 4 workers, on this machine: 434 ZIPs in 6.75 seconds (434 ok, 0 error, 64.3 ZIP/s). The seed has 41,034 resolvable ZIPs, so that rate projects a full run of about 10 minutes 38 seconds. The results database was 45,604,328 bytes. Rent sources: 87 observed industrial (`cbsa_raw`), 313 this ZCTA's ACS gross rent, and 34 the county median of ACS gross rent. Every ZIP in the sample is in PG&E territory, so electricity is Schedule B-10. `make precompute` runs this sample. The full nation is `dce precompute` with no `--sample`. Model version `2026.11.6-compact-results` makes rows from `2026.11.5-local-costs` stale. The stored document keeps the dashboard numbers and gravity shares, drops the fields the page does not print, and is zlib-compressed. A ZIP with no deliveries inside 60 miles, such as 96799, gets an isolated origin and is stored as `ok`. That origin is not taken from any other ZIP.
 
 ## Not in this change
 

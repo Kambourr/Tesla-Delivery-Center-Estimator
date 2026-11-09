@@ -6,6 +6,10 @@ All notable changes to this project are recorded here.
 
 ### Changed
 
+- Precomputed ZIP rows store the dashboard document, zlib-compressed, in schema version 7. Provenance, undisplayed year columns, per-ZIP delivery amounts, and `taken_from` past the first 8 centers are omitted from the stored JSON. `estimate(zip)` still returns them. `MODEL_VERSION` is `2026.11.6-compact-results`.
+- A ZIP with no deliveries inside 60 miles gets an isolated origin (the non-California per-household rate times a household proxy). That volume is not taken from any other ZIP. The 26 ZIPs that used to be error rows, including 96799, now store an `ok` document.
+- `scripts/build_macos.sh` defaults to `.venv/bin/python`, clears the hidden flag on editable-install `.pth` files, checks for `tippecanoe` before a full bundle, and re-signs the `.app` after stripping extended attributes.
+- `scripts/build_zcta_boundaries.py` no longer rewrites `data/geo/boundary_build.json` unless `--record` is passed.
 - Electricity, commercial property tax, and fit-out are local. The ladder is a utility tariff (PG&E Schedule B-10 on PG&E territory), then the EIA-861 utility average, then the state price, then the U.S. price. An average sets the demand charge to 0. The Lincoln Institute rate for the studied city shifts the NNN load. Fit-out uses the BEA goods price parity. Wage, rent, and each ZIP's own demand are unchanged. `MODEL_VERSION` is `2026.11.5-local-costs`.
 - An observed industrial broker seed is used directly. The ACS rent factor
   no longer scales a CBSA that already has a broker comp. `94402` is the

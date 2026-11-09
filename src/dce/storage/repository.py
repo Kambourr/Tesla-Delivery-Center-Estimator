@@ -19,6 +19,7 @@ the last ``upsert_source`` commits them together.
 from __future__ import annotations
 
 import sqlite3
+import zlib
 from collections.abc import Sequence
 from dataclasses import dataclass
 
@@ -1333,6 +1334,30 @@ class ZipResultRecord:
     elapsed_ms: float | None = None
 
 
+def encode_zip_payload(payload_json: str) -> bytes:
+    """Compress one canonical JSON document for ``zip_result.payload_json``.
+
+    zlib level 9 is deterministic for the same bytes. The read path expands
+    this back to the JSON string.
+    """
+    return zlib.compress(payload_json.encode("utf-8"), level=9)
+
+
+def decode_zip_payload(value: object) -> str:
+    """Return the JSON text stored in ``zip_result.payload_json``.
+
+    New rows are zlib bytes. A row copied forward from schema version 6 is
+    still plain JSON text, or UTF-8 bytes of that text.
+    """
+    if isinstance(value, memoryview):
+        value = bytes(value)
+    if isinstance(value, bytes):
+        if value.startswith(b"\x78"):
+            return zlib.decompress(value).decode("utf-8")
+        return value.decode("utf-8")
+    return str(value)
+
+
 def upsert_zip_results(conn: sqlite3.Connection, rows: Sequence[ZipResultRecord]) -> None:
     """Insert or replace precomputed rows in one transaction."""
     conn.executemany(
@@ -1356,7 +1381,7 @@ def upsert_zip_results(conn: sqlite3.Connection, rows: Sequence[ZipResultRecord]
                 row.inputs_hash,
                 row.status,
                 row.reason,
-                row.payload_json,
+                encode_zip_payload(row.payload_json),
                 row.computed_at,
                 row.elapsed_ms,
             )
@@ -1506,7 +1531,7 @@ def _zip_result_from_row(row: sqlite3.Row | tuple[object, ...]) -> ZipResultReco
         inputs_hash=str(inputs_hash),
         status=str(status),
         reason=None if reason is None else str(reason),
-        payload_json=str(payload),
+        payload_json=decode_zip_payload(payload),
         computed_at=str(computed_at),
         elapsed_ms=_optional_float(elapsed),
     )

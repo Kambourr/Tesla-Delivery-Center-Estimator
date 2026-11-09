@@ -24,6 +24,10 @@ land area, crosswalk names and ratios, and the rent-resolution tables from
 
 Version 6 adds ``zip_result``, the precomputed estimate for one ZIP. The
 row is replaced when the model version or the inputs hash changes.
+
+Version 7 stores ``payload_json`` as a BLOB. New rows are zlib-compressed
+JSON. A version-6 text value copied into the new table is left as text, and
+the reader accepts both.
 """
 
 from __future__ import annotations
@@ -58,6 +62,7 @@ def migrate(conn: sqlite3.Connection) -> None:
     _apply_version_4(conn)
     _apply_version_5(conn)
     _apply_version_6(conn)
+    _apply_version_7(conn)
 
 
 def _apply_version_2(conn: sqlite3.Connection) -> None:
@@ -256,5 +261,49 @@ def _apply_version_6(conn: sqlite3.Connection) -> None:
     conn.execute(
         "INSERT INTO schema_migrations (version, applied_at) "
         "VALUES (6, strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))"
+    )
+    conn.commit()
+
+
+_VERSION_7_TABLE = """
+CREATE TABLE zip_result_v7 (
+    zip TEXT PRIMARY KEY CHECK (length(zip) = 5),
+    model_version TEXT NOT NULL,
+    inputs_hash TEXT NOT NULL,
+    status TEXT NOT NULL CHECK (status IN ('ok', 'error')),
+    reason TEXT,
+    payload_json BLOB NOT NULL,
+    computed_at TEXT NOT NULL,
+    elapsed_ms REAL
+)
+"""
+
+
+def _apply_version_7(conn: sqlite3.Connection) -> None:
+    existing = conn.execute("SELECT 1 FROM schema_migrations WHERE version = 7").fetchone()
+    if existing is not None:
+        return
+    payload_type = ""
+    for row in conn.execute("PRAGMA table_info(zip_result)"):
+        if str(row[1]) == "payload_json":
+            payload_type = str(row[2])
+    if payload_type.upper() != "BLOB":
+        conn.execute("DROP INDEX IF EXISTS zip_result_fresh")
+        conn.execute(_VERSION_7_TABLE)
+        conn.execute(
+            "INSERT INTO zip_result_v7 ("
+            "zip, model_version, inputs_hash, status, reason, payload_json, computed_at, elapsed_ms"
+            ") SELECT zip, model_version, inputs_hash, status, reason, payload_json, "
+            "computed_at, elapsed_ms FROM zip_result"
+        )
+        conn.execute("DROP TABLE zip_result")
+        conn.execute("ALTER TABLE zip_result_v7 RENAME TO zip_result")
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS zip_result_fresh "
+            "ON zip_result (model_version, inputs_hash, status)"
+        )
+    conn.execute(
+        "INSERT INTO schema_migrations (version, applied_at) "
+        "VALUES (7, strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))"
     )
     conn.commit()

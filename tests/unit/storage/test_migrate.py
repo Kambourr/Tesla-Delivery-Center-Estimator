@@ -68,7 +68,11 @@ def test_migrate_creates_dictionary_and_crosswalk_tables(tmp_path: Path) -> None
         assert "cbsa" in _column_names(conn, "zip_cbsa")
         assert _column_names(conn, "zip_zcta") == ["zip", "zcta", "tot_ratio"]
         versions = conn.execute("SELECT version FROM schema_migrations ORDER BY version").fetchall()
-        assert versions == [(1,), (2,), (3,), (4,), (5,), (6,)]
+        assert versions == [(1,), (2,), (3,), (4,), (5,), (6,), (7,)]
+        payload = {
+            str(row[1]): str(row[2]) for row in conn.execute("PRAGMA table_info(zip_result)")
+        }
+        assert payload["payload_json"] == "BLOB"
         assert "median_home_value" in _column_names(conn, "zcta_acs")
         assert "households" in _column_names(conn, "zcta_acs")
         assert "median_gross_rent" in _column_names(conn, "zcta_acs")
@@ -95,6 +99,6 @@ def test_migrate_is_idempotent_and_keeps_rows(tmp_path: Path) -> None:
         migrate(conn)
         assert get_source(conn, "hud_crosswalk") == record
         versions = conn.execute("SELECT COUNT(*) FROM schema_migrations").fetchone()
-        assert versions == (6,)
+        assert versions == (7,)
     finally:
         conn.close()

@@ -22,7 +22,10 @@ California origin demand is the CEC ZIP battery-electric count times the
 county Tesla share, annualized when the seed year is short a quarter, then
 times the base handover factor 1.10. Other states split the Cox/KBB 2025
 US Tesla total, minus the 2025 California CEC total, by ACS households and
-income. Electricity is the utility tariff, then the EIA-861 utility average,
+income. A ZIP whose 60-mile catchment would otherwise have no deliveries
+gets an isolated-origin fallback: the same per-household rate, times a
+household proxy, and that volume is not taken from any other ZIP.
+Electricity is the utility tariff, then the EIA-861 utility average,
 then the state price, then the U.S. price. PG&E territory keeps
 Schedule B-10. Commercial property tax shifts the NNN load. Fit-out
 uses the BEA goods price parity. Every resolved input is on
@@ -53,6 +56,7 @@ from dce.data.national_demand import (
     US_TESLA_SALES_2025,
     NationalDemand,
     build_national_demand,
+    isolated_origin_deliveries,
 )
 from dce.data.operating_inputs import OperatingInputs, load_san_mateo_operating_inputs
 from dce.data.property_tax import PropertyTaxResolution
@@ -172,6 +176,14 @@ def warm_bundle(data_dir: Path | None = None) -> _Bundle:
     return _bundle(data_dir)
 
 
+def close_bundle(data_dir: Path | None = None) -> None:
+    """Close the cached database for ``data_dir`` so the file can be vacuumed."""
+    directory = user_data_dir() if data_dir is None else data_dir
+    bundle = _BUNDLES.pop(str(directory.resolve()), None)
+    if bundle is not None:
+        bundle.conn.close()
+
+
 def estimate(
     zip_code: str,
     scenario: Scenario | None = None,
@@ -259,11 +271,23 @@ def _prepare(
     centers = _centers_near(bundle.centers, place.lat, place.lon)
     features = catchment_features(geo, centers, points)
     steady = features.gravity.total_deliveries_per_year
+    isolated_origin: float | None = None
     if steady <= 0.0:
-        raise EstimateDataError(
-            f"ZIP {geo.zip_code} has no deliveries inside the 60-mile catchment, "
-            "so cost per delivery is undefined."
+        isolated_origin = isolated_origin_deliveries(
+            households=local.households,
+            population=local.population,
+            median_hh_income=local.median_hh_income,
+            persons_per_household=bundle.demand.persons_per_household,
+            deliveries_per_reference_household=bundle.demand.deliveries_per_reference_household,
         )
+        points = _replace_origin(points, geo.zip_code, isolated_origin)
+        features = catchment_features(geo, centers, points)
+        steady = features.gravity.total_deliveries_per_year
+        if steady <= 0.0:
+            raise EstimateDataError(
+                f"ZIP {geo.zip_code} has no deliveries inside the 60-mile catchment, "
+                "so cost per delivery is undefined."
+            )
     rent, rent_row = _rent(local, overrides)
     wage, wage_row = _wage(local, bundle.assumptions)
     prices = resolve_local_prices(geo, bundle.assumptions, rent)
@@ -291,6 +315,7 @@ def _prepare(
         rent_row,
         wage_row,
         steady,
+        isolated_origin=isolated_origin,
     )
     return PreparedEstimate(
         assumptions=bundle.assumptions,
@@ -517,6 +542,26 @@ def _wage(local: ZipLocalData, assumptions: ModelAssumptions) -> tuple[float, In
     )
 
 
+def _replace_origin(
+    rows: tuple[ZipDemand, ...], zip_code: str, origin: float
+) -> tuple[ZipDemand, ...]:
+    """Give ``zip_code`` a fallback origin. Other rows stay as they were."""
+    replaced = False
+    updated: list[ZipDemand] = []
+    for row in rows:
+        if row.zip_code == zip_code:
+            updated.append(ZipDemand(row.zip_code, row.lat, row.lon, origin))
+            replaced = True
+        else:
+            updated.append(row)
+    if not replaced:
+        raise EstimateDataError(
+            f"ZIP {zip_code} was not in its own catchment demand, so the isolated "
+            "origin could not be applied."
+        )
+    return tuple(updated)
+
+
 def _provenance(
     local: ZipLocalData,
     demand: NationalDemand,
@@ -524,10 +569,14 @@ def _provenance(
     rent_row: InputProvenance,
     wage_row: InputProvenance,
     steady: float,
+    *,
+    isolated_origin: float | None = None,
 ) -> tuple[InputProvenance, ...]:
     place = demand.places.get(local.geo.zip_code)
     state = local.geo.state if place is None else place.state
     own = demand.deliveries.get(local.geo.zip_code, 0.0)
+    if isolated_origin is not None:
+        own = isolated_origin
     rows = [
         rent_row,
         wage_row,
@@ -581,7 +630,9 @@ def _provenance(
             "minutes",
             missing="ACS S0801 mean commute is not in the national summary file.",
         ),
-        *_demand_provenance(local, demand, state, own, steady),
+        *_demand_provenance(
+            local, demand, state, own, steady, isolated=isolated_origin is not None
+        ),
     ]
     return tuple(rows)
 
@@ -705,6 +756,8 @@ def _demand_provenance(
     state: str,
     own: float,
     steady: float,
+    *,
+    isolated: bool = False,
 ) -> tuple[InputProvenance, InputProvenance, InputProvenance, InputProvenance]:
     income_missing = local.median_hh_income is None or local.median_hh_income <= 0
     if state == "CA":
@@ -722,7 +775,7 @@ def _demand_provenance(
         source = "cec"
         level = "county"
         geo_id = local.geo.county_fips
-        origin_fallback = own <= 0.0
+        origin_fallback = own <= 0.0 or isolated
         annualization_fallback = demand.annualization != 1.0
         annualization = demand.annualization
     else:
@@ -748,6 +801,14 @@ def _demand_provenance(
         origin_fallback = True
         annualization_fallback = False
         annualization = 1.0
+    if isolated:
+        detail += (
+            " Isolated ZIP fallback: the 60-mile catchment had no deliveries. "
+            "This ZIP keeps the national non-California deliveries per reference "
+            "household times a household proxy (ACS households, else population "
+            "divided by the national persons per household, else one household). "
+            "That volume is not taken from any other ZIP."
+        )
     return (
         InputProvenance(
             "zip_origin_deliveries",

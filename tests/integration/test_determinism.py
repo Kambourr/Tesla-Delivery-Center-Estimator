@@ -6,7 +6,8 @@ import json
 import multiprocessing
 from pathlib import Path
 
-from dce.precompute import precompute
+from dce.app.results import COMPUTED_AT
+from dce.precompute import get_zip_result, precompute
 from dce.precompute.payload import canonical_estimate_json
 from dce.precompute.version import MODEL_VERSION, inputs_hash
 from dce.storage.connection import get_connection
@@ -40,9 +41,15 @@ def test_precompute_json_matches_inline_and_multiprocessing(tmp_path: Path) -> N
         document = json.loads(text)
         assert document["schema"] == "dce.ui_result.v1"
         assert document["zip_code"] == code
-        assert document["model_version"] == MODEL_VERSION
-        assert document["inputs_hash"] == inputs_hash()
+        assert "model_version" not in document
+        assert "inputs_hash" not in document
+        assert "computed_at" not in document
         assert "elapsed_ms" not in document
+        served = get_zip_result(code, data_dir=inline_a)
+        assert served is not None
+        assert served["model_version"] == MODEL_VERSION
+        assert served["inputs_hash"] == inputs_hash()
+        assert served["computed_at"] == COMPUTED_AT
     conn = get_connection(inline_a)
     try:
         for code in codes:

@@ -24,6 +24,7 @@ import csv
 import json
 import shutil
 import subprocess
+import sys
 import urllib.error
 import urllib.request
 from pathlib import Path
@@ -48,6 +49,11 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--cache", type=Path, default=ROOT / "data" / "cache" / "zip_inputs")
     parser.add_argument("--download", action="store_true")
+    parser.add_argument(
+        "--record",
+        action="store_true",
+        help="Rewrite the tracked data/geo/boundary_build.json. Off by default.",
+    )
     args = parser.parse_args(argv)
     cache = args.cache
     cache.mkdir(parents=True, exist_ok=True)
@@ -76,10 +82,18 @@ def main(argv: list[str] | None = None) -> int:
         "source": _URL,
         "accessed": "2026-11-09",
     }
-    (GEO / "boundary_build.json").write_text(
-        json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8"
-    )
-    print(json.dumps(summary, indent=2, sort_keys=True))
+    text = json.dumps(summary, indent=2, sort_keys=True) + "\n"
+    record = GEO / "boundary_build.json"
+    # tippecanoe and the national GeoJSON are not byte-stable across machines.
+    # Writing those sizes back marks a tracked file dirty after every build.
+    if args.record:
+        record.write_text(text, encoding="utf-8")
+    elif record.is_file() and record.read_text(encoding="utf-8") != text:
+        print(
+            "boundary_build.json was not rewritten. Pass --record to replace the committed sizes.",
+            file=sys.stderr,
+        )
+    print(text, end="")
     return 0
 
 

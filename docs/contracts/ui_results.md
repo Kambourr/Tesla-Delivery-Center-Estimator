@@ -44,6 +44,14 @@ The batch job owns the table and the read API. This package only calls
 `get_zip_result` / `get_zip_results` through the adapter above. It does
 not declare a table of its own.
 
+A precomputed row keeps every number this page prints and every gravity
+`share` the map paints. It omits `provenance`, the year columns the cash
+table does not print, per-ZIP `deliveries_per_year`, the nearest-center ZIP
+list, tornado input values, and the scenario fields the cards do not print.
+`taken_from` keeps the largest 8 centers and one `other` total.
+`estimate(zip)` still returns the full document. The field list below is
+that full document.
+
 ## Result object
 
 ```json

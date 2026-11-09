@@ -22,8 +22,8 @@ def _assumptions():
     return parse_assumptions(raw)
 
 
-def test_model_version_is_the_local_cost_stamp() -> None:
-    assert MODEL_VERSION == "2026.11.5-local-costs"
+def test_model_version_is_the_compact_results_stamp() -> None:
+    assert MODEL_VERSION == "2026.11.6-compact-results"
 
 
 def test_94402_keeps_pge_b10() -> None:

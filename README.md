@@ -38,7 +38,9 @@ python scripts/check_staleness.py --db /tmp/dce-demo/dce.sqlite
 
 That loads ACS population and income for 94401–94404, May 2025 OEWS SOC 49-3023 for the San Francisco–Oakland–Fremont metro (CBSA 41860), and DMV light-duty vehicle counts. `--refresh` calls the allowlisted hosts. Census refresh needs `CENSUS_API_KEY`. Tests do not use the network.
 
-`python -m dce.app` opens the map. pywebview is imported only then, so headless `make check` does not need a display or GTK. ZIP polygons come from `data/geo/zcta_bay_area.geojson`. After `make zcta-boundaries`, `data/geo/zcta_us.pmtiles` (gitignored, layer `zcta`, zooms 3–8) covers the rest of the US. Tiles for the dark basemap load from OpenFreeMap at runtime and the page still draws ZIP boundaries when those requests fail.
+`python -m dce.app` opens the map. pywebview is imported only then, so headless `make check` does not need a display or GTK. ZIP polygons come from `data/geo/zcta_bay_area.geojson`. After `make zcta-boundaries`, `data/geo/zcta_us.pmtiles` (gitignored, layer `zcta`, zooms 3–8) covers the rest of the US. That target needs `tippecanoe` (`brew install tippecanoe`). Tiles for the dark basemap load from OpenFreeMap at runtime and the page still draws ZIP boundaries when those requests fail.
+
+`make app-bundle` builds the unsigned Apple Silicon app. It also needs `tippecanoe` (`brew install tippecanoe`) and refuses to start without it. The script uses `.venv/bin/python` when that interpreter exists. See [`docs/BUILD.md`](docs/BUILD.md).
 
 `LICENSE` is a placeholder. A license has not been chosen.
 

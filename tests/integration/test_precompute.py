@@ -10,6 +10,8 @@ from dce.app.precomputed import lookup_zip_result
 from dce.app.results import UI_RESULT_SCHEMA, ui_result_problems
 from dce.precompute import get_zip_result, get_zip_results, precompute
 from dce.precompute.version import MODEL_VERSION, inputs_hash
+from dce.storage.connection import get_connection
+from dce.storage.repository import ZipResultRecord, upsert_zip_results
 
 
 @pytest.fixture(scope="module")
@@ -24,10 +26,20 @@ def test_precompute_stores_ok_and_error_rows_and_resumes(data_dir: Path) -> None
         workers=1,
     )
     assert first.computed == 5
-    assert first.errors == 1
+    assert first.errors == 0
     assert first.skipped == 0
     assert first.model_version == MODEL_VERSION
     assert first.db_bytes > 0
+    conn = get_connection(data_dir)
+    try:
+        stored = conn.execute(
+            "SELECT typeof(payload_json) FROM zip_result WHERE zip = '78701'"
+        ).fetchone()
+        assert stored is not None
+        assert stored[0] == "blob"
+        assert conn.execute("PRAGMA page_size").fetchone()[0] == 512
+    finally:
+        conn.close()
 
     austin = get_zip_result("78701", data_dir=data_dir)
     assert austin is not None
@@ -55,15 +67,20 @@ def test_precompute_stores_ok_and_error_rows_and_resumes(data_dir: Path) -> None
     assert isinstance(gravity, dict)
     assert gravity["zips"]
     assert austin["nearby_centers"]
-    assert austin["provenance"]
+    assert "provenance" not in austin
+    gravity_zips = gravity["zips"]
+    assert isinstance(gravity_zips, list) and gravity_zips
+    assert "share" in gravity_zips[0]
+    assert "deliveries_per_year" not in gravity_zips[0]
+    year0 = standalone["years"][0]
+    assert isinstance(year0, dict)
+    assert set(year0) == {"year", "deliveries", "benefit", "opex", "fcf", "cumulative_fcf"}
 
-    no_catchment = get_zip_result("96799", data_dir=data_dir)
-    assert no_catchment is not None
-    assert no_catchment["status"] == "error"
-    reason = no_catchment["reason"]
-    assert isinstance(reason, str)
-    assert "96799" in reason
-    assert "no deliveries" in reason
+    samoa = get_zip_result("96799", data_dir=data_dir)
+    assert samoa is not None
+    assert samoa["schema"] == UI_RESULT_SCHEMA
+    assert samoa["zip_code"] == "96799"
+    assert float(samoa["estimated_annual_deliveries"]) > 0
 
     many = get_zip_results(("78701", "99999", "94402"), data_dir=data_dir)
     assert list(many) == ["78701", "94402"]
@@ -77,14 +94,36 @@ def test_precompute_stores_ok_and_error_rows_and_resumes(data_dir: Path) -> None
     assert second.computed == 0
     assert second.skipped == 5
 
+    conn = get_connection(data_dir)
+    try:
+        upsert_zip_results(
+            conn,
+            [
+                ZipResultRecord(
+                    zip_code="94402",
+                    model_version=MODEL_VERSION,
+                    inputs_hash=inputs_hash(),
+                    status="error",
+                    reason="forced for resume",
+                    payload_json='{"zip_code":"94402","status":"error","reason":"forced for resume"}',
+                    computed_at="2026-11-09T00:00:00+00:00",
+                    elapsed_ms=1.0,
+                )
+            ],
+        )
+    finally:
+        conn.close()
     retried = precompute(
         data_dir=data_dir,
-        zip_codes=("96799",),
+        zip_codes=("94402",),
         workers=1,
         retry_errors=True,
     )
     assert retried.computed == 1
-    assert retried.errors == 1
+    assert retried.errors == 0
+    restored = get_zip_result("94402", data_dir=data_dir)
+    assert restored is not None
+    assert restored["schema"] == UI_RESULT_SCHEMA
 
 
 def test_lookup_zip_result_returns_the_stored_94402_document(

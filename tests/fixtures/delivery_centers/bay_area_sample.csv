@@ -1,0 +1,6 @@
+# Tesla delivery locations used by the 2026-11-08 catchment research.
+# lat/lon are Census 2024 Gazetteer ZCTA internal points for the center ZIP (public domain).
+# as_of is the Find Us list date. san-jose-hub was not on that list; location_type=hub.
+center_id,name,address,city,state,zip,lat,lon,location_type,as_of,coordinate_basis
+colma,Tesla Delivery Colma,1500 Collins Ave,Colma,CA,94014,37.690689,-122.447721,delivery,2026-11-08,census_gazetteer_2024_zcta
+san-jose-hub,North San Jose delivery hub,2256 Junction Ave,San Jose,CA,95131,37.387267,-121.897948,hub,2026-11-08,census_gazetteer_2024_zcta

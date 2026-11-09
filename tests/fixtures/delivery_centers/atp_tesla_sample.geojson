@@ -1,0 +1,210 @@
+{
+ "type": "FeatureCollection",
+ "features": [
+  {
+   "type": "Feature",
+   "id": "jV_DlCnebmZa5ZkD5zGEMLlVLzs=",
+   "properties": {
+    "ref": "tesladallasdeliverycenter-STORE",
+    "shop": "car",
+    "@source_uri": "https://www.tesla.com/api/findus/get-location-details?locationSlug=tesladallasdeliverycenter&functionTypes=gallery,service&locale=en_US&isInHkMoTw=false",
+    "@spider": "tesla",
+    "addr:street_address": "300 Lexington Dr",
+    "addr:city": "Plano",
+    "addr:state": "TX",
+    "addr:postcode": "75075",
+    "addr:country": "US",
+    "name": "Tesla Plano - Lexington",
+    "phone": "+1 469-304-4322",
+    "website": "https://www.tesla.com/findus/location/store/tesladallasdeliverycenter",
+    "opening_hours": "Mo-Sa 10:00-19:00; Su 12:00-18:00",
+    "brand": "Tesla",
+    "brand:wikidata": "Q478214",
+    "nsi_id": "tesla-7c40a3"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -96.70733,
+     33.0357901
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "GegDCMSTzkL0n7iNRT8WkQMGJh8=",
+   "properties": {
+    "ref": "tesladallasdeliverycenter-SERVICE",
+    "shop": "car_repair",
+    "@source_uri": "https://www.tesla.com/api/findus/get-location-details?locationSlug=tesladallasdeliverycenter&functionTypes=gallery,service&locale=en_US&isInHkMoTw=false",
+    "@spider": "tesla",
+    "addr:street_address": "300 Lexington Dr",
+    "addr:city": "Plano",
+    "addr:state": "TX",
+    "addr:postcode": "75075",
+    "addr:country": "US",
+    "name": "Tesla Service Plano-Lexington Drive",
+    "phone": "+1 469-304-4322",
+    "website": "https://www.tesla.com/findus/location/service/tesladallasdeliverycenter",
+    "email": "planolexington_service@tesla.com",
+    "opening_hours": "Mo-Fr 07:45-18:00; Sa 08:00-17:00; Su closed",
+    "brand": "Tesla",
+    "brand:wikidata": "Q478214",
+    "nsi_id": "tesla-e5a54b"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -96.70733,
+     33.0357901
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "r-R9QAeoVZ-hXuj_wv1HhOQ6Ka8=",
+   "properties": {
+    "ref": "americanamanhassetdelivery-STORE",
+    "shop": "car",
+    "@source_uri": "https://www.tesla.com/api/findus/get-location-details?locationSlug=americanamanhassetdelivery&functionTypes=sales&locale=en_US&isInHkMoTw=false",
+    "@spider": "tesla",
+    "addr:street_address": "2122 Northern Blvd",
+    "addr:city": "Manhasset",
+    "addr:state": "NY",
+    "addr:postcode": "11030",
+    "addr:country": "US",
+    "name": "Tesla Americana Manhasset",
+    "phone": "+1 516-734-0271",
+    "website": "https://www.tesla.com/findus/location/store/americanamanhassetdelivery",
+    "opening_hours": "Mo-Sa 10:00-18:00; Su 12:00-18:00",
+    "brand": "Tesla",
+    "brand:wikidata": "Q478214",
+    "nsi_id": "tesla-7c40a3"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -73.669443,
+     40.796214
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "Yp2hur8l4knZNqYrdxEm86XVCko=",
+   "properties": {
+    "ref": "charlottematthews-STORE",
+    "shop": "car",
+    "@source_uri": "https://www.tesla.com/api/findus/get-location-details?locationSlug=charlottematthews&functionTypes=service,sales&locale=en_US&isInHkMoTw=false",
+    "@spider": "tesla",
+    "addr:street_address": "9140 E Independence Blvd",
+    "addr:city": "Matthews",
+    "addr:state": "NC",
+    "addr:postcode": "28105",
+    "addr:country": "US",
+    "name": "Tesla Charlotte",
+    "phone": "+1 704-845-0689",
+    "website": "https://www.tesla.com/findus/location/store/charlottematthews",
+    "opening_hours": "Mo-Sa 10:00-19:00; Su 12:00-18:00",
+    "brand": "Tesla",
+    "brand:wikidata": "Q478214",
+    "nsi_id": "tesla-7c40a3"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -80.718783,
+     35.14032
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "1h1tj3aQ-EE5Ql5mnQrS9qNZVzI=",
+   "properties": {
+    "ref": "montereyseaside-STORE",
+    "shop": "car",
+    "@source_uri": "https://www.tesla.com/api/findus/get-location-details?locationSlug=montereyseaside&functionTypes=service,sales,supercharger&locale=en_US&isInHkMoTw=false",
+    "@spider": "tesla",
+    "addr:street_address": "1901 Del Monte Blvd",
+    "addr:city": "Seaside",
+    "addr:state": "CA",
+    "addr:postcode": "93955",
+    "addr:country": "US",
+    "name": "Tesla Monterey",
+    "phone": "+1 831-264-6896",
+    "website": "https://www.tesla.com/findus/location/store/montereyseaside",
+    "opening_hours": "Mo-Sa 10:00-18:00; Su 11:00-18:00",
+    "brand": "Tesla",
+    "brand:wikidata": "Q478214",
+    "nsi_id": "tesla-7c40a3"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -121.8438038,
+     36.6171238
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "fGdaVBozxQU9vZO_5K36Nu0L3JE=",
+   "properties": {
+    "ref": "austinpondsprings-STORE",
+    "shop": "car",
+    "@source_uri": "https://www.tesla.com/api/findus/get-location-details?locationSlug=austinpondsprings&functionTypes=gallery&locale=en_US&isInHkMoTw=false",
+    "@spider": "tesla",
+    "addr:street_address": "12845 N Highway 183",
+    "addr:city": "Austin",
+    "addr:state": "TX",
+    "addr:postcode": "78750",
+    "addr:country": "US",
+    "name": "Tesla Pond Springs",
+    "phone": "+1 737-207-8000",
+    "website": "https://www.tesla.com/findus/location/store/austinpondsprings",
+    "opening_hours": "Mo-Sa 10:00-19:00; Su 12:00-18:00",
+    "brand": "Tesla",
+    "brand:wikidata": "Q478214",
+    "nsi_id": "tesla-7c40a3"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -97.7708997,
+     30.4357336
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "Rmxwwq_amaLUPq8yi7cDsCaGmxM=",
+   "properties": {
+    "ref": "raleighglenwoodave-SERVICE",
+    "shop": "car_repair",
+    "@source_uri": "https://www.tesla.com/api/findus/get-location-details?locationSlug=raleighglenwoodave&functionTypes=service,sales&locale=en_US&isInHkMoTw=false",
+    "@spider": "tesla",
+    "addr:street_address": "7101 Glenwood Avenue",
+    "addr:city": "Raleigh",
+    "addr:state": "NC",
+    "addr:postcode": "27612",
+    "addr:country": "US",
+    "name": "Tesla Service Raleigh-Glenwood Avenue",
+    "phone": "+1 919-420-0280",
+    "website": "https://www.tesla.com/findus/location/service/raleighglenwoodave",
+    "email": "Raleigh_Service@tesla.com",
+    "opening_hours": "Mo-Fr 07:00-18:00; Sa-Su closed",
+    "brand": "Tesla",
+    "brand:wikidata": "Q478214",
+    "nsi_id": "tesla-e5a54b"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -78.7155104,
+     35.8632628
+    ]
+   }
+  }
+ ]
+}

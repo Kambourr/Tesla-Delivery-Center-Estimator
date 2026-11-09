@@ -1,0 +1,42 @@
+{
+ "version": 0.6,
+ "generator": "Overpass API (excerpt)",
+ "elements": [
+  {
+   "type": "node",
+   "id": 11091826022,
+   "lat": 35.3074019,
+   "lon": -119.0982174,
+   "tags": {
+    "addr:city": "Bakersfield",
+    "addr:housenumber": "5206",
+    "addr:postcode": "93311",
+    "addr:state": "CA",
+    "addr:street": "Young Street",
+    "brand": "Tesla",
+    "brand:wikidata": "Q478214",
+    "name": "Tesla Bakersfield-Young Street",
+    "shop": "car"
+   }
+  },
+  {
+   "type": "way",
+   "id": 1195037615,
+   "center": {
+    "lat": 36.7789229,
+    "lon": -119.6755531
+   },
+   "tags": {
+    "addr:city": "Fresno",
+    "addr:housenumber": "2988",
+    "addr:postcode": "93727",
+    "addr:state": "CA",
+    "addr:street": "North Burl Avenue",
+    "brand": "Tesla",
+    "brand:wikidata": "Q478214",
+    "name": "Tesla Fresno",
+    "shop": "car"
+   }
+  }
+ ]
+}

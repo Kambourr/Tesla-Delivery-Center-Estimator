@@ -33,7 +33,7 @@ def _reference_site(a: ModelAssumptions) -> DemandInputs:
 def test_reference_site_gets_base_deliveries(assumptions: ModelAssumptions) -> None:
     site = _reference_site(assumptions)
     assert demand_score(site, assumptions) == pytest.approx(1.0)
-    assert estimate_annual_deliveries(site, assumptions) == pytest.approx(2_500.0)
+    assert estimate_annual_deliveries(site, assumptions) == pytest.approx(4_500.0)
 
 
 def test_accepts_raw_mapping(

@@ -13,6 +13,10 @@ the version-1 statements in place.
 Version 2 adds ``zcta_acs.median_home_value`` (ACS ``B25077_001E``). The
 ``ALTER`` lives here, not in ``schema.sql``, so repeating ``schema.sql``
 stays valid.
+
+Version 4 adds ``zcta_acs.households`` (ACS ``B11001_001E``). The
+non-California demand fallback weights ZIPs by that count. Version 3
+(catchment tables) is unchanged.
 """
 
 from __future__ import annotations
@@ -34,6 +38,7 @@ def migrate(conn: sqlite3.Connection) -> None:
     conn.executescript(_read_schema_sql())
     _apply_version_2(conn)
     _apply_version_3(conn)
+    _apply_version_4(conn)
 
 
 def _apply_version_2(conn: sqlite3.Connection) -> None:
@@ -114,5 +119,19 @@ def _apply_version_3(conn: sqlite3.Connection) -> None:
     conn.execute(
         "INSERT INTO schema_migrations (version, applied_at) "
         "VALUES (3, strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))"
+    )
+    conn.commit()
+
+
+def _apply_version_4(conn: sqlite3.Connection) -> None:
+    existing = conn.execute("SELECT 1 FROM schema_migrations WHERE version = 4").fetchone()
+    if existing is not None:
+        return
+    columns = {str(row[1]) for row in conn.execute("PRAGMA table_info(zcta_acs)")}
+    if "households" not in columns:
+        conn.execute("ALTER TABLE zcta_acs ADD COLUMN households REAL")
+    conn.execute(
+        "INSERT INTO schema_migrations (version, applied_at) "
+        "VALUES (4, strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))"
     )
     conn.commit()

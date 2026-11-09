@@ -84,6 +84,7 @@ module = [
     "shapely.*",
     "pyproj",
     "pyproj.*",
+    "yaml",
 ]
 ignore_missing_imports = true
 

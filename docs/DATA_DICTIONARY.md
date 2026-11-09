@@ -37,9 +37,9 @@ The only required input is `zip_code`. Everything else is an assumption default,
 `source_id PK`, `url`, `as_of TEXT ISO`, `fetched_at`, `ttl_days INT`, `license_note`, `bytes INT`
 
 ### zcta_acs
-`zcta TEXT`, `year INT`, `population`, `median_hh_income`, `vehicles_available`, `mean_commute`, `median_home_value`, `PRIMARY KEY(zcta,year)`
+`zcta TEXT`, `year INT`, `population`, `median_hh_income`, `vehicles_available`, `mean_commute`, `median_home_value`, `households`, `PRIMARY KEY(zcta,year)`
 
-`median_home_value` is ACS `B25077_001E`. Schema version 2 adds the column. `2000001` is the Census top-code for $2,000,000 or more.
+`median_home_value` is ACS `B25077_001E`. Schema version 2 adds the column. `2000001` is the Census top-code for $2,000,000 or more. `households` is ACS `B11001_001E` (total households). Schema version 4 adds that column for the non-California demand fallback.
 
 ### oews_wage
 `area_code`, `area_name`, `soc`, `soc_title`, `mean_annual`, `median_annual`, `as_of`

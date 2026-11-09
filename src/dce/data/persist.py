@@ -174,6 +174,7 @@ def _zcta_record(row: ZctaAcs) -> ZctaAcsRecord:
         vehicles_available=row.vehicles_available,
         mean_commute=row.mean_commute,
         median_home_value=row.median_home_value,
+        households=row.households,
     )
 
 

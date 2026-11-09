@@ -101,6 +101,7 @@ class ZctaAcsRecord:
     vehicles_available: float | None
     mean_commute: float | None
     median_home_value: float | None
+    households: float | None = None
 
 
 @dataclass(frozen=True)
@@ -134,7 +135,8 @@ def get_zcta_acs(conn: sqlite3.Connection, zcta: str, year: int) -> ZctaAcsRecor
     """Return one ACS row, or ``None`` when that ZCTA and year were never stored."""
     query = (
         "SELECT zcta, year, population, median_hh_income, vehicles_available, "
-        "mean_commute, median_home_value FROM zcta_acs WHERE zcta = ? AND year = ?"
+        "mean_commute, median_home_value, households FROM zcta_acs "
+        "WHERE zcta = ? AND year = ?"
     )
     row = conn.execute(query, (zcta, year)).fetchone()
     if row is None:
@@ -150,14 +152,15 @@ def upsert_zcta_acs(
         """
         INSERT INTO zcta_acs (
             zcta, year, population, median_hh_income, vehicles_available,
-            mean_commute, median_home_value
-        ) VALUES (?, ?, ?, ?, ?, ?, ?)
+            mean_commute, median_home_value, households
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(zcta, year) DO UPDATE SET
             population = excluded.population,
             median_hh_income = excluded.median_hh_income,
             vehicles_available = excluded.vehicles_available,
             mean_commute = excluded.mean_commute,
-            median_home_value = excluded.median_home_value
+            median_home_value = excluded.median_home_value,
+            households = excluded.households
         """,
         (
             record.zcta,
@@ -167,6 +170,7 @@ def upsert_zcta_acs(
             record.vehicles_available,
             record.mean_commute,
             record.median_home_value,
+            record.households,
         ),
     )
     if commit:
@@ -285,7 +289,7 @@ def _optional_int(value: object) -> int | None:
 
 
 def _zcta_from_row(row: sqlite3.Row | tuple[object, ...]) -> ZctaAcsRecord:
-    zcta, year, population, income, vehicles, commute, home_value = row
+    zcta, year, population, income, vehicles, commute, home_value, households = row
     return ZctaAcsRecord(
         zcta=str(zcta),
         year=_required_int(year),
@@ -294,6 +298,7 @@ def _zcta_from_row(row: sqlite3.Row | tuple[object, ...]) -> ZctaAcsRecord:
         vehicles_available=_optional_float(vehicles),
         mean_commute=_optional_float(commute),
         median_home_value=_optional_float(home_value),
+        households=_optional_float(households),
     )
 
 

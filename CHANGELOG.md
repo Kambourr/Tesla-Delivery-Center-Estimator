@@ -6,6 +6,22 @@ All notable changes to this project are recorded here.
 
 ### Added
 
+- `estimate(zip)` runs the whole pipeline with no manual input: ZIP resolution,
+  gravity catchment (nearest-center is the low case), cost per delivery with
+  the top 3 drivers, and both DCF views (standalone delivery-fee is the
+  headline, incremental-to-Tesla is the check) at Tesla WACC 13.6%. The CLI
+  is `dce estimate 94402`, with `--json` for the full cash-flow tables.
+  San Mateo gravity is 5,523 deliveries a year. At that volume, standalone
+  NPV is about +$13.9M, IRR about 86%, simple payback about 1.3 years, and
+  incremental NPV about −$2.6M. The published +$9.7M / 66% / 1.7 years is
+  the same model at the research case of 4,400 deliveries.
+- ACS household counts (`B11001_001E`) on the Census loader, schema version
+  4, and the San Mateo demo cache, so the non-California demand fallback
+  can weight ZIPs. A ZIP with no households is skipped.
+- The San Mateo gravity gap is documented, not patched. 5,523 versus the
+  research text's about 5,720 is not the 60-mile cap, the Gazetteer
+  centroid, or rounding. Nearest-center still matches 4,370. See
+  `docs/STATUS.md`.
 - Catchment allocation. A candidate ZIP competes with existing Tesla delivery
   centers instead of taking every ZIP inside a fixed radius. Drive distance
   is straight-line miles times 1.25, capped at 60 miles. The base case is

@@ -58,6 +58,37 @@ class Driver:
 
 
 @dataclass(frozen=True)
+class CatchmentZipVolume:
+    zip_code: str
+    deliveries_per_year: float
+    share: float
+
+
+@dataclass(frozen=True)
+class CenterVolumeTaken:
+    center_id: str
+    name: str
+    deliveries_per_year: float
+
+
+@dataclass(frozen=True)
+class CatchmentCaseSummary:
+    method: Literal["gravity", "nearest"]
+    beta: float | None
+    zips: tuple[CatchmentZipVolume, ...]
+    deliveries_per_year: float
+    taken_from: tuple[CenterVolumeTaken, ...]
+
+
+@dataclass(frozen=True)
+class CatchmentSummary:
+    zip_code: str
+    beta: float
+    gravity: CatchmentCaseSummary  # base; feeds the cost model and the DCF
+    nearest: CatchmentCaseSummary  # low case
+
+
+@dataclass(frozen=True)
 class EstimateResult:
     geo: GeoContext
     scenario: Scenario
@@ -67,6 +98,7 @@ class EstimateResult:
     components: dict[str, float]
     drivers: list[Driver]
     map_path: str | None
+    catchment: CatchmentSummary | None = None  # gravity base + nearest low case
     dcf: DcfViews | None = None  # M3.5b; standalone + incremental lenses (ADR-0005)
 ```
 
@@ -133,10 +165,12 @@ def payback_years(cash_flows: Sequence[float], rate: float = 0.0) -> float | Non
 # geo/catchment.py  (M3.5a, ADR-0004; replaces catchment_features(geo, radius_miles))
 def catchment_features(
     geo: GeoContext,
-    centers: "GeoDataFrame",  # existing delivery centers: center_id, name, zcta, geometry (point)
-    demand: "GeoDataFrame",  # ZCTAs: zcta, tesla_deliveries_per_year, geometry
+    centers: Sequence[CenterSite],  # existing delivery centers: id, name, lat, lon
+    demand: Sequence[ZipDemand],  # ZIPs: zip, lat, lon, deliveries_per_year
     beta: float = 2.0,
-) -> "GeoDataFrame": ...
+    *,
+    radius_miles: float | None = None,
+) -> CatchmentFeatures: ...
 
 
 # geo/folium_map.py
@@ -176,13 +210,15 @@ def extract_tariff_json(pdf_path: Path, cache: Path) -> dict[str, object]: ...
 
 ## Catchment (M3.5a, ADR-0004)
 
-Built in `dce.geo.catchment` and `dce.data.ingest`. Not part of `dce.model`.
+Built in `dce.geo.catchment`. The orchestrator loads centers and ZIP demand and passes them in. Not part of `dce.model`.
 
-- `centers` are existing Tesla delivery centers from the seed (public Find Us list snapshot with `as_of`). `demand` holds Tesla deliveries a year per ZCTA.
+- `centers` are `CenterSite` rows (id, name, lat, lon) for existing Tesla delivery centers from the seed. `demand` is `ZipDemand` (zip, lat, lon, Tesla deliveries a year). A ZIP with a missing centroid or missing deliveries is skipped.
 - Distance is straight-line between ZCTA internal points × 1.25 circuity, capped at 60 miles. Candidate share is `P_cz = d_cz^-β / Σ_k d_kz^-β` over the candidate plus all centers, with equal attractiveness. The default is β = 2; the nearest-center split is the low case.
-- The returned frame has one row per ZCTA. Its columns are `zcta`, `geometry`, `tesla_deliveries_per_year`, `candidate_share` (in [0, 1]), `candidate_deliveries` (`D_z · P_cz`), and `taken_from_<center_id>` (`D_z · (P⁰_kz − P_kz)`). The candidate's annual deliveries are `candidate_deliveries.sum()`. They feed `steady_deliveries` for the DCF and the `$/delivery` denominator.
-- `facility.catchment_miles` is the fallback only when `centers` is empty. `demand.base_annual_deliveries` is the fallback only when ZIP-level EV data is missing.
-- No network and no SQL in the geo module. The caller passes frames that storage has already loaded.
+- The return is `CatchmentFeatures`, not a GeoDataFrame. It holds `gravity` (base) and `nearest` (low). Each `CatchmentCase` has `zips` (zip, deliveries, share, straight-line miles, drive miles), `total_deliveries_per_year`, and `taken_from` (center id, name, deliveries). `EstimateResult.catchment` carries the same facts as `CatchmentSummary` (zips, deliveries per year, volume taken from each center) so the model package does not import geo.
+- The steady-state deliveries that feed the cost model and `run_dcf` are `gravity.total_deliveries_per_year`.
+- `radius_miles` is a straight-line fallback used only when `centers` is empty. `demand.base_annual_deliveries` is the calibration fallback only when ZIP-level EV data is missing.
+- No network and no SQL in the geo module.
+- San Mateo 94402 on the committed fixture is 4,370 nearest-center deliveries and 5,523 gravity deliveries. The research text says gravity is about 5,720. That gap is not the 60-mile cap, the Gazetteer centroid, or rounding the Tesla share. See `docs/STATUS.md`.
 
 ## DCF (M3.5b, ADR-0005)
 
@@ -217,7 +253,7 @@ def estimate(
 ) -> EstimateResult: ...
 ```
 
-Loads from the bundled seed and SQLite (optional refresh if missing/stale and online), resolves rent, calls the model, optionally writes a map. `overrides` may include an optional advanced rent override. ZIP alone must succeed. Never imports `extract.pdf_llm`.
+Resolves the ZIP, builds the gravity catchment (nearest-center is the low case), feeds `gravity.total_deliveries_per_year` into the cost model and into `run_dcf_views`, and returns both benefit views. The default discount rate is the Tesla WACC on the assumptions table (13.6%). `overrides` may include `rent_psf_month`. ZIP alone must succeed. The San Mateo path reads the committed demo cache and does not use the network. Never imports `extract.pdf_llm`.
 
 ## GUI and CLI
 

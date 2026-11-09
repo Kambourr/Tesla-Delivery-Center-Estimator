@@ -95,13 +95,17 @@ outcome, which is what `estimate(zip)` returns.
 ## Error document
 
 A ZIP that cannot be estimated is stored, not raised out of the batch.
+A missing rent on the ZIP itself is not an error: the resolver uses the
+county, CBSA, state, or national median of ACS gross rent and marks that
+rung as a fallback. The example below is a ZIP whose 60-mile catchment
+has no deliveries, so cost per delivery is undefined.
 
 ```json
 {
-  "zip_code": "01093",
+  "zip_code": "96799",
   "status": "error",
-  "reason": "EstimateDataError: ZIP 01093 has no industrial seed, no SAFMR, and no ACS median gross rent.",
-  "model_version": "2026.11.3-local-inputs",
+  "reason": "EstimateDataError: ZIP 96799 has no deliveries inside the 60-mile catchment, so cost per delivery is undefined.",
+  "model_version": "2026.11.4-rent-ladder",
   "inputs_hash": "<sha256>",
   "computed_at": "2026-11-09T00:00:00+00:00"
 }

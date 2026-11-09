@@ -153,15 +153,18 @@ The chain, in order:
 
 | Tier id | When | Confidence |
 |---|---|---|
-| `zip_adjusted_cbsa` | An industrial seed exists for `geo.cbsa` and ACS can form the factor | `high`, or `medium` if the factor was clamped |
-| `county_gsa` | County median of `rent_zip_obs` with `source = 'gsa'` | `medium` |
-| `cbsa_raw` | Industrial seed, but ACS inputs for the factor are missing | `medium` |
+| `cbsa_raw` | An industrial seed exists for `geo.cbsa`. The observed rate is used directly | `high` |
+| `county_gsa` | No CBSA seed. County median of `rent_zip_obs` with `source = 'gsa'`. The ACS factor is applied only on this borrowed base | `medium` |
 | `state` | Median of industrial seeds in the state, and at least 3 distinct CBSA seeds | `medium` |
 | `national` | Industrial seed stored under CBSA `00000` | `low` |
 | `hud_safmr` | Newest `rent_safmr` 2-bedroom monthly rent, converted | `low` |
-| `acs_gross_rent` | ACS `B25064` monthly rent, converted | `low` |
+| `acs_gross_rent` | This ZCTA's ACS `B25064` monthly rent, converted | `low` |
+| `acs_gross_rent_county` | Median of ZCTA ACS gross rents in the dominant county | `low` |
+| `acs_gross_rent_cbsa` | Median of ZCTA ACS gross rents in the CBSA | `low` |
+| `acs_gross_rent_state` | Median of ZCTA ACS gross rents in the state | `low` |
+| `acs_gross_rent_national` | Median of ZCTA ACS gross rents in the US | `low` |
 
-`RentResolutionError` when none of those exist. The ZIP is on `.zip_code`.
+`RentResolutionError` when the ZIP is missing from the crosswalk, or when the file has no ACS gross rent anywhere and none of the earlier rungs hit. The ZIP is on `.zip_code`.
 
 The factor is model `acs_rent_v1`:
 
@@ -192,8 +195,10 @@ California ZIP in another CBSA, does not receive that number. One metro seed
 is not enough for the state tier. There is no national industrial row, so
 that tier does nothing until a curator adds CBSA `00000`.
 
-`94402` resolves on `zip_adjusted_cbsa` because `41884` has the Kidder row
-and ACS rent. A ZIP whose only input is ACS rent resolves on `acs_gross_rent`.
+`94402` resolves on `cbsa_raw` at the Kidder headline, $25.68 per square
+foot per year. The ACS factor is not applied on top of that observed
+submarket comp. A ZIP with no industrial seed and no rent of its own uses
+the county, CBSA, state, or national ACS median and is marked as a fallback.
 
 ## Boundaries for MapLibre
 

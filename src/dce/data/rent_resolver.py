@@ -9,27 +9,28 @@ LoopNet, Crexi, CoStar, CompStak, Reonomy, ATTOM, or Cherre.
 
 Fallback chain, first hit wins:
 
-1. ZIP-adjusted CBSA industrial. Broker seed times the frozen ACS model.
-   The shipped model ``acs_rent_v1`` scales the seed by this ZCTA's median
-   gross rent divided by the median gross rent of ZCTAs in the same CBSA.
-   Income, density, and home value are in the formula with exponent 0 until
-   a GSA Lease Inventory calibration replaces the coefficients. Confidence
-   high, or medium when the factor is clamped.
-2. County median of GSA ``rent_zip_obs`` (source ``gsa``), with the same
-   adjustment when the ACS inputs exist.
-3. Raw CBSA industrial seed, when the seed exists but the ACS adjustment
-   does not.
-4. State median of industrial seeds, only when at least three distinct CBSA
+1. Observed CBSA industrial seed, unadjusted. A residential ACS factor is
+   not applied on top of a broker comp for the same submarket. Confidence
+   high.
+2. County median of GSA ``rent_zip_obs`` (source ``gsa``). The frozen
+   ``acs_rent_v1`` factor is applied here only, because this ZIP's CBSA
+   has no industrial seed.
+3. State median of industrial seeds, only when at least three distinct CBSA
    seeds in that state exist. One metro headline is not a state rent.
-5. National industrial row. The shipped seed has none, so this tier is idle
-   until a curator adds a cited national figure.
-6. HUD SAFMR 2-bedroom when a ``rent_safmr`` row exists, else ACS median
-   gross rent converted with ``unit_sqft`` and ``commercial_residential_ratio``.
-   Confidence ``low``. The shipped ratio is 1, so this tier is a residential
-   proxy in dollars per square foot, not an industrial asking rent.
+4. National industrial row. The shipped seed has none.
+5. HUD SAFMR 2-bedroom.
+6. This ZCTA's ACS median gross rent.
+7. County median of ZCTA ACS gross rents, then the CBSA median.
+8. State median of ZCTA ACS gross rents.
+9. National median of ZCTA ACS gross rents.
 
-A ZIP uses its own ACS rent. A Bay Area broker row is not applied outside
-its CBSA, and it is not promoted to a state or national default by itself.
+Steps 5 through 9 are residential proxies. ``unit_sqft`` and
+``commercial_residential_ratio`` convert a monthly rent to dollars per
+square foot. The shipped ratio is 1. Confidence ``low``.
+
+A Bay Area broker row is not applied outside its CBSA. A ZIP with no
+crosswalk row still fails. A ZIP with a crosswalk row resolves as long as
+any ACS gross rent exists in the file.
 
 The result is written to ``rent_resolved_cache``.
 """
@@ -38,6 +39,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from statistics import median
@@ -49,12 +51,16 @@ from dce.storage.repository import (
     SafmrRecord,
     ZctaAcsRecord,
     ZctaCentroidRecord,
+    acs_positive_rents_for_county,
+    acs_positive_rents_for_state,
+    acs_positive_rents_national,
     acs_positive_values_for_cbsa,
     cbsas_for_state,
     get_latest_safmr,
     get_latest_zcta_acs,
     get_rent_model,
     get_zcta_centroid,
+    latest_acs_year,
     list_rent_cbsa,
     list_rent_cbsa_for_codes,
     list_rent_zip_obs_for_zips,
@@ -134,29 +140,22 @@ def resolve_rent(
     seed = _industrial(list_rent_cbsa(conn, cbsa)) if cbsa else None
     factor, clamped, adjusted_inputs = _factor(acs, centroid, references, coeffs)
 
-    if seed is not None and adjusted_inputs:
+    if seed is not None:
         return _store(
             conn,
             write_cache,
             _from_base(
                 code,
-                seed.rent_psf_year * factor,
+                seed.rent_psf_year,
                 property_type=seed.property_type,
-                tier="zip_adjusted_cbsa",
-                confidence="medium" if clamped else "high",
+                tier="cbsa_raw",
+                confidence="high",
                 as_of=seed.as_of,
                 citation=(
-                    f"{seed.citation} Adjusted with {coeffs.model_id} "
-                    f"(factor {factor:.4f}) using ACS ZCTA {zcta}."
+                    f"{seed.citation} Observed industrial asking rent for CBSA {cbsa}. "
+                    "Not scaled by residential ACS rent."
                 ),
-                components={
-                    "model_id": coeffs.model_id,
-                    "factor": factor,
-                    "clamped": clamped,
-                    "base_rent_psf_year": seed.rent_psf_year,
-                    "broker": seed.broker,
-                    **_component_inputs(acs, centroid, references),
-                },
+                components={"base_rent_psf_year": seed.rent_psf_year, "broker": seed.broker},
             ),
         )
 
@@ -164,6 +163,12 @@ def resolve_rent(
     if gsa is not None:
         base, gsa_as_of, gsa_citation = gsa
         amount = base * factor if adjusted_inputs else base
+        citation = gsa_citation
+        if adjusted_inputs:
+            citation = (
+                f"{gsa_citation} ZIP-adjusted with {coeffs.model_id} "
+                f"(factor {factor:.4f}) because CBSA {cbsa or 'none'} has no industrial seed."
+            )
         return _store(
             conn,
             write_cache,
@@ -174,27 +179,13 @@ def resolve_rent(
                 tier="county_gsa",
                 confidence="medium",
                 as_of=gsa_as_of,
-                citation=gsa_citation,
+                citation=citation,
                 components={
                     "base_rent_psf_year": base,
                     "factor": factor if adjusted_inputs else 1.0,
+                    "clamped": clamped,
+                    "model_id": coeffs.model_id,
                 },
-            ),
-        )
-
-    if seed is not None:
-        return _store(
-            conn,
-            write_cache,
-            _from_base(
-                code,
-                seed.rent_psf_year,
-                property_type=seed.property_type,
-                tier="cbsa_raw",
-                confidence="medium",
-                as_of=seed.as_of,
-                citation=seed.citation,
-                components={"base_rent_psf_year": seed.rent_psf_year, "broker": seed.broker},
             ),
         )
 
@@ -255,18 +246,103 @@ def resolve_rent(
                 None,
                 tier="acs_gross_rent",
                 as_of=f"{acs.year}-12-31",
-                citation=(
-                    f"ACS 5-year {acs.year} B25064_001E median gross rent for ZCTA {zcta}, "
-                    f"${acs.median_gross_rent:.0f} per month, converted with {coeffs.model_id} "
-                    f"unit_sqft {coeffs.unit_sqft:g} and commercial_residential_ratio "
-                    f"{coeffs.commercial_residential_ratio:g}. Residential proxy, confidence low."
+                citation=_acs_citation(
+                    coeffs,
+                    acs.year,
+                    f"ZCTA {zcta}",
+                    acs.median_gross_rent,
+                    1,
                 ),
             ),
         )
 
+    year = acs.year if acs is not None else latest_acs_year(conn)
+    if year is not None:
+        for tier, scope, values in _acs_rent_ladder(
+            conn, county.county_fips, cbsa, county.state, year
+        ):
+            monthly = _median(values)
+            if monthly is None:
+                continue
+            return _store(
+                conn,
+                write_cache,
+                _residential(
+                    code,
+                    monthly,
+                    coeffs,
+                    None,
+                    tier=tier,
+                    as_of=f"{year}-12-31",
+                    citation=_acs_citation(coeffs, year, scope, monthly, len(values)),
+                ),
+            )
+
     raise RentResolutionError(
         code,
-        f"ZIP {code} has no industrial seed, no SAFMR, and no ACS median gross rent.",
+        f"ZIP {code} has a crosswalk row but no industrial seed, no SAFMR, "
+        "and no ACS gross rent at the ZCTA, county, CBSA, state, or nation.",
+    )
+
+
+def _acs_rent_ladder(
+    conn: sqlite3.Connection, county_fips: str, cbsa: str, state: str, year: int
+) -> tuple[tuple[str, str, tuple[float, ...]], ...]:
+    """Return ACS gross-rent pools below the ZIP's own ZCTA, in ladder order."""
+    return (
+        (
+            "acs_gross_rent_county",
+            f"county {county_fips}",
+            _cached_rents(conn, "county", county_fips, year, acs_positive_rents_for_county),
+        ),
+        (
+            "acs_gross_rent_cbsa",
+            f"CBSA {cbsa or 'none'}",
+            () if cbsa == "" else _cached_rents(conn, "cbsa", cbsa, year, None),
+        ),
+        (
+            "acs_gross_rent_state",
+            f"state {state}",
+            _cached_rents(conn, "state", state, year, acs_positive_rents_for_state),
+        ),
+        (
+            "acs_gross_rent_national",
+            "the US",
+            _cached_rents(conn, "national", "US", year, None),
+        ),
+    )
+
+
+def _cached_rents(
+    conn: sqlite3.Connection,
+    kind: str,
+    scope_id: str,
+    year: int,
+    loader: _RentLoader | None,
+) -> tuple[float, ...]:
+    key = (id(conn), kind, scope_id, year)
+    cached = _ACS_RENTS.get(key)
+    if cached is not None:
+        return cached
+    if kind == "cbsa":
+        found = acs_positive_values_for_cbsa(conn, scope_id, year, "median_gross_rent")
+    elif kind == "national":
+        found = acs_positive_rents_national(conn, year)
+    elif loader is None:
+        found = ()
+    else:
+        found = loader(conn, scope_id, year)
+    _ACS_RENTS[key] = found
+    return found
+
+
+def _acs_citation(coeffs: _Coeffs, year: int, scope: str, monthly: float, count: int) -> str:
+    return (
+        f"ACS 5-year {year} B25064_001E median gross rent for {scope}, "
+        f"${monthly:.0f} per month across {count} ZCTA"
+        f"{'' if count == 1 else 's'}, converted with {coeffs.model_id} "
+        f"unit_sqft {coeffs.unit_sqft:g} and commercial_residential_ratio "
+        f"{coeffs.commercial_residential_ratio:g}. Residential proxy, confidence low."
     )
 
 
@@ -397,6 +473,8 @@ def _coeffs(record: RentModelRecord | None) -> _Coeffs:
 
 # sqlite3.Connection has no instance dict, so the CBSA median cache lives here.
 _RENT_REFS: dict[tuple[int, str, int], dict[str, float | None]] = {}
+_ACS_RENTS: dict[tuple[int, str, str, int], tuple[float, ...]] = {}
+_RentLoader = Callable[[sqlite3.Connection, str, int], tuple[float, ...]]
 
 
 def _references(conn: sqlite3.Connection, cbsa: str, year: int | None) -> dict[str, float | None]:
@@ -453,22 +531,6 @@ def _factor(
         factor = coeffs.clamp_high
         clamped = True
     return factor, clamped, applied
-
-
-def _component_inputs(
-    acs: ZctaAcsRecord | None,
-    centroid: ZctaCentroidRecord | None,
-    references: dict[str, float | None],
-) -> dict[str, object]:
-    return {
-        "acs_rent": None if acs is None else acs.median_gross_rent,
-        "acs_rent_ref": references.get("rent"),
-        "income": None if acs is None else acs.median_hh_income,
-        "income_ref": references.get("income"),
-        "home_value": None if acs is None else acs.median_home_value,
-        "home_ref": references.get("home"),
-        "land_sqmi": None if centroid is None else centroid.land_sqmi,
-    }
 
 
 def _county_gsa(conn: sqlite3.Connection, county_fips: str) -> tuple[float, str, str] | None:

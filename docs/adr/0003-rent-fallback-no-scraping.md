@@ -20,12 +20,10 @@ calibrated offline on the GSA Lease Inventory.
 
 Fallback, first hit wins:
 
-1. ZIP-adjusted CBSA industrial
-2. County
-3. Raw CBSA
-4. State
-5. National seed default
-6. HUD SAFMR or ZORI times a commercial-to-residential ratio, confidence `low`
+1. Observed CBSA industrial seed, unadjusted. A residential ACS factor is not applied on top of a broker comp for that submarket.
+2. County GSA observations. The ZIP ACS model adjusts this base only when the ZIP's own CBSA has no industrial seed.
+3. State industrial median, when at least three CBSA seeds exist, then a national industrial row.
+4. HUD SAFMR, then this ZCTA's ACS gross rent, then the county median, the CBSA median, the state median, and the national median of ACS gross rent. Those steps are low-confidence residential proxies.
 
 No LoopNet, Crexi, CoStar, CompStak, Reonomy, ATTOM, or Cherre. An optional
 advanced rent override may exist later. ZIP alone must still resolve.

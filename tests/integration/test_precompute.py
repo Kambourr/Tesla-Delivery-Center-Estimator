@@ -20,7 +20,7 @@ def data_dir(tmp_path_factory: pytest.TempPathFactory) -> Path:
 def test_precompute_stores_ok_and_error_rows_and_resumes(data_dir: Path) -> None:
     first = precompute(
         data_dir=data_dir,
-        zip_codes=("94402", "78701", "01301", "01003", "01093"),
+        zip_codes=("94402", "78701", "01301", "01003", "96799"),
         workers=1,
     )
     assert first.computed == 5
@@ -57,12 +57,13 @@ def test_precompute_stores_ok_and_error_rows_and_resumes(data_dir: Path) -> None
     assert austin["nearby_centers"]
     assert austin["provenance"]
 
-    missing_rent = get_zip_result("01093", data_dir=data_dir)
-    assert missing_rent is not None
-    assert missing_rent["status"] == "error"
-    reason = missing_rent["reason"]
+    no_catchment = get_zip_result("96799", data_dir=data_dir)
+    assert no_catchment is not None
+    assert no_catchment["status"] == "error"
+    reason = no_catchment["reason"]
     assert isinstance(reason, str)
-    assert "01093" in reason
+    assert "96799" in reason
+    assert "no deliveries" in reason
 
     many = get_zip_results(("78701", "99999", "94402"), data_dir=data_dir)
     assert list(many) == ["78701", "94402"]
@@ -70,7 +71,7 @@ def test_precompute_stores_ok_and_error_rows_and_resumes(data_dir: Path) -> None
 
     second = precompute(
         data_dir=data_dir,
-        zip_codes=("94402", "78701", "01301", "01003", "01093"),
+        zip_codes=("94402", "78701", "01301", "01003", "96799"),
         workers=1,
     )
     assert second.computed == 0
@@ -78,7 +79,7 @@ def test_precompute_stores_ok_and_error_rows_and_resumes(data_dir: Path) -> None
 
     retried = precompute(
         data_dir=data_dir,
-        zip_codes=("01093",),
+        zip_codes=("96799",),
         workers=1,
         retry_errors=True,
     )

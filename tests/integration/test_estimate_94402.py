@@ -95,7 +95,7 @@ def test_estimate_94402_matches_research_adjusted_for_gravity_volume(
     assert taken == pytest.approx(gravity, abs=1)
 
     assert [driver.name for driver in result.drivers] == ["labor", "lease", "capex"]
-    assert result.cost_per_delivery == pytest.approx(640.55, abs=0.05)
+    assert result.cost_per_delivery == pytest.approx(605.25, abs=0.05)
     assert result.dcf.standalone.discount_rate == pytest.approx(0.136)
     assert result.map_path is None
 
@@ -108,19 +108,27 @@ def test_estimate_94402_matches_research_adjusted_for_gravity_volume(
     assert anchor_incremental == pytest.approx(-2.8e6, abs=0.25e6)
 
     by_name = {row.name: row for row in result.provenance}
-    rent = by_name["rent_psf_month"].value
+    rent_row = by_name["rent_psf_month"]
+    rent = rent_row.value
     wage = by_name["wage_annual"].value
+    assert rent == pytest.approx(2.14)
+    assert rent_row.source == "cbsa_raw"
+    assert rent_row.geography_level == "cbsa"
+    assert rent_row.geography_id == "41884"
+    assert rent_row.fallback is False
+    assert "Kidder" in rent_row.detail
+    assert wage == pytest.approx(75730)
     assert rent is not None and wage is not None
     adjusted_npv, adjusted_irr, adjusted_payback, adjusted_disc, adjusted_incremental = (
         _research_views(gravity, rent=rent, wage_annual=wage)
     )
     standalone = result.dcf.standalone
     incremental = result.dcf.incremental
-    assert standalone.npv == pytest.approx(10.455e6, abs=1.0e4)
-    assert standalone.irr == pytest.approx(0.693, abs=0.002)
-    assert standalone.simple_payback_years == pytest.approx(1.585, abs=0.01)
-    assert standalone.discounted_payback_years == pytest.approx(1.870, abs=0.01)
-    assert incremental.npv == pytest.approx(-4.070e6, abs=1.0e4)
+    assert standalone.npv == pytest.approx(11.304e6, abs=1.0e4)
+    assert standalone.irr == pytest.approx(0.735, abs=0.002)
+    assert standalone.simple_payback_years == pytest.approx(1.497, abs=0.01)
+    assert standalone.discounted_payback_years == pytest.approx(1.758, abs=0.01)
+    assert incremental.npv == pytest.approx(-3.221e6, abs=1.0e4)
     assert standalone.npv == pytest.approx(adjusted_npv, abs=1.0)
     assert standalone.irr == pytest.approx(adjusted_irr, abs=1e-9)
     assert standalone.simple_payback_years == pytest.approx(adjusted_payback, abs=1e-9)
@@ -129,9 +137,10 @@ def test_estimate_94402_matches_research_adjusted_for_gravity_volume(
     assert incremental.simple_payback_years is None
     assert incremental.discounted_payback_years is None
 
-    # Local OEWS wage, ZIP-adjusted rent, and the 2026 CEC annualization move
-    # both lenses off the old fallback-wage / $2.14 / 2025-extract case.
-    # The 4,400-delivery reconstruction above is the published-model lock.
+    # Local OEWS wage and the 2026 CEC annualization move both lenses off the
+    # old fallback-wage / 2025-extract case. Rent is the observed Kidder
+    # headline, $2.14. The 4,400-delivery reconstruction above is the
+    # published-model lock.
     assert len(standalone.years) == 11
     assert standalone.years[0].capex == pytest.approx(3_780_000)
 

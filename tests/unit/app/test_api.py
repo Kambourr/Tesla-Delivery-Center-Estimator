@@ -67,7 +67,7 @@ def test_94402_matches_estimate_and_carries_the_dashboard_fields() -> None:
     standalone = result["dcf"]["standalone"]  # type: ignore[index]
     assert baseline.dcf is not None
     assert standalone["npv"] == pytest.approx(baseline.dcf.standalone.npv)
-    assert standalone["npv"] == pytest.approx(10.455e6, abs=0.05e6)  # type: ignore[index]
+    assert standalone["npv"] == pytest.approx(11.304e6, abs=0.05e6)  # type: ignore[index]
     assert result["tornado"][0]["driver"] == "deliveries"  # type: ignore[index]
     base = result["scenarios"]["base"]  # type: ignore[index]
     assert base["standalone"]["npv"] == pytest.approx(standalone["npv"], abs=1.0)  # type: ignore[index]

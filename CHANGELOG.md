@@ -4,6 +4,16 @@ All notable changes to this project are recorded here.
 
 ## Unreleased
 
+### Changed
+
+- An observed industrial broker seed is used directly. The ACS rent factor
+  no longer scales a CBSA that already has a broker comp. `94402` is the
+  Kidder Mathews rate, $25.68 per square foot per year. ZIPs with no rent
+  of their own use the county, then CBSA, state, and national median of
+  ACS gross rent, and that rung is marked as a fallback. `MODEL_VERSION`
+  is `2026.11.4-rent-ladder`, so stored rows from the previous rent
+  formula are recomputed.
+
 ### Added
 
 - `estimate(zip)` uses that ZIP's own inputs: ACS demand, the CBSA OEWS

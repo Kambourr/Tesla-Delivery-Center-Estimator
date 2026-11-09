@@ -883,6 +883,58 @@ def get_latest_zcta_acs(conn: sqlite3.Connection, zcta: str) -> ZctaAcsRecord | 
     return _zcta_from_row(row)
 
 
+def latest_acs_year(conn: sqlite3.Connection) -> int | None:
+    """Return the newest year stored in ``zcta_acs``, or ``None`` when it is empty."""
+    row = conn.execute("SELECT MAX(year) FROM zcta_acs").fetchone()
+    if row is None or row[0] is None:
+        return None
+    return int(row[0])
+
+
+def acs_positive_rents_for_county(
+    conn: sqlite3.Connection, county_fips: str, year: int
+) -> tuple[float, ...]:
+    """Return positive ZCTA median gross rents whose dominant county is ``county_fips``."""
+    query = (
+        "SELECT a.median_gross_rent FROM zcta_acs AS a "
+        "JOIN zip_county AS k ON k.zip = a.zcta "
+        "WHERE a.year = ? AND a.median_gross_rent > 0 AND k.county_fips = ? "
+        "AND NOT EXISTS ("
+        "SELECT 1 FROM zip_county AS other WHERE other.zip = k.zip AND ("
+        "other.tot_ratio > k.tot_ratio OR "
+        "(other.tot_ratio = k.tot_ratio AND other.county_fips < k.county_fips)"
+        "))"
+    )
+    return tuple(float(row[0]) for row in conn.execute(query, (year, county_fips)))
+
+
+def acs_positive_rents_for_state(
+    conn: sqlite3.Connection, state: str, year: int
+) -> tuple[float, ...]:
+    """Return positive ZCTA median gross rents whose dominant county is in ``state``."""
+    query = (
+        "SELECT a.median_gross_rent FROM zcta_acs AS a "
+        "JOIN zip_county AS k ON k.zip = a.zcta "
+        "WHERE a.year = ? AND a.median_gross_rent > 0 AND k.state = ? "
+        "AND NOT EXISTS ("
+        "SELECT 1 FROM zip_county AS other WHERE other.zip = k.zip AND ("
+        "other.tot_ratio > k.tot_ratio OR "
+        "(other.tot_ratio = k.tot_ratio AND other.county_fips < k.county_fips)"
+        "))"
+    )
+    return tuple(float(row[0]) for row in conn.execute(query, (year, state)))
+
+
+def acs_positive_rents_national(conn: sqlite3.Connection, year: int) -> tuple[float, ...]:
+    """Return positive ZCTA median gross rents, one per ZCTA that is its own ZIP."""
+    query = (
+        "SELECT a.median_gross_rent FROM zcta_acs AS a "
+        "WHERE a.year = ? AND a.median_gross_rent > 0 AND EXISTS ("
+        "SELECT 1 FROM zip_zcta AS z WHERE z.zcta = a.zcta AND z.zip = z.zcta)"
+    )
+    return tuple(float(row[0]) for row in conn.execute(query, (year,)))
+
+
 def acs_positive_values_for_cbsa(
     conn: sqlite3.Connection, cbsa: str, year: int, column: str
 ) -> tuple[float, ...]:

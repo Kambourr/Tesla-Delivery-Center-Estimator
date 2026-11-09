@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import pytest
 
-from dce.orchestrator import EstimateDataError, estimate
+from dce.orchestrator import estimate
 
 
 def test_austin_78701_uses_its_own_wage_rent_and_national_demand() -> None:
@@ -70,6 +70,10 @@ def test_amherst_01003_estimates_with_suppressed_income() -> None:
     assert inputs["population"].value == pytest.approx(13510)
 
 
-def test_zip_without_rent_inputs_raises_a_clear_error() -> None:
-    with pytest.raises(EstimateDataError, match="01093"):
-        estimate("01093")
+def test_zip_without_its_own_rent_uses_a_marked_fallback() -> None:
+    result = estimate("01093")
+    rent = {row.name: row for row in result.provenance}["rent_psf_month"]
+    assert rent.fallback is True
+    assert rent.value is not None and rent.value > 0
+    assert str(rent.source).startswith("acs_gross_rent")
+    assert result.cost_per_delivery > 0

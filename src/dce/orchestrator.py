@@ -88,7 +88,7 @@ _RENT_OVERRIDE = "rent_psf_month"
 _STRAIGHT_CAP_MILES = MAX_DRIVE_MILES / DRIVE_CIRCUITY + 0.05
 _CENTER_CAP_MILES = _STRAIGHT_CAP_MILES * 2
 _SEED_FETCHED_AT = "2026-11-09T00:00:00Z"
-_LOW_RENT_TIERS = frozenset({"national", "hud_safmr", "acs_gross_rent"})
+_OBSERVED_RENT_TIERS = frozenset({"cbsa_raw"})
 
 
 class EstimateDataError(ValueError):
@@ -432,7 +432,7 @@ def _rent(local: ZipLocalData, overrides: Overrides | None) -> tuple[float, Inpu
         source=resolved.tier,
         geography_level=level,
         geography_id=geo_id,
-        fallback=resolved.tier in _LOW_RENT_TIERS or resolved.confidence == "low",
+        fallback=resolved.tier not in _OBSERVED_RENT_TIERS,
         detail=(
             f"{resolved.citation} Confidence {resolved.confidence}. as_of {resolved.as_of}. "
             f"Property type {resolved.property_type}."
@@ -443,11 +443,13 @@ def _rent(local: ZipLocalData, overrides: Overrides | None) -> tuple[float, Inpu
 def _rent_geography(local: ZipLocalData, tier: str) -> tuple[str, str]:
     if tier == "acs_gross_rent":
         return "zcta", local.geo.zcta
-    if tier in {"zip_adjusted_cbsa", "cbsa_raw"}:
-        return "cbsa", local.geo.cbsa
-    if tier == "county_gsa":
+    if tier in {"zip_adjusted_cbsa", "cbsa_raw", "acs_gross_rent_cbsa"}:
+        return "cbsa", local.geo.cbsa or "none"
+    if tier in {"county_gsa", "acs_gross_rent_county"}:
         return "county", local.geo.county_fips
-    if tier == "state":
+    if tier == "hud_safmr":
+        return "zip", local.geo.zip_code
+    if tier in {"state", "acs_gross_rent_state"}:
         return "state", local.geo.state
     return "national", "US"
 

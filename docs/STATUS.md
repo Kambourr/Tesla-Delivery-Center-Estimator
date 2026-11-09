@@ -27,7 +27,7 @@ Every figure below is deterministic Python. The estimate, the scenario grid, the
 - ACS `B11001_001E` households are on the loader, schema version 4, and the San Mateo demo cache (94401–94404). The non-California fallback (`non_california_zip_demand`) weights ZIPs by that count. A ZIP with no households is left out. Fixture test, no network.
 - Jacob confirmed, and the assumptions file already had: property tax inside NNN rent (`included_in_nnn: true`), expansion rent $1.74 per square foot per month, low-case DCF horizon 8 years.
 
-San Mateo 94402 now uses the nationwide seed. Gravity is 5,565 deliveries a year (nearest 4,469, 21 ZIPs). The wage is the OEWS May 2025 SOC 49-3023 mean for CBSA 41860, $75,730, in place of the $25.91 hourly fallback ($53,893). Rent is the ZIP-adjusted San Francisco industrial seed, $2.667 per square foot per month, in place of the flat $2.14. Demand is 2026 CEC Q1–Q3 battery-electric sales, annualized by 4/3, times the San Mateo Tesla share, times handover 1.10. The 94402 origin itself is about 257 deliveries. The building stays 25,000 square feet. Utilities stay PG&E B-10.
+San Mateo 94402 now uses the nationwide seed. Gravity is 5,565 deliveries a year (nearest 4,469, 21 ZIPs). The wage is the OEWS May 2025 SOC 49-3023 mean for CBSA 41860, $75,730, in place of the $25.91 hourly fallback ($53,893). Rent is the observed Kidder Mathews industrial asking rent for CBSA 41884, $25.68 per square foot per year ($2.14 per square foot per month). Provenance records that source at CBSA 41884 with fallback false. The residential ACS factor is not applied on top of that comp. Demand is 2026 CEC Q1–Q3 battery-electric sales, annualized by 4/3, times the San Mateo Tesla share, times handover 1.10. The 94402 origin itself is about 257 deliveries. The building stays 25,000 square feet. Utilities stay PG&E B-10.
 
 The published research case is the same model at 4,400 deliveries with the old $2.14 rent and the fallback wage: about +$9.7M, 66%, 1.7 years, incremental about −$2.8M.
 
@@ -46,29 +46,29 @@ Same handover cases on the new inputs. Volume scales with the handover factor. C
 | | Low, H 1.00 | Base, H 1.10 | High, H 1.30 |
 |---|---|---|---|
 | Gravity (nearest) | 5,059 (4,063) | 5,565 (4,469) | 6,577 (5,281) |
-| Cost per delivery | $668 | $641 | $599 |
-| Standalone NPV | +$8.80M | +$10.45M | +$13.77M |
-| Standalone IRR | 61.7% | 69.3% | 84.0% |
-| Simple / discounted payback | 1.77 / 2.11 yr | 1.58 / 1.87 yr | 1.33 / 1.54 yr |
-| Incremental NPV | −$4.03M | −$4.07M | −$4.15M |
+| Cost per delivery | $629 | $605 | $569 |
+| Standalone NPV | +$9.65M | +$11.30M | +$14.62M |
+| Standalone IRR | 65.9% | 73.5% | 88.1% |
+| Simple / discounted payback | 1.66 / 1.96 yr | 1.50 / 1.76 yr | 1.27 / 1.47 yr |
+| Incremental NPV | −$3.18M | −$3.22M | −$3.31M |
 
 The outcome low / base / high cards also move wage, rent, fee, WACC, and horizon. Those are what the map and `dce precompute` store. Base matches the handover 1.10 row.
 
 | | Low (bad) | Base | High (good) |
 |---|---|---|---|
 | Deliveries | 3,373 | 5,565 | 9,500 |
-| Cost per delivery | $989 | $641 | $441 |
-| Standalone NPV / IRR | −$1.75M / −1.2% | +$10.45M / 69.3% | +$44.44M / 180.9% |
-| Simple / discounted payback | none | 1.58 / 1.87 yr | 0.62 / 0.67 yr |
-| Incremental NPV | −$4.20M | −$4.07M | −$3.69M |
+| Cost per delivery | $910 | $605 | $424 |
+| Standalone NPV / IRR | −$0.85M / +8.5% | +$11.30M / 73.5% | +$45.28M / 184.2% |
+| Simple / discounted payback | 5.84 yr / none | 1.50 / 1.76 yr | 0.60 / 0.66 yr |
+| Incremental NPV | −$3.29M | −$3.22M | −$2.85M |
 
 Austin 78701, base. CBSA 12420. Wage $57,440 (OEWS 49-3023, not a fallback). Rent $2.759 per square foot per month from ACS gross rent (fallback, ZCTA 78701). Demand is the national Cox/KBB residual (fallback). Energy $0.2875/kWh and demand $20.50/kW-month are the PG&E B-10 fallback. Gravity 2,512 deliveries a year, nearest 2,574. Cost per delivery $951. Standalone NPV +$0.84M, IRR 18.9%, simple payback 4.89 years, discounted 7.53 years. Incremental NPV −$3.90M, with no IRR and no payback. Top drivers are lease, labor, and capex.
 
-Greenfield, MA 01301 is micropolitan CBSA 24640, so the wage is the national 49-3023 mean $56,420. Amherst 01003 has a suppressed median income and still estimates, using the $80,000 reference. 01093 has no rent source and is stored as an error row.
+Greenfield, MA 01301 is micropolitan CBSA 24640, so the wage is the national 49-3023 mean $56,420. Amherst 01003 has a suppressed median income and still estimates, using the $80,000 reference. 01093 has no rent of its own. It uses the Franklin County median of ACS gross rent, $1,224 per month, and provenance marks that county rung as a fallback.
 
 1.10 and 1.30 are assumptions. No public source counts used-car handovers. A California county with no CEC Tesla row keeps the 9-county share 49,704 / 94,131. Outside California, `estimate` allocates the 2025 US Tesla total minus the 2025 California Tesla total. It does not invent a per-state total. The 46.2% Cox/KBB EV share remains the fallback inside the demand helper when a caller has EV registrations and no make split.
 
-The published standalone case uses 4,400 deliveries, which is the old nearest-center figure rounded. That reconstruction, at the old rent and the fallback wage, still matches the published +$9.7M / 66% / 1.7 years and incremental about −$2.8M. The live 94402 path does not. Higher wage and rent move incremental NPV to about −$4.1M. Top drivers at 94402 are still labor, lease, and straight-line capex.
+The published standalone case uses 4,400 deliveries, which is the old nearest-center figure rounded. That reconstruction, at the old rent and the fallback wage, still matches the published +$9.7M / 66% / 1.7 years and incremental about −$2.8M. The live 94402 path does not. The higher OEWS wage moves incremental NPV to about −$3.2M. Top drivers at 94402 are still labor, lease, and straight-line capex.
 
 The M4 low / base / high outcomes keep deliveries as a ratio of each ZIP's own volume, composed with the handover factor (the catchment is already at 1.10). The low case still uses the bad rent, wage, fee, 16.3% WACC, and 8-year horizon. The high horizon is 10 years, the lease.
 
@@ -84,7 +84,7 @@ Nearest-center never sees a far center, so Vallejo, Los Gatos, Corte Madera, and
 
 ## Precompute
 
-Bay Area sample, 4 workers, on this machine: 434 ZIPs in 6.05 seconds (400 ok, 34 error, 71.7 ZIP/s). The seed has 41,034 resolvable ZIPs, so that rate projects a full run of about 9 minutes 32 seconds. After the process exited the database file was 34,680,832 bytes. The CLI reported 41,623,016 bytes, which included the WAL of the still-open reader. Payload JSON was 19,429,557 bytes for those 434 rows. Error rows were ZIPs with no industrial seed, no SAFMR, and no ACS median gross rent. `make precompute` runs this sample. The full nation is `dce precompute` with no `--sample`.
+Bay Area sample, 4 workers, on this machine: 434 ZIPs in 6.84 seconds (434 ok, 0 error, 63.4 ZIP/s). The seed has 41,034 resolvable ZIPs, so that rate projects a full run of about 10 minutes 47 seconds. After the process exited the database file was 36,134,912 bytes. The CLI reported 45,211,112 bytes, which included the WAL of the still-open reader. Payload JSON was 20,845,754 bytes for those 434 rows. Rent sources: 87 observed industrial (`cbsa_raw`, fallback false), 313 this ZCTA's ACS gross rent, and 34 the county median of ACS gross rent. Both ACS rungs are fallbacks. There were no error rows, so the reason breakdown is empty. A ZIP with no deliveries inside 60 miles, such as 96799, is still stored as an error. `make precompute` runs this sample. The full nation is `dce precompute` with no `--sample`. Model version `2026.11.4-rent-ladder` makes rows from the previous rent formula stale.
 
 ## Not in this change
 

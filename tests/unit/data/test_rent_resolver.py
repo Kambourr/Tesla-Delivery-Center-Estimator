@@ -44,21 +44,27 @@ def _db(tmp_path: Path) -> sqlite3.Connection:
         conn,
         (
             ZipCountyRecord("94402", "06081", "CA", 1.0, "San Mateo County", "2026-11-09"),
+            ZipCountyRecord("94401", "06081", "CA", 1.0, "San Mateo County", "2026-11-09"),
+            ZipCountyRecord("94002", "06081", "CA", 1.0, "San Mateo County", "2026-11-09"),
             ZipCountyRecord("90001", "06037", "CA", 1.0, "Los Angeles County", "2026-11-09"),
             ZipCountyRecord("73301", "48453", "TX", 1.0, "Travis County", "2026-11-09"),
         ),
         (
             ZipCbsaRecord("94402", "41884", 1.0, "San Francisco-San Mateo-Redwood City, CA"),
+            ZipCbsaRecord("94401", "41884", 1.0, "San Francisco-San Mateo-Redwood City, CA"),
+            ZipCbsaRecord("94002", "99999", 1.0, "No industrial seed"),
             ZipCbsaRecord("90001", "31084", 1.0, "Los Angeles-Long Beach-Glendale, CA"),
             ZipCbsaRecord("73301", "12420", 1.0, "Austin-Round Rock-San Marcos, TX"),
         ),
         (
             ZipZctaRecord("94402", "94402", 1.0),
+            ZipZctaRecord("94401", "94401", 1.0),
+            ZipZctaRecord("94002", "94002", 1.0),
             ZipZctaRecord("90001", "90001", 1.0),
             ZipZctaRecord("73301", "73301", 1.0),
         ),
     )
-    for zcta, rent in (("94402", 3501.0), ("90001", 1400.0), ("73301", 1500.0)):
+    for zcta, rent in (("94402", 3501.0), ("94401", 1000.0), ("90001", 1400.0), ("73301", 1500.0)):
         upsert_zcta_acs(
             conn,
             ZctaAcsRecord(
@@ -109,11 +115,12 @@ def test_san_mateo_uses_the_cited_industrial_seed(tmp_path: Path) -> None:
         resolved = resolve_rent("94402", conn)
     finally:
         conn.close()
-    assert resolved.tier == "zip_adjusted_cbsa"
+    assert resolved.tier == "cbsa_raw"
     assert resolved.property_type == "industrial"
     assert resolved.rent_psf_year == pytest.approx(25.68)
     assert resolved.confidence == "high"
     assert "Kidder" in resolved.citation
+    assert "Not scaled" in resolved.citation
 
 
 def test_other_states_do_not_inherit_the_peninsula_headline(tmp_path: Path) -> None:
@@ -136,3 +143,14 @@ def test_other_states_do_not_inherit_the_peninsula_headline(tmp_path: Path) -> N
     components = json.loads(str(cached[0]))
     assert components["tier"] == "acs_gross_rent"
     assert components["monthly_rent"] == 1500.0
+
+
+def test_missing_zcta_rent_uses_the_county_median(tmp_path: Path) -> None:
+    conn = _db(tmp_path)
+    try:
+        resolved = resolve_rent("94002", conn)
+    finally:
+        conn.close()
+    assert resolved.tier == "acs_gross_rent_county"
+    assert resolved.confidence == "low"
+    assert resolved.rent_psf_year == pytest.approx((3501.0 + 1000.0) / 2 * 12 / 1000)

@@ -84,6 +84,13 @@ class NationalDemand:
     quarters: tuple[int, ...]
     cec_as_of: str | None
     non_ca_tesla_before_handover: float
+    # Deliveries one reference household would receive from the non-California
+    # residual. The isolated-ZIP rung uses this. It is not subtracted from
+    # ``deliveries``, so every other ZIP keeps the same origin.
+    deliveries_per_reference_household: float = 0.0
+    # ACS population / households, over ZCTAs that publish both and both are
+    # positive. The isolated-ZIP rung uses it when households are missing.
+    persons_per_household: float = 1.0
 
     def zip_codes(self) -> tuple[str, ...]:
         """Return every crosswalk ZIP, sorted."""
@@ -96,7 +103,7 @@ def build_national_demand(conn: sqlite3.Connection, *, handover_factor: float) -
     places = _places(conn)
     acs = {row.zcta: row for row in list_zcta_acs_year(conn, 2024)}
     annualization, quarters, as_of, ca_raw = _california(conn, places)
-    allocated = _non_california(places, acs, factor)
+    allocated, per_household = _non_california(places, acs, factor)
     deliveries: dict[str, float] = {}
     for zip_code, place in places.items():
         if place.lat is None or place.lon is None:
@@ -115,7 +122,44 @@ def build_national_demand(conn: sqlite3.Connection, *, handover_factor: float) -
         quarters=quarters,
         cec_as_of=as_of,
         non_ca_tesla_before_handover=NON_CA_TESLA_SALES_2025,
+        deliveries_per_reference_household=per_household,
+        persons_per_household=_persons_per_household(acs),
     )
+
+
+def isolated_origin_deliveries(
+    *,
+    households: float | None,
+    population: float | None,
+    median_hh_income: float | None,
+    persons_per_household: float,
+    deliveries_per_reference_household: float,
+) -> float:
+    """Return a positive origin for a ZIP whose 60-mile catchment is empty.
+
+    The number is the non-California residual per reference household times a
+    household proxy. It is not removed from any other ZIP's allocation.
+
+    The proxy is ACS households when that count is positive, otherwise
+    population divided by the national persons per household, otherwise one
+    household. A suppressed income uses the same $80,000 reference as the
+    national allocator.
+    """
+    if households is not None and households > 0.0:
+        proxy = households
+    elif population is not None and population > 0.0 and persons_per_household > 0.0:
+        proxy = population / persons_per_household
+    else:
+        proxy = 1.0
+    weight = _weight(proxy, median_hh_income)
+    if weight is None or weight <= 0.0:
+        weight = 1.0
+    origin = weight * deliveries_per_reference_household
+    if origin <= 0.0:
+        return (
+            deliveries_per_reference_household if deliveries_per_reference_household > 0.0 else 1.0
+        )
+    return origin
 
 
 def _places(conn: sqlite3.Connection) -> dict[str, ZipPlace]:
@@ -198,7 +242,7 @@ def _non_california(
     places: dict[str, ZipPlace],
     acs: dict[str, ZctaAcsRecord],
     handover_factor: float,
-) -> dict[str, float]:
+) -> tuple[dict[str, float], float]:
     weights: dict[str, float] = {}
     for zip_code, place in places.items():
         if place.state == "CA" or zip_code != place.zcta:
@@ -212,9 +256,30 @@ def _non_california(
         weights[zip_code] = weight
     scale = math.fsum(weights.values())
     if scale <= 0.0:
-        return {}
+        return {}, 0.0
     volume = NON_CA_TESLA_SALES_2025 * handover_factor
-    return {zip_code: volume * weight / scale for zip_code, weight in weights.items()}
+    return (
+        {zip_code: volume * weight / scale for zip_code, weight in weights.items()},
+        volume / scale,
+    )
+
+
+def _persons_per_household(acs: dict[str, ZctaAcsRecord]) -> float:
+    """Return population per household for ZCTAs that publish both, in ZCTA order."""
+    people: list[float] = []
+    homes: list[float] = []
+    for zcta in sorted(acs):
+        row = acs[zcta]
+        population = row.population
+        households = row.households
+        if population is None or households is None or population <= 0.0 or households <= 0.0:
+            continue
+        people.append(population)
+        homes.append(households)
+    home_total = math.fsum(homes)
+    if home_total <= 0.0:
+        return 1.0
+    return math.fsum(people) / home_total
 
 
 def _weight(households: float | None, income: float | None) -> float | None:

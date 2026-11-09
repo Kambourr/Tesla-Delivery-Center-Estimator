@@ -20,14 +20,34 @@ from pathlib import Path
 from dce.config import DB_FILENAME
 from dce.storage.migrate import migrate
 
+# Compressed ZIP documents are a few kilobytes. A 512-byte page keeps the
+# unused tail of each overflow chain small. 4096-byte pages would add about
+# 2 KiB of waste per ZIP and push the nationwide file over the bundle budget.
+RESULTS_PAGE_SIZE = 512
+
 
 def get_connection(user_data_dir: Path) -> sqlite3.Connection:
     """Open the user database, creating it and applying migrations."""
     user_data_dir.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(user_data_dir / DB_FILENAME)
+    path = user_data_dir / DB_FILENAME
+    new_file = not path.is_file()
+    conn = sqlite3.connect(path)
     conn.execute("PRAGMA foreign_keys = ON")
+    if new_file:
+        conn.execute(f"PRAGMA page_size = {RESULTS_PAGE_SIZE}")
     migrate(conn)
     return conn
+
+
+def finish_results_database(conn: sqlite3.Connection) -> None:
+    """Checkpoint, set the page size, and VACUUM so the file holds no free pages.
+
+    ``page_size`` on a database that already has tables takes effect at VACUUM.
+    """
+    conn.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+    conn.execute(f"PRAGMA page_size = {RESULTS_PAGE_SIZE}")
+    conn.execute("VACUUM")
+    conn.commit()
 
 
 def open_readonly(db_path: Path) -> sqlite3.Connection:

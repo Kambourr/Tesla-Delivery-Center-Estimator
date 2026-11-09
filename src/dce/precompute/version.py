@@ -14,7 +14,7 @@ from pathlib import Path
 
 from dce.config import assumptions_path, bundled_seed_dir, demo_data_dir
 
-MODEL_VERSION = "2026.11.8-broker-rents-commercial-tax-acf"
+MODEL_VERSION = "2026.11.9-compact-results"
 
 _HASH_FILES = (
     "coverage.json",

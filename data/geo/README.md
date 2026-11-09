@@ -14,6 +14,8 @@ archive is vector tiles, layer `zcta`, zooms 3 through 8, and it keeps every
 polygon. MapLibre draws that faster than one national GeoJSON, because only
 the tiles in view are decoded.
 
-`boundary_build.json` records the byte sizes from the last build. Sources
-and the access date are in `docs/DATA_SOURCES.md` section 11. The click API
-is `docs/contracts/zip_data.md`.
+`boundary_build.json` is the committed record of those sizes. A build
+prints the sizes it just measured and leaves the file alone unless
+`--record` is passed. Sources and the access date are in
+`docs/DATA_SOURCES.md` section 11. The click API is
+`docs/contracts/zip_data.md`.

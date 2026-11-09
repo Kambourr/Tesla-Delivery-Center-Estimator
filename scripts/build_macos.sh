@@ -29,8 +29,32 @@ if [[ "$(uname -m)" != "arm64" ]]; then
   exit 1
 fi
 
-PYTHON="${PYTHON:-python3}"
+if [[ "${APP_BUNDLE}" == "1" ]] && ! command -v tippecanoe >/dev/null 2>&1; then
+  echo "tippecanoe is required to build nationwide ZIP tiles. Install it with: brew install tippecanoe" >&2
+  exit 1
+fi
+
+if [[ -z "${PYTHON:-}" ]]; then
+  if [[ -x .venv/bin/python ]]; then
+    PYTHON=".venv/bin/python"
+  else
+    PYTHON="python3"
+  fi
+fi
 "${PYTHON}" -m pip install -e ".[packaging]"
+
+# Python 3.14 skips .pth files marked UF_HIDDEN. An editable install on a
+# Desktop checkout can come up that way, and then `python -m dce` cannot
+# import the package. Clear the flag, and put src on PYTHONPATH as well.
+SITE="$("${PYTHON}" -c 'import sysconfig; print(sysconfig.get_path("purelib"))')"
+if [[ -d "${SITE}" ]]; then
+  shopt -s nullglob
+  for pth in "${SITE}"/*.pth; do
+    chflags nohidden "${pth}"
+  done
+  shopt -u nullglob
+fi
+export PYTHONPATH="${PWD}/src${PYTHONPATH:+:${PYTHONPATH}}"
 RESULTS_DIR="data/results"
 RESULTS_DB="${RESULTS_DIR}/dce.sqlite"
 
@@ -83,12 +107,29 @@ PY
   export DCE_PRECOMPUTE_FINISHED="${PRECOMPUTE_FINISHED}"
 fi
 
+set +e
 "${PYTHON}" -m PyInstaller --noconfirm --clean \
   --workpath build/pyinstaller \
   --distpath dist \
   packaging/dce_macos.spec
+pyinstaller_status=$?
+set -e
 
 APP="dist/DeliveryCenterEstimator.app"
+# PyInstaller's own ad-hoc signature fails with "resource fork, Finder
+# information, or similar detritus not allowed" when the checkout lives on
+# the Desktop. Strip those attributes and sign again.
+if [[ -d "${APP}" ]]; then
+  xattr -cr "${APP}"
+  codesign --force --deep -s - "${APP}"
+  codesign --verify --deep --strict "${APP}"
+fi
+if [[ "${pyinstaller_status}" -ne 0 ]]; then
+  if [[ ! -d "${APP}" ]] || ! codesign --verify --deep --strict "${APP}" >/dev/null 2>&1; then
+    echo "PyInstaller exited ${pyinstaller_status}." >&2
+    exit "${pyinstaller_status}"
+  fi
+fi
 echo "Built ${APP}"
 echo "Gatekeeper: right-click the app and choose Open the first time."
 

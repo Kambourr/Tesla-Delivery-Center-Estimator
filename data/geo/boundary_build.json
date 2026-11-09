@@ -1,0 +1,11 @@
+{
+  "accessed": "2026-11-09",
+  "bay_area_geojson_bytes": 452598,
+  "bay_area_zctas": 300,
+  "national_geojson_bytes": 71158217,
+  "national_pmtiles_bytes": 22151345,
+  "pmtiles_layer": "zcta",
+  "pmtiles_zooms": "3-8",
+  "source": "https://www2.census.gov/geo/tiger/GENZ2020/shp/cb_2020_us_zcta520_500k.zip",
+  "tolerance_degrees": 0.001
+}

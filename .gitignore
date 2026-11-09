@@ -23,6 +23,10 @@ dist/
 build/
 *.manifest
 
+# National ZCTA tiles are rebuilt by scripts/build_zcta_boundaries.py.
+data/geo/*.pmtiles
+data/geo/zcta_us.geojson
+
 # Generated local data. Bundled seed databases under data/seed/ may be committed.
 data/cache/
 extract_cache/

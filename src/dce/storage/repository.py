@@ -19,6 +19,7 @@ the last ``upsert_source`` commits them together.
 from __future__ import annotations
 
 import sqlite3
+from collections.abc import Sequence
 from dataclasses import dataclass
 
 
@@ -102,6 +103,7 @@ class ZctaAcsRecord:
     mean_commute: float | None
     median_home_value: float | None
     households: float | None = None
+    median_gross_rent: float | None = None
 
 
 @dataclass(frozen=True)
@@ -135,7 +137,7 @@ def get_zcta_acs(conn: sqlite3.Connection, zcta: str, year: int) -> ZctaAcsRecor
     """Return one ACS row, or ``None`` when that ZCTA and year were never stored."""
     query = (
         "SELECT zcta, year, population, median_hh_income, vehicles_available, "
-        "mean_commute, median_home_value, households FROM zcta_acs "
+        "mean_commute, median_home_value, households, median_gross_rent FROM zcta_acs "
         "WHERE zcta = ? AND year = ?"
     )
     row = conn.execute(query, (zcta, year)).fetchone()
@@ -152,15 +154,16 @@ def upsert_zcta_acs(
         """
         INSERT INTO zcta_acs (
             zcta, year, population, median_hh_income, vehicles_available,
-            mean_commute, median_home_value, households
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            mean_commute, median_home_value, households, median_gross_rent
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(zcta, year) DO UPDATE SET
             population = excluded.population,
             median_hh_income = excluded.median_hh_income,
             vehicles_available = excluded.vehicles_available,
             mean_commute = excluded.mean_commute,
             median_home_value = excluded.median_home_value,
-            households = excluded.households
+            households = excluded.households,
+            median_gross_rent = excluded.median_gross_rent
         """,
         (
             record.zcta,
@@ -171,6 +174,7 @@ def upsert_zcta_acs(
             record.mean_commute,
             record.median_home_value,
             record.households,
+            record.median_gross_rent,
         ),
     )
     if commit:
@@ -289,7 +293,17 @@ def _optional_int(value: object) -> int | None:
 
 
 def _zcta_from_row(row: sqlite3.Row | tuple[object, ...]) -> ZctaAcsRecord:
-    zcta, year, population, income, vehicles, commute, home_value, households = row
+    (
+        zcta,
+        year,
+        population,
+        income,
+        vehicles,
+        commute,
+        home_value,
+        households,
+        gross_rent,
+    ) = row
     return ZctaAcsRecord(
         zcta=str(zcta),
         year=_required_int(year),
@@ -299,6 +313,7 @@ def _zcta_from_row(row: sqlite3.Row | tuple[object, ...]) -> ZctaAcsRecord:
         mean_commute=_optional_float(commute),
         median_home_value=_optional_float(home_value),
         households=_optional_float(households),
+        median_gross_rent=_optional_float(gross_rent),
     )
 
 
@@ -361,6 +376,7 @@ class ZctaCentroidRecord:
     lon: float
     vintage: str
     as_of: str
+    land_sqmi: float | None = None
 
 
 @dataclass(frozen=True)
@@ -446,7 +462,8 @@ def get_zcta_centroid(
 ) -> ZctaCentroidRecord | None:
     """Return one ZCTA internal point, or ``None`` when it was never stored."""
     query = (
-        "SELECT zcta, lat, lon, vintage, as_of FROM zcta_centroid WHERE zcta = ? AND vintage = ?"
+        "SELECT zcta, lat, lon, vintage, as_of, land_sqmi FROM zcta_centroid "
+        "WHERE zcta = ? AND vintage = ?"
     )
     row = conn.execute(query, (zcta, vintage)).fetchone()
     if row is None:
@@ -460,14 +477,15 @@ def upsert_zcta_centroid(
     """Insert or replace one ZCTA centroid."""
     conn.execute(
         """
-        INSERT INTO zcta_centroid (zcta, lat, lon, vintage, as_of)
-        VALUES (?, ?, ?, ?, ?)
+        INSERT INTO zcta_centroid (zcta, lat, lon, vintage, as_of, land_sqmi)
+        VALUES (?, ?, ?, ?, ?, ?)
         ON CONFLICT(zcta, vintage) DO UPDATE SET
             lat = excluded.lat,
             lon = excluded.lon,
-            as_of = excluded.as_of
+            as_of = excluded.as_of,
+            land_sqmi = excluded.land_sqmi
         """,
-        (record.zcta, record.lat, record.lon, record.vintage, record.as_of),
+        (record.zcta, record.lat, record.lon, record.vintage, record.as_of, record.land_sqmi),
     )
     if commit:
         conn.commit()
@@ -603,13 +621,14 @@ def _delivery_center_from_row(row: sqlite3.Row | tuple[object, ...]) -> Delivery
 
 
 def _centroid_from_row(row: sqlite3.Row | tuple[object, ...]) -> ZctaCentroidRecord:
-    zcta, lat, lon, vintage, as_of = row
+    zcta, lat, lon, vintage, as_of, land_sqmi = row
     return ZctaCentroidRecord(
         zcta=str(zcta),
         lat=_required_float(lat),
         lon=_required_float(lon),
         vintage=str(vintage),
         as_of=str(as_of),
+        land_sqmi=_optional_float(land_sqmi),
     )
 
 
@@ -646,3 +665,627 @@ def _required_float(value: object) -> float:
     if isinstance(value, bool) or not isinstance(value, (int, float)):
         raise TypeError(f"Expected a number from SQLite, got {value!r}.")
     return float(value)
+
+
+@dataclass(frozen=True)
+class ZipCountyRecord:
+    """One ``zip_county`` row. ``tot_ratio`` is the land share for a ZCTA."""
+
+    zip_code: str
+    county_fips: str
+    state: str
+    tot_ratio: float
+    county_name: str = ""
+    as_of: str | None = None
+
+
+@dataclass(frozen=True)
+class ZipCbsaRecord:
+    """One ``zip_cbsa`` row. ``cbsa`` may be a metropolitan division."""
+
+    zip_code: str
+    cbsa: str
+    tot_ratio: float
+    cbsa_name: str = ""
+    as_of: str | None = None
+
+
+@dataclass(frozen=True)
+class ZipZctaRecord:
+    """One ``zip_zcta`` row."""
+
+    zip_code: str
+    zcta: str
+    tot_ratio: float = 1.0
+
+
+@dataclass(frozen=True)
+class RentCbsaRecord:
+    """One industrial asking-rent seed row."""
+
+    cbsa: str
+    property_type: str
+    rent_psf_year: float
+    as_of: str
+    citation: str
+    broker: str
+    fetched_at: str | None = None
+
+
+@dataclass(frozen=True)
+class RentZipObsRecord:
+    """One ZIP rent observation, usually a GSA lease summary."""
+
+    zip_code: str
+    property_type: str
+    rent_psf_year: float
+    as_of: str
+    source: str
+    citation: str
+    n_leases: int | None = None
+
+
+@dataclass(frozen=True)
+class RentModelRecord:
+    """The frozen ACS adjustment. ``formula_json`` holds the exponents."""
+
+    model_id: str
+    formula_json: str
+    trained_on: str
+    as_of: str
+
+
+@dataclass(frozen=True)
+class RentCacheRecord:
+    """The last ``resolve_rent`` result for a ZIP."""
+
+    zip_code: str
+    rent_psf_year: float
+    property_type: str
+    tier: str
+    confidence: str
+    as_of: str
+    components_json: str
+    resolved_at: str
+    citation: str
+
+
+@dataclass(frozen=True)
+class SafmrRecord:
+    """HUD Small Area FMR, 2-bedroom, dollars per month."""
+
+    zip_code: str
+    rent_2br_month: float
+    as_of: str
+    citation: str
+
+
+def replace_zip_geography(
+    conn: sqlite3.Connection,
+    counties: Sequence[ZipCountyRecord],
+    cbsas: Sequence[ZipCbsaRecord],
+    zctas: Sequence[ZipZctaRecord],
+) -> None:
+    """Replace the ZIP crosswalk tables in one transaction."""
+    if not counties or not zctas:
+        raise ValueError("Refusing to replace the ZIP crosswalk with no rows.")
+    conn.execute("DELETE FROM zip_county")
+    conn.execute("DELETE FROM zip_cbsa")
+    conn.execute("DELETE FROM zip_zcta")
+    conn.executemany(
+        """
+        INSERT INTO zip_county (
+            zip, county_fips, state, res_ratio, bus_ratio, oth_ratio, tot_ratio, as_of, county_name
+        ) VALUES (?, ?, ?, NULL, NULL, NULL, ?, ?, ?)
+        """,
+        [
+            (row.zip_code, row.county_fips, row.state, row.tot_ratio, row.as_of, row.county_name)
+            for row in counties
+        ],
+    )
+    conn.executemany(
+        """
+        INSERT INTO zip_cbsa (zip, cbsa, res_ratio, bus_ratio, oth_ratio, tot_ratio, as_of, cbsa_name)
+        VALUES (?, ?, NULL, NULL, NULL, ?, ?, ?)
+        """,
+        [(row.zip_code, row.cbsa, row.tot_ratio, row.as_of, row.cbsa_name) for row in cbsas],
+    )
+    conn.executemany(
+        "INSERT INTO zip_zcta (zip, zcta, tot_ratio) VALUES (?, ?, ?)",
+        [(row.zip_code, row.zcta, row.tot_ratio) for row in zctas],
+    )
+    conn.commit()
+
+
+def list_zip_counties(conn: sqlite3.Connection, zip_code: str) -> tuple[ZipCountyRecord, ...]:
+    """Return county rows for one ZIP, highest land share first."""
+    query = (
+        "SELECT zip, county_fips, state, tot_ratio, county_name, as_of FROM zip_county "
+        "WHERE zip = ? ORDER BY tot_ratio DESC, county_fips"
+    )
+    return tuple(_zip_county_from_row(row) for row in conn.execute(query, (zip_code,)))
+
+
+def list_zip_cbsas(conn: sqlite3.Connection, zip_code: str) -> tuple[ZipCbsaRecord, ...]:
+    """Return CBSA rows for one ZIP, highest land share first."""
+    query = (
+        "SELECT zip, cbsa, tot_ratio, cbsa_name, as_of FROM zip_cbsa "
+        "WHERE zip = ? ORDER BY tot_ratio DESC, cbsa"
+    )
+    return tuple(_zip_cbsa_from_row(row) for row in conn.execute(query, (zip_code,)))
+
+
+def list_zip_zctas(conn: sqlite3.Connection, zip_code: str) -> tuple[ZipZctaRecord, ...]:
+    """Return ZCTA rows for one ZIP."""
+    query = "SELECT zip, zcta, tot_ratio FROM zip_zcta WHERE zip = ? ORDER BY tot_ratio DESC, zcta"
+    return tuple(_zip_zcta_from_row(row) for row in conn.execute(query, (zip_code,)))
+
+
+def replace_zcta_centroids(
+    conn: sqlite3.Connection, rows: Sequence[ZctaCentroidRecord], *, vintage: str
+) -> None:
+    """Replace centroids for one gazetteer vintage."""
+    if not rows:
+        raise ValueError("Refusing to replace centroids with no rows.")
+    conn.execute("DELETE FROM zcta_centroid WHERE vintage = ?", (vintage,))
+    conn.executemany(
+        """
+        INSERT INTO zcta_centroid (zcta, lat, lon, vintage, as_of, land_sqmi)
+        VALUES (?, ?, ?, ?, ?, ?)
+        """,
+        [(row.zcta, row.lat, row.lon, row.vintage, row.as_of, row.land_sqmi) for row in rows],
+    )
+    conn.commit()
+
+
+def replace_zcta_acs_year(
+    conn: sqlite3.Connection, rows: Sequence[ZctaAcsRecord], *, year: int
+) -> None:
+    """Replace ACS rows for one year."""
+    if not rows:
+        raise ValueError("Refusing to replace ACS rows with no rows.")
+    conn.execute("DELETE FROM zcta_acs WHERE year = ?", (year,))
+    conn.executemany(
+        """
+        INSERT INTO zcta_acs (
+            zcta, year, population, median_hh_income, vehicles_available,
+            mean_commute, median_home_value, households, median_gross_rent
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        [
+            (
+                row.zcta,
+                row.year,
+                row.population,
+                row.median_hh_income,
+                row.vehicles_available,
+                row.mean_commute,
+                row.median_home_value,
+                row.households,
+                row.median_gross_rent,
+            )
+            for row in rows
+        ],
+    )
+    conn.commit()
+
+
+def get_latest_zcta_acs(conn: sqlite3.Connection, zcta: str) -> ZctaAcsRecord | None:
+    """Return the newest ACS row for a ZCTA."""
+    query = (
+        "SELECT zcta, year, population, median_hh_income, vehicles_available, "
+        "mean_commute, median_home_value, households, median_gross_rent FROM zcta_acs "
+        "WHERE zcta = ? ORDER BY year DESC LIMIT 1"
+    )
+    row = conn.execute(query, (zcta,)).fetchone()
+    if row is None:
+        return None
+    return _zcta_from_row(row)
+
+
+def acs_positive_values_for_cbsa(
+    conn: sqlite3.Connection, cbsa: str, year: int, column: str
+) -> tuple[float, ...]:
+    """Return one ACS measure for ZCTAs whose dominant CBSA is ``cbsa``.
+
+    ``column`` is a fixed ACS measure name. ZIPs that are not their own ZCTA
+    are left out so a post-office box is not a second copy of the same rent.
+    """
+    allowed = {
+        "median_gross_rent",
+        "median_hh_income",
+        "median_home_value",
+        "population",
+        "households",
+    }
+    if column not in allowed:
+        raise ValueError(f"ACS column is not a rent-model measure: {column}.")
+    query = (
+        f"SELECT a.{column} FROM zcta_acs AS a "
+        "JOIN zip_zcta AS z ON z.zcta = a.zcta AND z.zip = z.zcta "
+        "JOIN zip_cbsa AS c ON c.zip = z.zip "
+        f"WHERE c.cbsa = ? AND a.year = ? AND a.{column} > 0"
+    )
+    return tuple(float(row[0]) for row in conn.execute(query, (cbsa, year)))
+
+
+def cbsas_for_state(conn: sqlite3.Connection, state: str) -> tuple[str, ...]:
+    """Return distinct CBSA codes that appear on ZIPs in ``state``."""
+    query = (
+        "SELECT DISTINCT c.cbsa FROM zip_cbsa AS c "
+        "JOIN zip_county AS k ON k.zip = c.zip "
+        "WHERE k.state = ? ORDER BY c.cbsa"
+    )
+    return tuple(str(row[0]) for row in conn.execute(query, (state,)))
+
+
+def upsert_oews_wages(conn: sqlite3.Connection, rows: Sequence[OewsWageRecord]) -> None:
+    """Insert or replace many OEWS rows in one transaction."""
+    conn.executemany(
+        """
+        INSERT INTO oews_wage (
+            area_code, area_name, soc, soc_title, mean_annual, median_annual, as_of
+        ) VALUES (?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(area_code, soc, as_of) DO UPDATE SET
+            area_name = excluded.area_name,
+            soc_title = excluded.soc_title,
+            mean_annual = excluded.mean_annual,
+            median_annual = excluded.median_annual
+        """,
+        [
+            (
+                row.area_code,
+                row.area_name,
+                row.soc,
+                row.soc_title,
+                row.mean_annual,
+                row.median_annual,
+                row.as_of,
+            )
+            for row in rows
+        ],
+    )
+    conn.commit()
+
+
+def list_oews_wages(conn: sqlite3.Connection, area_code: str) -> tuple[OewsWageRecord, ...]:
+    """Return every SOC for an area at that area's newest ``as_of``."""
+    query = (
+        "SELECT area_code, area_name, soc, soc_title, mean_annual, median_annual, as_of "
+        "FROM oews_wage WHERE area_code = ? AND as_of = ("
+        "SELECT MAX(as_of) FROM oews_wage WHERE area_code = ?"
+        ") ORDER BY soc"
+    )
+    return tuple(_oews_from_row(row) for row in conn.execute(query, (area_code, area_code)))
+
+
+def replace_rent_cbsa(conn: sqlite3.Connection, rows: Sequence[RentCbsaRecord]) -> None:
+    """Replace the broker industrial seed."""
+    conn.execute("DELETE FROM rent_cbsa")
+    conn.executemany(
+        """
+        INSERT INTO rent_cbsa (
+            cbsa, property_type, rent_psf_year, as_of, citation, broker, fetched_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?)
+        """,
+        [
+            (
+                row.cbsa,
+                row.property_type,
+                row.rent_psf_year,
+                row.as_of,
+                row.citation,
+                row.broker,
+                row.fetched_at,
+            )
+            for row in rows
+        ],
+    )
+    conn.commit()
+
+
+def list_rent_cbsa(conn: sqlite3.Connection, cbsa: str) -> tuple[RentCbsaRecord, ...]:
+    """Return seed rows for one CBSA, newest ``as_of`` first. Industrial before other types."""
+    query = (
+        "SELECT cbsa, property_type, rent_psf_year, as_of, citation, broker, fetched_at "
+        "FROM rent_cbsa WHERE cbsa = ? ORDER BY as_of DESC, "
+        "CASE property_type WHEN 'industrial' THEN 0 WHEN 'flex' THEN 1 ELSE 2 END"
+    )
+    return tuple(_rent_cbsa_from_row(row) for row in conn.execute(query, (cbsa,)))
+
+
+def list_rent_cbsa_for_codes(
+    conn: sqlite3.Connection, cbsas: Sequence[str]
+) -> tuple[RentCbsaRecord, ...]:
+    """Return the newest industrial row for each requested CBSA that has one."""
+    if not cbsas:
+        return ()
+    placeholders = ", ".join("?" for _ in cbsas)
+    query = (
+        "SELECT cbsa, property_type, rent_psf_year, as_of, citation, broker, fetched_at "
+        f"FROM rent_cbsa WHERE cbsa IN ({placeholders}) AND property_type = 'industrial' "
+        "ORDER BY cbsa, as_of DESC"
+    )
+    seen: set[str] = set()
+    rows: list[RentCbsaRecord] = []
+    for raw in conn.execute(query, tuple(cbsas)):
+        record = _rent_cbsa_from_row(raw)
+        if record.cbsa in seen:
+            continue
+        seen.add(record.cbsa)
+        rows.append(record)
+    return tuple(rows)
+
+
+def list_rent_zip_obs_for_zips(
+    conn: sqlite3.Connection, zip_codes: Sequence[str], source: str
+) -> tuple[RentZipObsRecord, ...]:
+    """Return observations for these ZIPs and one source."""
+    if not zip_codes:
+        return ()
+    placeholders = ", ".join("?" for _ in zip_codes)
+    query = (
+        "SELECT zip, property_type, rent_psf_year, as_of, source, citation, n_leases "
+        f"FROM rent_zip_obs WHERE source = ? AND zip IN ({placeholders})"
+    )
+    return tuple(_rent_obs_from_row(row) for row in conn.execute(query, (source, *zip_codes)))
+
+
+def zips_in_county(conn: sqlite3.Connection, county_fips: str) -> tuple[str, ...]:
+    """Return ZIPs that touch a county."""
+    query = "SELECT zip FROM zip_county WHERE county_fips = ? ORDER BY zip"
+    return tuple(str(row[0]) for row in conn.execute(query, (county_fips,)))
+
+
+def upsert_rent_model(conn: sqlite3.Connection, record: RentModelRecord) -> None:
+    """Insert or replace one coefficient row."""
+    conn.execute(
+        """
+        INSERT INTO rent_model_coeffs (model_id, formula_json, trained_on, as_of)
+        VALUES (?, ?, ?, ?)
+        ON CONFLICT(model_id) DO UPDATE SET
+            formula_json = excluded.formula_json,
+            trained_on = excluded.trained_on,
+            as_of = excluded.as_of
+        """,
+        (record.model_id, record.formula_json, record.trained_on, record.as_of),
+    )
+    conn.commit()
+
+
+def get_rent_model(conn: sqlite3.Connection, model_id: str) -> RentModelRecord | None:
+    """Return one coefficient row."""
+    query = (
+        "SELECT model_id, formula_json, trained_on, as_of FROM rent_model_coeffs WHERE model_id = ?"
+    )
+    row = conn.execute(query, (model_id,)).fetchone()
+    if row is None:
+        return None
+    model_id_value, formula_json, trained_on, as_of = row
+    return RentModelRecord(
+        model_id=str(model_id_value),
+        formula_json=str(formula_json),
+        trained_on=str(trained_on),
+        as_of=str(as_of),
+    )
+
+
+def upsert_rent_cache(conn: sqlite3.Connection, record: RentCacheRecord) -> None:
+    """Insert or replace the resolved rent for one ZIP."""
+    conn.execute(
+        """
+        INSERT INTO rent_resolved_cache (
+            zip, rent_psf_year, property_type, tier, confidence, as_of,
+            components_json, resolved_at, citation
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(zip) DO UPDATE SET
+            rent_psf_year = excluded.rent_psf_year,
+            property_type = excluded.property_type,
+            tier = excluded.tier,
+            confidence = excluded.confidence,
+            as_of = excluded.as_of,
+            components_json = excluded.components_json,
+            resolved_at = excluded.resolved_at,
+            citation = excluded.citation
+        """,
+        (
+            record.zip_code,
+            record.rent_psf_year,
+            record.property_type,
+            record.tier,
+            record.confidence,
+            record.as_of,
+            record.components_json,
+            record.resolved_at,
+            record.citation,
+        ),
+    )
+    conn.commit()
+
+
+def upsert_safmr(conn: sqlite3.Connection, record: SafmrRecord) -> None:
+    """Insert or replace one Small Area FMR row."""
+    conn.execute(
+        """
+        INSERT INTO rent_safmr (zip, rent_2br_month, as_of, citation)
+        VALUES (?, ?, ?, ?)
+        ON CONFLICT(zip, as_of) DO UPDATE SET
+            rent_2br_month = excluded.rent_2br_month,
+            citation = excluded.citation
+        """,
+        (record.zip_code, record.rent_2br_month, record.as_of, record.citation),
+    )
+    conn.commit()
+
+
+def get_latest_safmr(conn: sqlite3.Connection, zip_code: str) -> SafmrRecord | None:
+    """Return the newest 2-bedroom SAFMR for a ZIP."""
+    query = (
+        "SELECT zip, rent_2br_month, as_of, citation FROM rent_safmr "
+        "WHERE zip = ? ORDER BY as_of DESC LIMIT 1"
+    )
+    row = conn.execute(query, (zip_code,)).fetchone()
+    if row is None:
+        return None
+    zip_value, rent, as_of, citation = row
+    return SafmrRecord(
+        zip_code=str(zip_value),
+        rent_2br_month=_required_float(rent),
+        as_of=str(as_of),
+        citation=str(citation),
+    )
+
+
+def replace_zev_sales(
+    conn: sqlite3.Connection,
+    zip_rows: Sequence[ZevZipSalesRecord],
+    county_rows: Sequence[ZevCountySalesRecord],
+) -> None:
+    """Replace stored CEC sales. ``dmv`` and ``fallback`` rows are left in place."""
+    if not zip_rows and not county_rows:
+        raise ValueError("Refusing to replace CEC sales with no rows.")
+    conn.execute("DELETE FROM zev_sales_zip WHERE source = 'cec'")
+    conn.execute("DELETE FROM zev_sales_county WHERE source = 'cec'")
+    conn.executemany(
+        """
+        INSERT INTO zev_sales_zip (
+            zip, state, data_year, quarter, fuel_type, vehicles, as_of, source
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        [
+            (
+                row.zip_code,
+                row.state,
+                row.data_year,
+                row.quarter,
+                row.fuel_type,
+                row.vehicles,
+                row.as_of,
+                row.source,
+            )
+            for row in zip_rows
+        ],
+    )
+    conn.executemany(
+        """
+        INSERT INTO zev_sales_county (
+            county, state, data_year, quarter, fuel_type, make, vehicles, as_of, source
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        [
+            (
+                row.county,
+                row.state,
+                row.data_year,
+                row.quarter,
+                row.fuel_type,
+                row.make,
+                row.vehicles,
+                row.as_of,
+                row.source,
+            )
+            for row in county_rows
+        ],
+    )
+    conn.commit()
+
+
+def list_zev_zip_year(
+    conn: sqlite3.Connection, zip_code: str, *, source: str = "cec"
+) -> tuple[ZevZipSalesRecord, ...]:
+    """Return ZIP sales for the newest year stored for that ZIP and source."""
+    query = (
+        "SELECT zip, state, data_year, quarter, fuel_type, vehicles, as_of, source "
+        "FROM zev_sales_zip WHERE zip = ? AND source = ? AND data_year = ("
+        "SELECT MAX(data_year) FROM zev_sales_zip WHERE zip = ? AND source = ?"
+        ") ORDER BY quarter, fuel_type"
+    )
+    return tuple(
+        _zev_zip_from_row(row) for row in conn.execute(query, (zip_code, source, zip_code, source))
+    )
+
+
+def list_zev_county_year(
+    conn: sqlite3.Connection, county: str, *, source: str = "cec"
+) -> tuple[ZevCountySalesRecord, ...]:
+    """Return county sales for the newest year stored for that county name."""
+    query = (
+        "SELECT county, state, data_year, quarter, fuel_type, make, vehicles, as_of, source "
+        "FROM zev_sales_county WHERE county = ? AND source = ? AND data_year = ("
+        "SELECT MAX(data_year) FROM zev_sales_county WHERE county = ? AND source = ?"
+        ") ORDER BY quarter, make"
+    )
+    return tuple(
+        _zev_county_from_row(row) for row in conn.execute(query, (county, source, county, source))
+    )
+
+
+def get_latest_ev_zip(conn: sqlite3.Connection, zip_code: str) -> EvZipRecord | None:
+    """Return the newest vehicle-count row for a ZIP. ``cec`` wins over ``dmv`` over ``fallback``."""
+    query = (
+        "SELECT zip, state, bev, phev, fcev, total_ldv, as_of, source FROM ev_zip "
+        "WHERE zip = ? ORDER BY as_of DESC, "
+        "CASE source WHEN 'cec' THEN 0 WHEN 'dmv' THEN 1 ELSE 2 END LIMIT 1"
+    )
+    row = conn.execute(query, (zip_code,)).fetchone()
+    if row is None:
+        return None
+    return _ev_from_row(row)
+
+
+def _zip_county_from_row(row: sqlite3.Row | tuple[object, ...]) -> ZipCountyRecord:
+    zip_code, county_fips, state, tot_ratio, county_name, as_of = row
+    return ZipCountyRecord(
+        zip_code=str(zip_code),
+        county_fips=str(county_fips),
+        state=str(state),
+        tot_ratio=_required_float(tot_ratio),
+        county_name="" if county_name is None else str(county_name),
+        as_of=None if as_of is None else str(as_of),
+    )
+
+
+def _zip_cbsa_from_row(row: sqlite3.Row | tuple[object, ...]) -> ZipCbsaRecord:
+    zip_code, cbsa, tot_ratio, cbsa_name, as_of = row
+    return ZipCbsaRecord(
+        zip_code=str(zip_code),
+        cbsa=str(cbsa),
+        tot_ratio=_required_float(tot_ratio),
+        cbsa_name="" if cbsa_name is None else str(cbsa_name),
+        as_of=None if as_of is None else str(as_of),
+    )
+
+
+def _zip_zcta_from_row(row: sqlite3.Row | tuple[object, ...]) -> ZipZctaRecord:
+    zip_code, zcta, tot_ratio = row
+    return ZipZctaRecord(
+        zip_code=str(zip_code),
+        zcta=str(zcta),
+        tot_ratio=1.0 if tot_ratio is None else _required_float(tot_ratio),
+    )
+
+
+def _rent_cbsa_from_row(row: sqlite3.Row | tuple[object, ...]) -> RentCbsaRecord:
+    cbsa, property_type, rent, as_of, citation, broker, fetched_at = row
+    return RentCbsaRecord(
+        cbsa=str(cbsa),
+        property_type=str(property_type),
+        rent_psf_year=_required_float(rent),
+        as_of=str(as_of),
+        citation=str(citation),
+        broker=str(broker),
+        fetched_at=None if fetched_at is None else str(fetched_at),
+    )
+
+
+def _rent_obs_from_row(row: sqlite3.Row | tuple[object, ...]) -> RentZipObsRecord:
+    zip_code, property_type, rent, as_of, source, citation, n_leases = row
+    return RentZipObsRecord(
+        zip_code=str(zip_code),
+        property_type=str(property_type),
+        rent_psf_year=_required_float(rent),
+        as_of=str(as_of),
+        source=str(source),
+        citation=str(citation),
+        n_leases=None if n_leases is None else _required_int(n_leases),
+    )

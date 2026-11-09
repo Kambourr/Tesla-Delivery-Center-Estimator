@@ -110,16 +110,29 @@ All sources below were URL-checked as of 2026-11-08 (America/Los_Angeles). **PUB
    `rent_zip = rent_cbsa × f(ACS_zcta)` where `f` is a frozen linear model (coefficients in `rent_model_coeffs`) trained offline on (GSA $/SF ∪ broker metro rents) vs ACS income, density, median home value. No network, no LLM.
 4. **Property-type note:** For delivery-center narrative use **industrial / flex** asking rents; if only office GSA comps exist for a ZIP, down-weight and flag confidence.
 
-#### Deterministic fallback chain (always automatic)
+#### Deterministic fallback chain (shipped 2026-11-09)
+
+`resolve_rent` implements this chain. The Python fields are in
+`docs/contracts/zip_data.md`. ZORI is not in the seed (redistribution terms).
 
 ```
-1. ZIP-adjusted CBSA industrial (seed + ACS)     → confidence high/medium
-2. County median of GSA $/SF (industrial-ish filter if any) + ACS adj
-3. Raw CBSA industrial seed (no ZIP adj)
-4. State median industrial seed / GSA
-5. National industrial default from seed
-6. Weak: HUD SAFMR 2BR or ZORI × commercial_residential_ratio  → confidence low
+1. zip_adjusted_cbsa   industrial seed × acs_rent_v1     high, or medium if clamped
+2. county_gsa          median of rent_zip_obs source=gsa
+3. cbsa_raw            industrial seed, no ACS factor
+4. state               median of industrial seeds, only when that state has ≥3 CBSA seeds
+5. national            industrial seed stored as CBSA 00000 (none shipped)
+6. hud_safmr           else acs_gross_rent (B25064)      low, residential proxy
 ```
+
+The shipped industrial seed is one row: CBSA `41884`, $25.68/sf/year
+($2.14/sf/month), as_of 2026-09-30, Kidder Mathews Peninsula Industrial
+Market Report Q3 2026
+(https://kidder.com/market-reports/peninsula-industrial-market-report/).
+`acs_rent_v1` uses the ZCTA median gross rent ratio only
+(`b_acs_rent = 1`; income, density, and home value exponents are 0 until a
+GSA fit). A single Bay Area headline cannot become the California or
+national rent. Other ZIPs use their own ACS `B25064` rent, converted as
+`monthly * 12 / 1000`, and are marked `residential_proxy` at low confidence.
 
 UI shows: resolved `$/SF/yr`, **source tier**, **confidence**, **as_of**, staleness badge. Never a blank requiring typing.
 
@@ -191,6 +204,36 @@ Downstream code may filter on `confidence` (for example, keep `high` and `medium
 **Known gaps.** The live list on 2026-11-08 had 135 entries (CA 31, FL 19, IL 9, WA 6; research §1.1). The 2024 capture has 118. Centers opened after December 2024 are missing unless the research list or All the Places names them. They are not added by hand. The seed is a lower bound on competing centers.
 
 **Refresh.** TTL 90 days (`DELIVERY_CENTER_TTL_DAYS`). To refresh, run `python scripts/build_us_delivery_centers.py --refresh`. If a newer Wayback capture or All the Places run exists, update `FINDUS_CAPTURE` / `ATP_RUN` and the source ids, and rename the output file to the new `as_of`.
+
+### 11. Nationwide ZIP inputs (map click)
+
+Accessed **2026-11-09**. Counts are `data/seed/coverage.json`. The Python API is `docs/contracts/zip_data.md`. Rebuild with `make zip-inputs` and `make zcta-boundaries`. Those targets are not part of `make check`. Tests use fixtures and the committed extracts. They do not download.
+
+The runtime allowlist is unchanged: `census.gov`, `bls.gov`, `huduser.gov`, `eia.gov`, `openei.org`, `energy.ca.gov`, `data.ca.gov`, `pge.com`. `data.hrsa.gov` is a curator host only (`scripts/build_zip_inputs.py`). It is not added to `dce.data.ingest.http`.
+
+| Input | File in `data/seed/` | Source | URL | Licence |
+|---|---|---|---|---|
+| ZCTA internal points | `zcta_centroid_2024.csv` (33,791) | Census 2024 Gazetteer | https://www2.census.gov/geo/docs/maps-data/data/gazetteer/2024_Gazetteer/2024_Gaz_zcta_national.zip | Public domain (US government work). `as_of` `2024-01-01` |
+| ZIP to county, CBSA, ZCTA | `zip_crosswalk.csv` (41,034 ZIPs, 54,196 ZIP-county rows, 33,791 ZCTAs, 26,524 ZCTAs with a CBSA) | Census 2020 ZCTA-to-county relationship, land-area share, plus the July 2023 CBSA delineation (list 1). `list1_2024.xlsx` was HTTP 404 on this date, so 2023 is the file | https://www2.census.gov/geo/docs/maps-data/data/rel2020/zcta520/tab20_zcta520_county20_natl.txt and https://www2.census.gov/programs-surveys/metro-micro/geographies/reference-files/2023/delineation-files/list1_2023.xlsx | Public domain. `GeoContext.cbsa` is the metropolitan division when list 1 has one (`41884` for San Mateo, not parent `41860`) |
+| ZIP Codes that are not ZCTAs | same crosswalk | HRSA GeoCare Navigator ZIP Code to ZCTA Crosswalk, 2025. Exact duplicate rows are collapsed. A blank ZCTA is skipped | https://data.hrsa.gov/DataDownload/GeoCareNavigator/ZIPCodetoZCTACrosswalk2025UDS.xlsx (index https://data.hrsa.gov/GeoCareNavigator/Resources) | US government work (HHS/HRSA). Not a runtime host |
+| Households, population, income, rent, home value, vehicles | `zcta_acs_2024.csv` | ACS 2024 5-year table-based summary files, ZCTA rows (`GEO_ID` prefix `860Z200US`). No API key. Summary column `B01003_E001` is API `B01003_001E` | https://www2.census.gov/programs-surveys/acs/summary_file/2024/table-based-SF/data/5YRData/ | Public domain. `as_of` `2024-12-31` |
+| Metro wages | `oews_metro_2025.csv` (403 rows) | BLS OEWS via `https://api.bls.gov/publicAPI/v2/timeseries/data/` (v1 when `BLS_API_KEY` is unset). May 2025. SOC `49-3023` mean and median for 392 of 393 metropolitan parent CBSAs. Guayama, PR (`25020`) returned no annual series. Delivery SOCs for the nation (`00000`) and for `41860`. The `www.bls.gov` bulk zip answered HTTP 403 from this environment, so the seed is the API extract. `parse_oews_bulk_csv` can read a curator CSV later | https://www.bls.gov/oes/tables.htm | Public domain. `as_of` `2025-05-01`. All 37 divisions map to the parent CBSA before the lookup |
+| Industrial rent | `rent_cbsa.csv`, `rent_model_coeffs.json` | One cited Kidder Mathews headline. Coefficients are the shipped `acs_rent_v1` defaults, not a GSA fit | https://kidder.com/market-reports/peninsula-industrial-market-report/ | Headline figure and citation only. No PDF in git |
+| California ZEV sales | `zev_zip_sales.csv`, `zev_county_sales.csv` | CEC New ZEV Sales workbook, newest year in the file (2026): 7,953 ZIP rows, 4,082 county rows | https://www.energy.ca.gov/files/zev-and-infrastructure-stats-data (file used: https://www.energy.ca.gov/filebrowser/download/10036?fid=10036) | California Energy Commission open data. Outside California, `ev_proxy` is `acs_national_fallback`. No invented state Tesla total |
+| HUD ZIP API | not the shipped crosswalk | `https://www.huduser.gov/hudapi/public/usps` type 2 and type 3. The docs page returned an HTTP 202 WAF challenge on this date, so the parser follows the published `data.results[].geoid` / `tot_ratio` / `state` shape and was not verified live | https://www.huduser.gov/portal/datasets/usps_crosswalk.html | US government work. Needs `HUD_TOKEN`. Missing token raises before any socket |
+
+ACS coverage among 33,772 ZCTA rows in the 2024 summary files: population 33,772, households 33,772, median household income 30,547, median home value 30,260, aggregate vehicles 28,665, median gross rent 25,751. The 19 Gazetteer ZCTAs that are absent from ACS stay in the crosswalk with null ACS fields. Census sentinels on an estimate become null. A margin-of-error sentinel does not null the estimate. `94402` matches the demo cache: population 25,475, households 10,125, income 172,522, vehicles 18,262, home value 2,000,001, median gross rent 3,501, internal point 37.540103, -122.330103, land 5.05 square miles.
+
+#### ZCTA polygons
+
+Census has not published a national ZCTA cartographic file since 2020 (the 2024 GENZ directory has no ZCTA zip). The 2024 gazetteer still says ZCTAs follow 2020 tabulation blocks.
+
+- **File:** https://www2.census.gov/geo/tiger/GENZ2020/shp/cb_2020_us_zcta520_500k.zip (1:500,000, code `ZCTA5CE20`). Public domain.
+- **Simplify:** Douglas-Peucker, 0.001 degrees (about 111 m), topology preserved, then reprojected to EPSG:4326. The only property is `zcta`.
+- **Nationwide asset:** PMTiles vector tiles, layer `zcta`, zooms 3–8, every polygon kept (`tippecanoe --no-feature-limit --no-tile-size-limit`). MapLibre decodes only the tiles in view. A single GeoJSON of the same 33,791 polygons is 71,158,217 bytes and would be parsed all at once, so it is not the runtime asset and it is not committed. `data/geo/zcta_us.pmtiles` is gitignored and is 22,151,345 bytes. `make zcta-boundaries` rebuilds it.
+- **Committed fixture:** `data/geo/zcta_bay_area.geojson`, 452,598 bytes, 300 ZCTAs whose dominant county is Alameda, Contra Costa, Marin, Napa, San Francisco, San Mateo, Santa Clara, Solano, or Sonoma. The same numbers are in `data/geo/boundary_build.json`.
+
+`make zip-inputs` reads a cache directory (default `data/cache/zip_inputs`, gitignored). The 2026-11-09 extracts were built from `/tmp/dce-public`. Pass `--fetch-bls` and `--fetch-zev` to call `api.bls.gov` and `energy.ca.gov`. Pass `--download` to fetch the Census and HRSA files. Curator downloads are HTTPS and refuse redirects.
 
 ## Offline caching strategy
 

@@ -37,13 +37,18 @@ class GazetteerError(IngestError):
 
 @dataclass(frozen=True)
 class ZctaCentroid:
-    """One ZCTA internal point. ``vintage`` is the gazetteer year as text."""
+    """One ZCTA internal point. ``vintage`` is the gazetteer year as text.
+
+    ``land_sqmi`` is ``ALAND_SQMI`` when the file has that column. Density
+    for the rent model is population divided by this area.
+    """
 
     zcta: str
     lat: float
     lon: float
     vintage: str
     as_of: str
+    land_sqmi: float | None = None
 
 
 def gazetteer_license_note() -> str:
@@ -106,7 +111,8 @@ def parse_zcta_gazetteer(text: str, *, year: int) -> tuple[ZctaCentroid, ...]:
         raise GazetteerError(
             "ZCTA gazetteer header must include GEOID, INTPTLAT, and INTPTLONG."
         ) from exc
-    width = max(geo_i, lat_i, lon_i)
+    land_i = header.index("ALAND_SQMI") if "ALAND_SQMI" in header else None
+    width = max(geo_i, lat_i, lon_i, land_i or 0)
     rows: list[ZctaCentroid] = []
     seen: set[str] = set()
     for line in lines[1:]:
@@ -126,6 +132,7 @@ def parse_zcta_gazetteer(text: str, *, year: int) -> tuple[ZctaCentroid, ...]:
                 lon=_coordinate(zcta, parts[lon_i], what="INTPTLONG", low=-180.0, high=180.0),
                 vintage=str(vintage),
                 as_of=as_of,
+                land_sqmi=None if land_i is None else _land(zcta, parts[land_i]),
             )
         )
     if not rows:
@@ -137,6 +144,16 @@ def _require_year(year: int) -> int:
     if isinstance(year, bool) or not isinstance(year, int) or year < 2000 or year > 2100:
         raise GazetteerError(f"Gazetteer year must be a 4-digit year, got {year!r}.")
     return year
+
+
+def _land(zcta: str, value: str) -> float:
+    try:
+        number = float(value)
+    except ValueError as exc:
+        raise GazetteerError(f"ZCTA {zcta} ALAND_SQMI is not a number: {value!r}.") from exc
+    if not math.isfinite(number) or number < 0:
+        raise GazetteerError(f"ZCTA {zcta} ALAND_SQMI is out of range: {value!r}.")
+    return number
 
 
 def _coordinate(zcta: str, value: str, *, what: str, low: float, high: float) -> float:

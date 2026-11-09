@@ -5,7 +5,7 @@ else
 PYTHON := python3
 endif
 
-.PHONY: setup lint typecheck test build check
+.PHONY: setup lint typecheck test build check zip-inputs zcta-boundaries
 
 setup:
 	python3 -m venv .venv
@@ -28,3 +28,10 @@ build:
 	./scripts/build_macos.sh
 
 check: lint typecheck test
+
+# Public-data extracts. Not part of CI. See docs/DATA_SOURCES.md.
+zip-inputs:
+	$(PYTHON) scripts/build_zip_inputs.py --cache /tmp/dce-public --fetch-bls --fetch-zev
+
+zcta-boundaries:
+	$(PYTHON) scripts/build_zcta_boundaries.py --cache /tmp/dce-public

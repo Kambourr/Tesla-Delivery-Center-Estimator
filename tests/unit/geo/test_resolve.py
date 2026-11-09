@@ -66,9 +66,20 @@ def test_unknown_zip_raises_typed_error() -> None:
     assert exc_info.value.zip_code == "99999"
     assert "99999" in str(exc_info.value)
 
-    with pytest.raises(UnknownZipError) as leading_zero:
-        resolve_zip("00501")
-    assert leading_zero.value.zip_code == "00501"
+
+def test_nationwide_rows_keep_local_geographies() -> None:
+    new_york = resolve_zip("10001")
+    assert new_york.state == "NY"
+    assert new_york.zcta == "10001"
+    assert new_york.cbsa not in {"41884", "41860"}
+    puerto = resolve_zip("00601")
+    assert puerto.zip_code == "00601"
+    assert puerto.zcta == "00601"
+    assert puerto.state == "PR"
+    holtsville = resolve_zip("00501")
+    assert holtsville.zip_code == "00501"
+    assert holtsville.zcta == "11742"
+    assert holtsville.state == "NY"
 
 
 def test_invalid_zip_raises_typed_error() -> None:
@@ -125,10 +136,9 @@ def test_missing_fixture_raises_typed_error(
         resolve_zip("94402")
 
 
-def test_fixture_search_failure_raises_typed_error(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(
-        "dce.geo.resolve._FIXTURE_PARTS",
-        ("tests", "fixtures", "no-such-hud.json"),
-    )
-    with pytest.raises(CrosswalkFixtureError, match="no-such-hud.json"):
+def test_missing_seed_directory_raises_typed_error(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    monkeypatch.setattr("dce.geo.resolve.bundled_seed_dir", lambda: tmp_path)
+    with pytest.raises(CrosswalkFixtureError, match="zip_crosswalk.csv"):
         resolve_zip("94402")

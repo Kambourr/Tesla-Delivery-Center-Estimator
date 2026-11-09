@@ -10,6 +10,8 @@ one reads the subject table. Variables:
   weights ZIPs by this count.
 * ``B19013_001E`` median household income
 * ``B25046_001E`` aggregate vehicles available
+* ``B25064_001E`` median gross rent (dollars per month). The rent resolver
+  uses this as the local adjuster and as the low-confidence residential proxy.
 * ``B25077_001E`` median home value (the rent model reads this later;
   ``2000001`` is the Census top-code for $2,000,000+)
 * ``S0801_C01_046E`` mean travel time to work, in minutes
@@ -41,6 +43,7 @@ HOUSEHOLDS_VARIABLE = "B11001_001E"
 INCOME_VARIABLE = "B19013_001E"
 VEHICLES_VARIABLE = "B25046_001E"
 HOME_VALUE_VARIABLE = "B25077_001E"
+GROSS_RENT_VARIABLE = "B25064_001E"
 COMMUTE_VARIABLE = "S0801_C01_046E"
 _ZCTA_COLUMN = "zip code tabulation area"
 _DETAILED_VARIABLES = (
@@ -50,6 +53,7 @@ _DETAILED_VARIABLES = (
     INCOME_VARIABLE,
     VEHICLES_VARIABLE,
     HOME_VALUE_VARIABLE,
+    GROSS_RENT_VARIABLE,
 )
 _COMMUTE_VARIABLES = ("NAME", COMMUTE_VARIABLE)
 _SENTINELS = frozenset(
@@ -81,6 +85,7 @@ class ZctaAcs:
     mean_commute: float | None
     median_home_value: float | None
     households: float | None = None
+    median_gross_rent: float | None = None
 
 
 class CensusAcsError(IngestError):
@@ -163,7 +168,31 @@ def zcta_acs_from_variables(zcta: str, year: int, values: Mapping[str, str | Non
         mean_commute=_estimate(values.get(COMMUTE_VARIABLE)),
         median_home_value=_estimate(values.get(HOME_VALUE_VARIABLE)),
         households=_estimate(values.get(HOUSEHOLDS_VARIABLE)),
+        median_gross_rent=_estimate(values.get(GROSS_RENT_VARIABLE)),
     )
+
+
+def zcta_acs_from_summary_files(
+    year: int,
+    tables: Mapping[str, str],
+) -> tuple[ZctaAcs, ...]:
+    """Build ZCTA rows from ACS 5-year table-based summary files.
+
+    ``tables`` maps an API variable name (``B01003_001E``) to the text of
+    ``acsdt5y{year}-b01003.dat``. The summary file names the same estimate
+    ``B01003_E001``. Only ZCTA rows (``GEO_ID`` prefix ``860Z200US``) are kept.
+    A variable that is absent leaves that field ``None``.
+    """
+    vintage = _require_year(year)
+    parsed = {name: _zcta_column(text, name) for name, text in tables.items()}
+    codes = sorted({zcta for column in parsed.values() for zcta in column})
+    if not codes:
+        raise CensusAcsError("ACS summary files have no ZCTA rows.")
+    rows: list[ZctaAcs] = []
+    for zcta in codes:
+        values = {name: column.get(zcta) for name, column in parsed.items()}
+        rows.append(zcta_acs_from_variables(zcta, vintage, values))
+    return tuple(rows)
 
 
 def require_zcta(zcta: str) -> str:
@@ -249,6 +278,43 @@ def _data_row(value: object, *, width: int) -> list[str | None]:
         else:
             cells.append(str(cell))
     return cells
+
+
+def _zcta_column(text: str, variable: str) -> dict[str, str | None]:
+    """Return ZCTA -> estimate text for one summary file."""
+    summary_name = _summary_estimate_name(variable)
+    lines = text.splitlines()
+    if not lines:
+        raise CensusAcsError(f"ACS summary file for {variable} is empty.")
+    header = lines[0].split("|")
+    try:
+        column = header.index(summary_name)
+    except ValueError as exc:
+        raise CensusAcsError(
+            f"ACS summary file for {variable} has no {summary_name} column."
+        ) from exc
+    found: dict[str, str | None] = {}
+    for line in lines[1:]:
+        if not line.startswith("860Z200US"):
+            continue
+        cells = line.split("|")
+        if len(cells) <= column:
+            raise CensusAcsError(f"ACS summary row for {variable} is shorter than the header.")
+        geo = cells[0]
+        if len(geo) < 5 or not geo[-5:].isdigit():
+            continue
+        zcta = geo[-5:]
+        cell = cells[column].strip()
+        found[zcta] = None if cell == "" else cell
+    return found
+
+
+def _summary_estimate_name(variable: str) -> str:
+    """Map ``B01003_001E`` to the summary-file name ``B01003_E001``."""
+    table, _, line = variable.partition("_")
+    if len(line) != 4 or not line[:-1].isdigit() or not line.endswith("E"):
+        raise CensusAcsError(f"ACS variable must look like B01003_001E, got {variable!r}.")
+    return f"{table}_E{line[:-1]}"
 
 
 def _estimate(value: str | None) -> float | None:

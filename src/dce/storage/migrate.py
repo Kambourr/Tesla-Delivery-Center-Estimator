@@ -17,6 +17,10 @@ stays valid.
 Version 4 adds ``zcta_acs.households`` (ACS ``B11001_001E``). The
 non-California demand fallback weights ZIPs by that count. Version 3
 (catchment tables) is unchanged.
+
+Version 5 adds the nationwide ZIP inputs: ACS median gross rent, gazetteer
+land area, crosswalk names and ratios, and the rent-resolution tables from
+``docs/DATA_SOURCES.md`` section 8 plus ``rent_safmr``.
 """
 
 from __future__ import annotations
@@ -39,6 +43,7 @@ def migrate(conn: sqlite3.Connection) -> None:
     _apply_version_2(conn)
     _apply_version_3(conn)
     _apply_version_4(conn)
+    _apply_version_5(conn)
 
 
 def _apply_version_2(conn: sqlite3.Connection) -> None:
@@ -133,5 +138,80 @@ def _apply_version_4(conn: sqlite3.Connection) -> None:
     conn.execute(
         "INSERT INTO schema_migrations (version, applied_at) "
         "VALUES (4, strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))"
+    )
+    conn.commit()
+
+
+def _ensure_column(conn: sqlite3.Connection, table: str, column: str, declaration: str) -> None:
+    columns = {str(row[1]) for row in conn.execute(f"PRAGMA table_info({table})")}
+    if column not in columns:
+        conn.execute(f"ALTER TABLE {table} ADD COLUMN {column} {declaration}")
+
+
+_VERSION_5_SQL = """
+CREATE TABLE IF NOT EXISTS rent_cbsa (
+    cbsa TEXT NOT NULL CHECK (length(cbsa) = 5),
+    property_type TEXT NOT NULL,
+    rent_psf_year REAL NOT NULL CHECK (rent_psf_year >= 0),
+    as_of TEXT NOT NULL,
+    citation TEXT NOT NULL,
+    broker TEXT NOT NULL,
+    fetched_at TEXT,
+    PRIMARY KEY (cbsa, property_type, as_of)
+);
+
+CREATE TABLE IF NOT EXISTS rent_zip_obs (
+    zip TEXT NOT NULL CHECK (length(zip) = 5),
+    property_type TEXT NOT NULL,
+    rent_psf_year REAL NOT NULL CHECK (rent_psf_year >= 0),
+    as_of TEXT NOT NULL,
+    source TEXT NOT NULL CHECK (source IN ('gsa', 'assessor', 'model')),
+    n_leases INTEGER,
+    citation TEXT NOT NULL,
+    PRIMARY KEY (zip, property_type, source, as_of)
+);
+
+CREATE TABLE IF NOT EXISTS rent_model_coeffs (
+    model_id TEXT PRIMARY KEY,
+    formula_json TEXT NOT NULL,
+    trained_on TEXT NOT NULL,
+    as_of TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS rent_resolved_cache (
+    zip TEXT PRIMARY KEY CHECK (length(zip) = 5),
+    rent_psf_year REAL NOT NULL,
+    property_type TEXT NOT NULL,
+    tier TEXT NOT NULL,
+    confidence TEXT NOT NULL,
+    as_of TEXT NOT NULL,
+    components_json TEXT NOT NULL,
+    resolved_at TEXT NOT NULL,
+    citation TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS rent_safmr (
+    zip TEXT NOT NULL CHECK (length(zip) = 5),
+    rent_2br_month REAL NOT NULL CHECK (rent_2br_month >= 0),
+    as_of TEXT NOT NULL,
+    citation TEXT NOT NULL,
+    PRIMARY KEY (zip, as_of)
+);
+"""
+
+
+def _apply_version_5(conn: sqlite3.Connection) -> None:
+    existing = conn.execute("SELECT 1 FROM schema_migrations WHERE version = 5").fetchone()
+    if existing is not None:
+        return
+    _ensure_column(conn, "zcta_acs", "median_gross_rent", "REAL")
+    _ensure_column(conn, "zcta_centroid", "land_sqmi", "REAL")
+    _ensure_column(conn, "zip_zcta", "tot_ratio", "REAL")
+    _ensure_column(conn, "zip_county", "county_name", "TEXT")
+    _ensure_column(conn, "zip_cbsa", "cbsa_name", "TEXT")
+    conn.executescript(_VERSION_5_SQL)
+    conn.execute(
+        "INSERT INTO schema_migrations (version, applied_at) "
+        "VALUES (5, strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))"
     )
     conn.commit()

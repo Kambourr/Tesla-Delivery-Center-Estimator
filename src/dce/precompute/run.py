@@ -22,14 +22,15 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
-from dce.config import user_data_dir
+from dce.config import DB_FILENAME, user_data_dir
 from dce.data.national_demand import ZipPlace
 from dce.orchestrator import warm_bundle
 from dce.precompute.payload import BAY_AREA_COUNTIES, canonical_json, payload_for_zip
 from dce.precompute.version import MODEL_VERSION, inputs_hash
-from dce.storage.connection import get_connection
+from dce.storage.connection import get_connection, open_readonly
 from dce.storage.repository import (
     ZipResultRecord,
+    count_zip_results,
     get_zip_result_row,
     get_zip_result_rows,
     list_fresh_zip_results,
@@ -113,7 +114,7 @@ def precompute(
 def get_zip_result(zip_code: str, *, data_dir: Path | None = None) -> dict[str, object] | None:
     """Return the stored JSON for one ZIP, or ``None`` when it has not been stored."""
     code = zip_code.strip()
-    conn = get_connection(user_data_dir() if data_dir is None else data_dir)
+    conn = _read_connection(data_dir)
     try:
         row = get_zip_result_row(conn, code)
     finally:
@@ -127,7 +128,7 @@ def get_zip_results(
     zip_codes: Sequence[str], *, data_dir: Path | None = None
 ) -> dict[str, dict[str, object]]:
     """Return stored JSON for the ZIPs that have a row, in request order."""
-    conn = get_connection(user_data_dir() if data_dir is None else data_dir)
+    conn = _read_connection(data_dir)
     try:
         rows = get_zip_result_rows(conn, [code.strip() for code in zip_codes])
     finally:
@@ -137,6 +138,38 @@ def get_zip_results(
         for row in rows
     }
     return {code.strip(): found[code.strip()] for code in zip_codes if code.strip() in found}
+
+
+def result_counts(*, data_dir: Path | None = None) -> dict[str, int]:
+    """Return ``ok`` and ``error`` counts for the results database."""
+    conn = _read_connection(data_dir)
+    try:
+        return count_zip_results(conn)
+    finally:
+        conn.close()
+
+
+def _read_connection(data_dir: Path | None) -> sqlite3.Connection:
+    """Open the results database.
+
+    An explicit ``data_dir`` is the writable database ``precompute`` fills.
+    With no argument, ``DCE_RESULTS_DIR`` selects a directory and
+    ``DCE_RESULTS_READONLY=1`` opens that file without a journal. Otherwise
+    the per-user directory is used, which is what a checkout does.
+    """
+    if data_dir is not None:
+        return get_connection(data_dir)
+    directory = _default_results_dir()
+    if os.environ.get("DCE_RESULTS_READONLY") == "1":
+        return open_readonly(directory / DB_FILENAME)
+    return get_connection(directory)
+
+
+def _default_results_dir() -> Path:
+    override = os.environ.get("DCE_RESULTS_DIR", "").strip()
+    if override:
+        return Path(override).expanduser()
+    return user_data_dir()
 
 
 def format_report(report: PrecomputeReport) -> str:

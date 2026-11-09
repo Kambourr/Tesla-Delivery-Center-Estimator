@@ -1,0 +1,15 @@
+{
+  "version": 8,
+  "name": "Delivery Center Dark Offline",
+  "metadata": {
+    "dce:basemap": "Bundled fallback. No tiles, no glyphs, and no network. ZIP polygons and center markers are drawn on this background."
+  },
+  "sources": {},
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {"background-color": "#121417"}
+    }
+  ]
+}

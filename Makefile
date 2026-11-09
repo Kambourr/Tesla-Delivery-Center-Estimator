@@ -5,7 +5,7 @@ else
 PYTHON := python3
 endif
 
-.PHONY: setup lint typecheck test build check app zip-inputs zcta-boundaries precompute
+.PHONY: setup lint typecheck test build check app app-bundle zip-inputs zcta-boundaries precompute
 
 setup:
 	python3 -m venv .venv
@@ -24,8 +24,14 @@ test:
 	$(PYTHON) -m pytest
 
 # macOS arm64 .app. The script exits 1 on any other OS.
+# PyInstaller only. Use app-bundle for the nationwide offline app.
 build:
 	./scripts/build_macos.sh
+
+# Seeds if needed, nationwide boundaries if needed, full `dce precompute`, then the .app.
+# No --sample and no --limit. The script exits 1 on any OS other than macOS arm64.
+app-bundle:
+	./scripts/build_macos.sh --app-bundle
 
 # Open the pywebview map. Needs a display.
 app:
@@ -38,7 +44,7 @@ zip-inputs:
 	$(PYTHON) scripts/build_zip_inputs.py --cache /tmp/dce-public --fetch-bls --fetch-zev
 
 zcta-boundaries:
-	$(PYTHON) scripts/build_zcta_boundaries.py --cache /tmp/dce-public
+	$(PYTHON) scripts/build_zcta_boundaries.py --cache /tmp/dce-public --download
 
 # Nine Bay Area counties. The full nation is `dce precompute` with no --sample.
 precompute:

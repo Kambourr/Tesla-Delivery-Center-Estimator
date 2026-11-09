@@ -5,14 +5,20 @@ Run this spec only through ``scripts/build_macos.sh`` on an arm64 Mac.
 PyInstaller names below (``Analysis``, ``PYZ``, ``EXE``, ``COLLECT``,
 ``BUNDLE``, ``SPECPATH``) are injected by PyInstaller. Do not pass
 ``cipher``: PyInstaller 6 removed that argument.
+
+``make app-bundle`` writes ``data/results/dce.sqlite`` before this spec
+runs. The file is copied to ``data/results`` inside the app and opened
+read-only from ``sys._MEIPASS``.
 """
 
+import os
 from pathlib import Path
 
 root = Path(SPECPATH).resolve().parent
 
 datas = [
     (str(root / "src" / "dce" / "app" / "web"), "dce/app/web"),
+    (str(root / "src" / "dce" / "storage" / "schema.sql"), "dce/storage"),
     (str(root / "data" / "seed"), "data/seed"),
     (str(root / "data" / "defaults"), "data/defaults"),
     (str(root / "data" / "demo"), "data/demo"),
@@ -22,13 +28,31 @@ datas = [
 pmtiles = root / "data" / "geo" / "zcta_us.pmtiles"
 if pmtiles.is_file():
     datas.append((str(pmtiles), "data/geo"))
+results = root / "data" / "results" / "dce.sqlite"
+if results.is_file():
+    datas.append((str(results), "data/results"))
+elif os.environ.get("DCE_REQUIRE_RESULTS") == "1":
+    raise SystemExit(
+        "data/results/dce.sqlite is missing. make app-bundle runs "
+        "dce precompute before PyInstaller."
+    )
 
 a = Analysis(
     [str(root / "src" / "dce" / "app" / "__main__.py")],
     pathex=[str(root / "src")],
     binaries=[],
     datas=datas,
-    hiddenimports=["webview", "yaml", "bottle"],
+    hiddenimports=[
+        "webview",
+        "yaml",
+        "bottle",
+        "dce.app.smoke",
+        "dce.app.runtime",
+        "dce.precompute",
+        "dce.orchestrator",
+        "dce.storage.migrate",
+        "dce.storage.repository",
+    ],
     noarchive=False,
 )
 pyz = PYZ(a.pure)

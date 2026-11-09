@@ -1,9 +1,11 @@
 /* Delivery Center Estimator map. Local MapLibre, no CDN scripts. */
 (function () {
+  const OFFLINE_STYLE = "vendor/basemap-offline.json";
   const FALLBACK_STYLE = {
     version: 8,
+    name: "Delivery Center Dark Offline",
     sources: {},
-    layers: [{ id: "background", type: "background", paint: { "background-color": "#16181d" } }],
+    layers: [{ id: "background", type: "background", paint: { "background-color": "#121417" } }],
   };
   const COUNTIES = { "06081": "San Mateo County" };
   const TORNADO_LIMIT = 8;
@@ -105,10 +107,14 @@
     });
   }
 
+  function offlineStyle(body) {
+    return (body && body.basemap_fallback) || OFFLINE_STYLE;
+  }
+
   function initMap(body) {
     map = new maplibregl.Map({
       container: "map",
-      style: body.basemap_style || FALLBACK_STYLE,
+      style: body.basemap_style || offlineStyle(body),
       center: [-122.15, 37.55],
       zoom: 9,
       attributionControl: true,
@@ -117,27 +123,40 @@
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "bottom-left");
     map.on("style.load", function () { addOverlays(body); });
     let sawTiles = false;
+    let tileFailed = false;
     map.on("error", function (event) {
+      const sourceId = event && event.sourceId;
       const message = String((event && event.error && event.error.message) || "");
+      if (sourceId === "openmaptiles" || /glyph|sprite/i.test(message)) {
+        tileFailed = true;
+        useFallback(body);
+        return;
+      }
       if (!overlaysAdded && /style/i.test(message)) useFallback(body);
     });
     map.on("data", function (event) {
       if (event.sourceId === "openmaptiles" && event.isSourceLoaded) {
         sawTiles = true;
-        note.hidden = true;
+        if (!usingFallback) note.hidden = true;
       }
     });
     setTimeout(function () {
-      if (!sawTiles) note.hidden = false;
+      if (sawTiles || usingFallback) return;
+      note.hidden = false;
+      if (tileFailed || navigator.onLine === false) useFallback(body);
     }, 2800);
     map.on("click", onMapClick);
   }
 
   function useFallback(body) {
-    if (usingFallback) return;
-    usingFallback = true;
     note.hidden = false;
-    map.setStyle(FALLBACK_STYLE);
+    if (usingFallback) {
+      if (map.getStyle() && map.getStyle().name === "Delivery Center Dark Offline") return;
+      map.setStyle(FALLBACK_STYLE);
+      return;
+    }
+    usingFallback = true;
+    map.setStyle(offlineStyle(body));
   }
 
   function installPmtiles() {
@@ -236,9 +255,42 @@
     map.on("mousemove", "zcta-fill", onZipMove);
     map.on("mouseleave", "zcta-fill", onZipLeave);
     fitZipBounds();
+    if (usingFallback) emphasizeOfflineZips();
     overlaysAdded = true;
     mapReady = true;
     readyResolve();
+  }
+
+  function emphasizeOfflineZips() {
+    if (!map.getLayer("zcta-fill") || !map.getLayer("zcta-line")) return;
+    map.setPaintProperty("zcta-fill", "fill-color", [
+      "case",
+      ["boolean", ["feature-state", "selected"], false], "#9db7ff",
+      ["boolean", ["feature-state", "compare"], false], "#f0d7a4",
+      "#d5deea",
+    ]);
+    map.setPaintProperty("zcta-fill", "fill-opacity", [
+      "case",
+      ["boolean", ["feature-state", "selected"], false], 0.62,
+      ["boolean", ["feature-state", "compare"], false], 0.5,
+      ["boolean", ["feature-state", "hover"], false], 0.42,
+      [">", ["coalesce", ["feature-state", "catchment"], 0], 0],
+      ["interpolate", ["linear"], ["coalesce", ["feature-state", "catchment"], 0], 0, 0.2, 1, 0.62],
+      0.28,
+    ]);
+    map.setPaintProperty("zcta-line", "line-color", [
+      "case",
+      ["boolean", ["feature-state", "selected"], false], "#f7f9ff",
+      ["boolean", ["feature-state", "compare"], false], "#f0d7a4",
+      ["boolean", ["feature-state", "hover"], false], "#ffffff",
+      "#e8edf4",
+    ]);
+    map.setPaintProperty("zcta-line", "line-width", [
+      "case",
+      ["boolean", ["feature-state", "selected"], false], 2.4,
+      ["boolean", ["feature-state", "hover"], false], 1.8,
+      1.15,
+    ]);
   }
 
   function fitZipBounds() {

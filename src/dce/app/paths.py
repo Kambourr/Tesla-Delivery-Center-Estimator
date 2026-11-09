@@ -20,6 +20,7 @@ _PMTILES_ENV = "DCE_ZCTA_PMTILES"
 _RESULTS_ENV = "DCE_UI_RESULTS_PATH"
 _STYLE_ENV = "DCE_BASEMAP_STYLE"
 _DEFAULT_STYLE = "vendor/basemap-style.json"
+OFFLINE_BASEMAP_STYLE = "vendor/basemap-offline.json"
 _PMTILES_URL = "tiles/zcta_us.pmtiles"
 
 

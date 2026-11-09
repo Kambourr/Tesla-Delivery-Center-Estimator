@@ -48,6 +48,7 @@ def test_bootstrap_loads_bay_area_fixture_and_centers() -> None:
     assert isinstance(centers, list)
     assert "colma" in {row["center_id"] for row in centers if isinstance(row, dict)}
     assert str(body["basemap_style"]).startswith("vendor/")
+    assert body["basemap_fallback"] == "vendor/basemap-offline.json"
     boundaries = body["boundaries"]
     assert isinstance(boundaries, dict)
     assert boundaries["mode"] in {"geojson", "pmtiles"}

@@ -12,6 +12,7 @@ from dce.precompute.run import (
     get_zip_result,
     get_zip_results,
     precompute,
+    result_counts,
 )
 from dce.precompute.version import MODEL_VERSION, inputs_hash
 
@@ -23,4 +24,5 @@ __all__ = [
     "get_zip_results",
     "inputs_hash",
     "precompute",
+    "result_counts",
 ]

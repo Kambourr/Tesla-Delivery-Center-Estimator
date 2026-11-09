@@ -29,15 +29,25 @@ row is replaced when the model version or the inputs hash changes.
 from __future__ import annotations
 
 import sqlite3
+import sys
 from pathlib import Path
 
-_SCHEMA_PATH = Path(__file__).with_name("schema.sql")
+
+def _schema_path() -> Path:
+    """Return ``schema.sql``, including the copy PyInstaller places in ``_MEIPASS``."""
+    meipass = getattr(sys, "_MEIPASS", None)
+    if isinstance(meipass, str) and meipass:
+        bundled = Path(meipass) / "dce" / "storage" / "schema.sql"
+        if bundled.is_file():
+            return bundled
+    return Path(__file__).with_name("schema.sql")
 
 
 def _read_schema_sql() -> str:
-    if not _SCHEMA_PATH.is_file():
-        raise FileNotFoundError(f"Packaged schema is missing: {_SCHEMA_PATH}")
-    return _SCHEMA_PATH.read_text(encoding="utf-8")
+    path = _schema_path()
+    if not path.is_file():
+        raise FileNotFoundError(f"Packaged schema is missing: {path}")
+    return path.read_text(encoding="utf-8")
 
 
 def migrate(conn: sqlite3.Connection) -> None:

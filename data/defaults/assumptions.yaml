@@ -1,4 +1,4 @@
-# Default modeling assumptions for the delivery-center cost model (M3).
+# Default modeling assumptions for the delivery-center cost model and DCF.
 #
 # Read by the caller (orchestrator or tests) and passed to
 # dce.model.assumptions.parse_assumptions, which is strict: unknown, missing,
@@ -12,69 +12,128 @@
 #                        README next to it). The golden test checks this string
 #                        first so a silent edit cannot slip through.
 #
-# Every value is a tunable placeholder, not Tesla data and not a sourced
-# statistic. "Plan" IDs refer to the assumptions table in docs/PLAN.md.
+# Ranges (schema 2). A number may be written as {low, base, high}. The model
+# runs on `base`; low/high feed the M4 scenarios and the NPV tornado.
+# low <= base <= high by input value (not by effect on NPV).
+#
+# Sources. Values cite docs/research/tesla_delivery_ops_research.md ("ops §n")
+# and docs/research/dcf_design.md ("dcf §n"), both dated 2026-11-08 and built
+# from public data only. ASSUMPTION marks a value with no public source; it is
+# Jacob's to tune. Nothing here is Tesla internal data.
 # Rent is NOT here: it arrives as a resolved number (ADR-0003).
 
-schema_version: 1
-assumptions_version: "2026.11.0"
+schema_version: 2
+assumptions_version: "2026.11.1"
 as_of: "2026-11-08"
 
 facility:
-  # Plan A1. Delivery-center footprint, square feet. Industry warehouse proxy.
-  sqft: 25000
-  # Plan A3. Fraction added to base rent for NNN pass-throughs (CAM,
-  # insurance, landlord taxes). 0.15 means +15%.
+  # Plan A1. Footprint, SF. ops §5: Colma building 12,840 SF; Port Coquitlam
+  # 60,000 SF incl. service; 25,000 SF is a placeholder (dcf §2).
+  sqft: {low: 13000, base: 25000, high: 60000}
+  # Plan A3. NNN pass-throughs (CAM, insurance, landlord property taxes) as a
+  # fraction of base rent. 0.15 means +15%. Placeholder kept (ops §5).
   opex_load: 0.15
-  # Plan A8. Catchment radius in miles. Used by dce.geo to build the
-  # catchment; the cost math does not read it. Open question 4.
-  catchment_miles: 15
+  # Plan A8. FALLBACK radius in miles, used only when dce.geo has no list of
+  # existing centers (ADR-0004). ops §5: p90 distance to the nearest center
+  # is 13-16 mi urban, 35-37 mi exurban.
+  catchment_miles: {low: 10, base: 15, high: 35}
 
 labor:
-  # Plan A5. Multiplier on base wages for benefits and payroll taxes.
-  # 1.30 means +30%. Must be >= 1.
-  wage_load: 1.30
+  # Plan A5. Multiplier on base wages for benefits and payroll taxes. BLS
+  # ECEC Jun 2026 private industry gives 1.43; ECEC counts paid leave as a
+  # benefit while OEWS wages include it, so 1.35 is the base (ops §5).
+  wage_load: {low: 1.30, base: 1.35, high: 1.43}
+  # Paid hours per FTE-year, to turn an hourly wage into wage_annual.
+  paid_hours_per_fte: 2080
+  # Blended delivery-role wage, USD/h, used only when OEWS for the wage_mix
+  # is missing. Tesla Bay Area postings Nov 2026 (dcf §2); low/high are -/+20%.
+  fallback_wage_hourly: {low: 20.73, base: 25.91, high: 31.09}
   # Plan A4. headcount = max(min_headcount, deliveries / deliveries_per_fte).
-  # Placeholder curve; open question 2 (staffing curve and SOCs).
   staffing:
-    min_headcount: 8          # FTEs to open the doors at any volume
-    deliveries_per_fte: 250   # annual deliveries one FTE supports
+    # ASSUMPTION (ops §5): 7-day retail hours need about 4 advisors, 3
+    # prep/detail, 1 yard, 1 lead, 1 ops.
+    min_headcount: {low: 6, base: 10, high: 15}
+    # ASSUMPTION (ops §5): about 4.9 labor-hours per delivery, de-rated for
+    # the quarter-end peak. Large NPV leverage (dcf §4 tornado).
+    deliveries_per_fte: {low: 200, base: 300, high: 450}
+  # Delivery-role SOC mix for the OEWS blended wage (ops §1.4, §5). Shares of
+  # headcount; must sum to 1. 49-3023 (service technicians) is service-center
+  # staff, not delivery staff, and is no longer the default.
+  wage_mix:
+    - {socs: ["41-2031"], title: "Retail salespersons (Tesla Advisor)", share: 0.45}
+    - {socs: ["53-7061"], title: "Cleaners of vehicles and equipment (detailer)", share: 0.30}
+    - {socs: ["53-7062", "53-7065"], title: "Yard, stock, and inventory", share: 0.15}
+    - {socs: ["41-1011"], title: "First-line supervisors of retail sales", share: 0.10}
+
+# Default Scenario.vehicle_mix. Cox/KBB US Q3 2026 (69/28/3) and CEC CA 2026
+# YTD (71.5/22.2/2.5); Model S/X sunset mid-2026 (Q3 2026 10-Q). ops §5.
+vehicle_mix:
+  model_y: 0.70
+  model_3: 0.27
+  cybertruck: 0.03
+  model_s: 0.0
+  model_x: 0.0
+
+seasonality:
+  # Share of annual deliveries by calendar quarter. CEC CA Tesla 2024-25
+  # average (ops §5). Must sum to 1.
+  quarter_shares: [0.23, 0.26, 0.28, 0.23]
+  # Share of a quarter's deliveries by month (first, second, third).
+  # ASSUMPTION anchored on about one-third of a quarter in its last two weeks
+  # (ops §1.3, §5). Each list must sum to 1. "high" is the peakiest.
+  month_in_quarter:
+    low: [0.30, 0.33, 0.37]
+    base: [0.25, 0.30, 0.45]
+    high: [0.20, 0.25, 0.55]
 
 utilities:
-  # Annual electricity use per square foot (kWh / SF / year). Placeholder in
-  # the range of small warehouse and service buildings; excludes customer
-  # vehicle charging.
+  # kWh / SF / year. 15 x 25,000 SF = 375 MWh (dcf §2; ASSUMPTION). Excludes
+  # customer vehicle charging.
   kwh_per_sqft_year: 15
-  # Billing peak demand per square foot (kW / SF). 0.006 gives 150 kW at
-  # 25,000 SF. Demand charges are billed monthly: kW x $/kW-month x 12.
+  # Billing peak kW / SF. 0.006 x 25,000 SF = 150 kW (dcf §2; ASSUMPTION).
   peak_kw_per_sqft: 0.006
 
 property_tax:
-  # Annual tax = assessed_value_psf x sqft x effective_rate. Placeholder
-  # county-default style values; see open question on NNN overlap in the PR.
-  assessed_value_psf: 250     # USD / SF
-  effective_rate: 0.011       # 1.1% of assessed value per year
+  # Annual tax = assessed_value_psf x sqft x effective_rate.
+  assessed_value_psf: 250     # USD / SF, placeholder
+  effective_rate: 0.011       # 1.1% of assessed value per year, placeholder
+  # Industrial rents are NNN, so the landlord's property tax is already in
+  # opex_load. true sets the property_tax component to 0 to avoid counting it
+  # twice; this is how the dcf §4 San Mateo figures were built. Open question.
+  included_in_nnn: true
 
 capex:
-  # Plan A6. Fit-out and equipment, USD / SF. Midpoint of the $80-$150 band.
-  # Open question 5.
-  fitout_psf: 115
-  # Plan A7. Straight-line amortization life, years.
+  # Upfront capex = fitout_psf x sqft x (1 + soft_contingency) + equipment_usd.
+  # The static $/delivery shows it straight-line over life_years; the DCF
+  # spends it as year-0 cash instead (ADR-0005).
+  # Hard fit-out, USD / SF. RLB Q3 2026 QCR; TI ranges terrapincg 2026 (dcf §2).
+  fitout_psf: {low: 60, base: 100, high: 160}
+  # Soft cost + contingency on fit-out. Industry 8-15% soft + 5-10%
+  # contingency (dcf §2).
+  soft_contingency: 0.20
+  # Chargers, IT, lifts, signage, furniture, USD. 30 L2 x $8k + 2 x 150 kW
+  # DCFC x $120k + $300k IT etc. (dcf §2; the $300k is ASSUMPTION).
+  equipment_usd: {low: 500000, base: 780000, high: 1200000}
+  # Plan A7. Straight-line life for the static $/delivery view, years
+  # (= lease term).
   life_years: 10
 
 other_opex:
   # Insurance, IT, supplies as a fraction of baseline lease + labor
-  # (plan "Other OpEx"). Computed once from unshocked dollars.
+  # (plan "Other OpEx"). Placeholder kept.
   pct_of_lease_and_labor: 0.08
 
 demand:
-  # Plan A9. Annual deliveries at a site whose inputs equal every reference
-  # below (score = 1). OPEN DECISION (open question 1); 2,500 is the plan
-  # placeholder.
-  base_annual_deliveries: 2500
+  # Plan A9. CALIBRATION FALLBACK only: annual deliveries at a site whose
+  # inputs equal every reference below, used when ZIP-level EV data or the
+  # gravity catchment (ADR-0004) is missing. US 4,364 per listed center
+  # (2025); CA 5,473; San Mateo candidate 4,370 (Voronoi) to 5,720 (Huff
+  # beta=2). ops §4.3-4.4, §5.
+  base_annual_deliveries: {low: 3000, base: 4500, high: 6500}
   # score = product over factors of (value / reference) ** elasticity.
-  # References are round placeholders for a "median" US catchment; they are
-  # not sourced statistics. Elasticities are Jacob-tunable.
+  # References are round placeholders; ops §5 recommends recalibrating them
+  # to the median existing delivery-center catchment. Elasticities are
+  # Jacob-tunable.
   factors:
     catchment_population:     # people inside the catchment
       reference: 500000
@@ -91,3 +150,86 @@ demand:
   # Clamp on the score so an outlier ZIP cannot produce absurd volumes.
   score_min: 0.0
   score_max: 4.0
+
+# Discounted cash flow (ADR-0005, dcf §2). End-of-year cash flows; year 0
+# holds capex and pre-opening.
+dcf:
+  # Years of operation. 10 = lease term. Low is Tesla's 7.7-year weighted
+  # remaining lease term (10-K FY2025) rounded up to whole years.
+  horizon_years: {low: 8, base: 10, high: 15}
+  # Headline lens. The app always shows standalone AND incremental (ADR-0005);
+  # gp_allocation is an upper bound only, never a decision metric.
+  benefit_mode: standalone
+  volume:
+    # Share of steady-state deliveries in years 1, 2, 3, ... ASSUMPTION.
+    ramp:
+      low: [0.60, 0.85, 1.00]
+      base: [0.75, 0.95, 1.00]
+      high: [0.90, 1.00, 1.00]
+    # Yearly volume growth after the ramp. FY2026 consensus +8%; Tesla gives
+    # no guidance (ops §3, dcf §2).
+    growth: {low: 0.0, base: 0.05, high: 0.10}
+    # Capacity cap as a multiple of steady-state deliveries. ASSUMPTION.
+    capacity_cap_multiple: 1.5
+  standalone:
+    # Destination fee on Model 3/Y, USD. GetTesla citing Edmunds, 2026-08-06.
+    # Low -10% is ASSUMPTION; high adds the $250 order fee.
+    fee_per_delivery: {low: 1250, base: 1390, high: 1640}
+    fee_escalation: 0.0
+    # Inbound freight factory -> site, USD per car. Base is ASSUMPTION (about
+    # 30 mi from Fremont with a carrier minimum); high is the Transportli
+    # <500 mi index, week of 2026-11-02.
+    inbound_freight: {low: 75, base: 150, high: 343}
+  incremental:
+    # Share of the new site's volume that existing centers could NOT absorb
+    # without expansion or overtime. Not publicly observable. ASSUMPTION.
+    constraint_share: {low: 0.5, base: 0.75, high: 1.0}
+    # NNN rent, USD/SF/month, an existing nearby center would pay to expand.
+    # Kidder Mathews Peninsula Industrial Q3 2026, South SF submarket (Colma
+    # sits next to it).
+    status_quo_rent_psf_month: 1.74
+    # California overtime pay multiplier (Labor Code §510).
+    overtime_multiplier: 1.5
+    # Proximity uplift in deliveries, fraction. Bucklin et al. 2008; own CA
+    # regression is not significant (dcf §1).
+    uplift: {low: 0.0, base: 0.01, high: 0.03}
+  # Automotive gross profit per vehicle ex credits, USD. 10-K FY2025 (low),
+  # TTM Q4'25-Q3'26 (base), Q3'26 (high). Used by incremental uplift and the
+  # gp_allocation upper bound.
+  gp_per_vehicle: {low: 5992, base: 7233, high: 7347}
+  # Pre-opening months of year-1 labor, expensed in year 0. ASSUMPTION.
+  preopen_months: 3
+  escalation:
+    # Yearly rent escalation. CBRE US Industrial YE2025: avg 3.36%, 3.50-3.53%
+    # for 10-100K SF.
+    rent: {low: 0.030, base: 0.035, high: 0.040}
+    # Yearly wage inflation. BLS ECI private wages, 12 months to Sep 2026.
+    wage: {low: 0.025, base: 0.031, high: 0.040}
+    # Yearly utility rate inflation. ASSUMPTION.
+    utilities: 0.03
+  # Discount rate = Tesla WACC. Rf 4.86% (UST 10y 2026-11-06) + beta 2.0 x
+  # ERP 4.41% (Damodaran 2026-11-01); debt < 1.1% of capital. Low uses a
+  # project beta of 1.1; high is GuruFocus WACC 16.32%.
+  discount_rate: {low: 0.097, base: 0.136, high: 0.163}
+  tax:
+    # Federal 21% (IRC §11); California 8.84% (FTB). State tax is deductible
+    # federally, so the combined rate is 27.98%.
+    fed_rate: 0.21
+    state_rate: 0.0884
+    # Federal bonus depreciation in year 0 on improvements and equipment,
+    # fraction. OBBBA (P.L. 119-21): permanent 100% bonus.
+    fed_bonus: 1.0
+    # Straight-line lives for any non-bonus federal basis, years (QIP 15,
+    # equipment 7).
+    fed_improvement_life: 15
+    fed_equipment_life: 7
+    # California does not conform to bonus or 15-year QIP: improvements 39-yr
+    # SL, equipment 7-yr SL. Remaining basis is written off at lease end.
+    # Verify with a tax advisor (dcf §6).
+    state_improvement_life: 39
+    state_equipment_life: 7
+  terminal:
+    # none: leasehold improvements revert at lease end. renewal: perpetuity of
+    # the final-year cash flow growing at `growth`.
+    mode: none
+    growth: 0.02

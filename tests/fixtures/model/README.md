@@ -23,4 +23,4 @@ DCE_UPDATE_GOLDEN=1 .venv/bin/python -m pytest tests/unit/model/test_golden.py
 ```
 
 If you change a default, also update the hand-arithmetic test, which hard
-codes the 2026.11.0 values.
+codes the current `assumptions_version` values (2026.11.1).

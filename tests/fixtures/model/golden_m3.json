@@ -1,96 +1,96 @@
 {
-  "assumptions_version": "2026.11.0",
+  "assumptions_version": "2026.11.1",
   "cases": {
     "base": {
-      "annualized_total_cost": 3394805.293893432,
+      "annualized_total_cost": 4696150.900103231,
       "components": {
-        "capex": 287500.0,
-        "labor": 2124488.235086511,
+        "capex": 378000.0,
+        "labor": 3309298.981577066,
         "lease": 545100.0,
-        "other_opex": 213567.0588069209,
-        "property_tax": 68750.0,
+        "other_opex": 308351.91852616525,
+        "property_tax": 0.0,
         "utilities": 155400.0
       },
-      "cost_per_delivery": 598.27,
+      "cost_per_delivery": 459.78,
       "drivers": [
         {
           "name": "labor",
-          "share": 0.6258056209904101,
-          "usd": 2124488.235086511
+          "share": 0.7046832718906713,
+          "usd": 3309298.981577066
         },
         {
           "name": "lease",
-          "share": 0.16056885529798268,
+          "share": 0.11607378289058334,
           "usd": 545100.0
         },
         {
           "name": "capex",
-          "share": 0.08468821481961111,
-          "usd": 287500.0
+          "share": 0.08049145098631537,
+          "usd": 378000.0
         }
       ],
-      "estimated_annual_deliveries": 5674.380969782348
+      "estimated_annual_deliveries": 10213.885745608226
     },
     "rent_m20": {
-      "annualized_total_cost": 3285785.293893432,
+      "annualized_total_cost": 4587130.900103231,
       "components": {
-        "capex": 287500.0,
-        "labor": 2124488.235086511,
+        "capex": 378000.0,
+        "labor": 3309298.981577066,
         "lease": 436079.99999999994,
-        "other_opex": 213567.0588069209,
-        "property_tax": 68750.0,
+        "other_opex": 308351.91852616525,
+        "property_tax": 0.0,
         "utilities": 155400.0
       },
-      "cost_per_delivery": 579.06,
+      "cost_per_delivery": 449.11,
       "drivers": [
         {
           "name": "labor",
-          "share": 0.6465694027649436,
-          "usd": 2124488.235086511
+          "share": 0.721431119722917,
+          "usd": 3309298.981577066
         },
         {
           "name": "lease",
-          "share": 0.13271713182551706,
+          "share": 0.09506595941924967,
           "usd": 436079.99999999994
         },
         {
           "name": "capex",
-          "share": 0.08749810906218163,
-          "usd": 287500.0
+          "share": 0.08240445023958076,
+          "usd": 378000.0
         }
       ],
-      "estimated_annual_deliveries": 5674.380969782348
+      "estimated_annual_deliveries": 10213.885745608226
     },
     "wage_p20": {
-      "annualized_total_cost": 3819702.9409107342,
+      "annualized_total_cost": 5358010.696418644,
       "components": {
-        "capex": 287500.0,
-        "labor": 2549385.8821038133,
+        "capex": 378000.0,
+        "labor": 3971158.7778924787,
         "lease": 545100.0,
-        "other_opex": 213567.0588069209,
-        "property_tax": 68750.0,
+        "other_opex": 308351.91852616525,
+        "property_tax": 0.0,
         "utilities": 155400.0
       },
-      "cost_per_delivery": 673.15,
+      "cost_per_delivery": 524.58,
       "drivers": [
         {
           "name": "labor",
-          "share": 0.6674304053330288,
-          "usd": 2549385.8821038133
+          "share": 0.7411629059544146,
+          "usd": 3971158.7778924787
         },
         {
           "name": "lease",
-          "share": 0.14270743260208382,
+          "share": 0.10173551918519892,
           "usd": 545100.0
         },
         {
           "name": "capex",
-          "share": 0.07526763322894717,
-          "usd": 287500.0
+          "share": 0.07054857136673123,
+          "usd": 378000.0
         }
       ],
-      "estimated_annual_deliveries": 5674.380969782348
+      "estimated_annual_deliveries": 10213.885745608226
     }
   },
-  "headcount": 22.697523879129392
+  "headcount": 34.04628581869409
 }

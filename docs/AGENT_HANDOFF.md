@@ -1,6 +1,11 @@
-# Agent Handoff — M2 is in; next work is M3
+# Agent Handoff — scope revised; M3.5a catchment and M3.5b DCF
 
-M2 (Census ACS, BLS OEWS, and California DMV loaders, plus staleness) is implemented. Read `docs/STATUS.md` before writing code. Start **M3** from `main` after the M2 pull request merges. Do not merge unless Jacob asks.
+M0–M3 are merged. Jacob revised the scope on 2026-11-08 (PLAN "Revised scope", ADR-0004, ADR-0005, research in `docs/research/`). Two milestones now sit before M4:
+
+- **M3.5a, gravity catchment** (`src/dce/geo/`, `src/dce/data/ingest/`). This is being built separately. Follow the `catchment_features(geo, centers, demand, beta)` contract in `MODULE_CONTRACTS.md`.
+- **M3.5b, DCF** (`src/dce/model/dcf.py`). This is the `claude/dcf-scope` pull request: schema-2 `assumptions.yaml` with researched low / base / high values and a `dcf:` block, `EstimateResult.dcf`, and San Mateo goldens.
+
+Read `docs/STATUS.md` before writing code. Do not merge unless Jacob asks.
 
 The M2 notes below are the record of that milestone. Do not rebuild them.
 

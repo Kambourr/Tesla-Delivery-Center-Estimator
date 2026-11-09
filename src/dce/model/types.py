@@ -19,6 +19,12 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    # Only for the annotation on EstimateResult.dcf; dce.model.dcf imports
+    # this module, so a runtime import would be circular.
+    from dce.model.dcf import DcfViews
 
 # Assumption tables mix numbers, strings, and nested presets. Callers pass a
 # mapping; the model reads the keys it knows. Not a pydantic model: the
@@ -90,7 +96,12 @@ class Driver:
 
 @dataclass(frozen=True)
 class EstimateResult:
-    """Full result for one ZIP and one scenario."""
+    """Full result for one ZIP and one scenario.
+
+    ``components`` is the static annualized view (capex straight-line).
+    ``dcf`` is the optional cash-flow view: the standalone lens (headline)
+    and the incremental lens (check), with capex as year-0 cash (ADR-0005).
+    """
 
     geo: GeoContext
     scenario: Scenario
@@ -100,3 +111,4 @@ class EstimateResult:
     components: dict[str, float]
     drivers: list[Driver]
     map_path: str | None
+    dcf: DcfViews | None = None

@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import copy
 import dataclasses
+from typing import Any
 
 import pytest
 
@@ -14,6 +16,7 @@ from dce.model.costs import (
     build_cost_inputs,
     cost_per_delivery,
     staffing_headcount,
+    upfront_capex,
 )
 from dce.model.errors import InvalidInputError, ModelError, ZeroDeliveriesError
 from dce.model.types import CostInputs, Scenario
@@ -129,9 +132,9 @@ def test_shock_of_minus_100_percent_is_rejected() -> None:
 
 
 def test_staffing_floor_and_slope(assumptions: ModelAssumptions) -> None:
-    assert staffing_headcount(0.0, assumptions) == 8.0
-    assert staffing_headcount(1_000.0, assumptions) == 8.0
-    assert staffing_headcount(5_000.0, assumptions) == pytest.approx(20.0)
+    assert staffing_headcount(0.0, assumptions) == 10.0
+    assert staffing_headcount(3_000.0, assumptions) == 10.0
+    assert staffing_headcount(6_000.0, assumptions) == pytest.approx(20.0)
 
 
 def test_build_cost_inputs_from_assumptions(assumptions: ModelAssumptions) -> None:
@@ -148,11 +151,13 @@ def test_build_cost_inputs_from_assumptions(assumptions: ModelAssumptions) -> No
     assert costs.headcount == pytest.approx(10.0)
     assert costs.kwh_per_year == pytest.approx(375_000.0)
     assert costs.demand_kw == pytest.approx(150.0)
-    assert costs.property_tax_annual == pytest.approx(68_750.0)
-    assert costs.capex_total == pytest.approx(2_875_000.0)
+    # NNN rent already carries the landlord's property tax (included_in_nnn).
+    assert costs.property_tax_annual == 0.0
+    # 100 $/SF x 25,000 SF x 1.20 soft/contingency + $780k equipment.
+    assert costs.capex_total == pytest.approx(3_780_000.0)
     assert costs.capex_years == 10
     lease = 1.5 * 12 * 25_000 * 1.15
-    labor = 10 * 60_000 * 1.30
+    labor = 10 * 60_000 * 1.35
     assert costs.other_opex_annual == pytest.approx(0.08 * (lease + labor))
 
 
@@ -180,3 +185,24 @@ def test_build_cost_inputs_rejects_bad_resolved_values(assumptions: ModelAssumpt
             demand_rate_kw=20.0,
             annual_deliveries=2_500.0,
         )
+
+
+def test_property_tax_is_charged_when_not_in_nnn(raw_assumptions: dict[str, Any]) -> None:
+    raw = copy.deepcopy(raw_assumptions)
+    raw["property_tax"]["included_in_nnn"] = False
+    costs = build_cost_inputs(
+        raw,
+        rent_psf_month=1.5,
+        wage_annual=60_000.0,
+        energy_rate_kwh=0.25,
+        demand_rate_kw=20.0,
+        annual_deliveries=2_500.0,
+    )
+    assert costs.property_tax_annual == pytest.approx(250 * 25_000 * 0.011)
+
+
+def test_upfront_capex_splits_improvements_and_equipment(assumptions: ModelAssumptions) -> None:
+    improvements, equipment = upfront_capex(assumptions)
+    assert improvements == pytest.approx(3_000_000.0)
+    assert equipment == pytest.approx(780_000.0)
+    assert upfront_capex(assumptions, 10_000.0)[0] == pytest.approx(1_200_000.0)

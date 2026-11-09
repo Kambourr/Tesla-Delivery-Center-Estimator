@@ -12,7 +12,8 @@ Contract
     utilities     kwh_per_year × energy_rate_kwh
                   + demand_kw × demand_rate_kw × 12   (monthly demand charge)
     property_tax  property_tax_annual
-    capex         capex_total / capex_years            (straight line)
+    capex         capex_total / capex_years            (straight line; the DCF
+                  instead spends capex_total as year-0 cash, see dce.model.dcf)
     other_opex    other_opex_annual
     ============  ==========================================================
 
@@ -32,7 +33,14 @@ demand_rate_kw, annual_deliveries) -> CostInputs``
     Turns the assumptions table plus resolved public inputs into
     :class:`CostInputs`. Rent arrives as a number; this module never looks
     rent up. ``other_opex_annual`` is a percentage of baseline (unshocked)
-    lease + labor, so a scenario shock does not move it.
+    lease + labor, so a scenario shock does not move it. ``capex_total`` is
+    :func:`upfront_capex` (improvements + equipment). ``property_tax_annual``
+    is 0 when ``property_tax.included_in_nnn`` is true, because NNN rent's
+    ``opex_load`` already carries the landlord's tax.
+
+``upfront_capex(assumptions, sqft=None) -> tuple[float, float]``
+    ``(improvements, equipment)`` in USD: ``fitout_psf × sqft ×
+    (1 + soft_contingency)`` and ``equipment_usd``.
 
 Pure. No I/O, no network, no LLM.
 """
@@ -125,6 +133,19 @@ def staffing_headcount(
     return max(staffing.min_headcount, deliveries / staffing.deliveries_per_fte)
 
 
+def upfront_capex(
+    assumptions: Assumptions | ModelAssumptions, sqft: float | None = None
+) -> tuple[float, float]:
+    """Return ``(improvements, equipment)`` upfront capex in USD.
+
+    ``sqft`` defaults to ``facility.sqft``.
+    """
+    a = parse_assumptions(assumptions)
+    area = a.facility.sqft if sqft is None else v.positive("sqft", sqft)
+    improvements = a.capex.fitout_psf * area * (1.0 + a.capex.soft_contingency)
+    return improvements, a.capex.equipment_usd
+
+
 def build_cost_inputs(
     assumptions: Assumptions | ModelAssumptions,
     *,
@@ -157,9 +178,11 @@ def build_cost_inputs(
         demand_kw=a.utilities.peak_kw_per_sqft * sqft,
         demand_rate_kw=v.non_negative("demand_rate_kw", demand_rate_kw),
         property_tax_annual=(
-            a.property_tax.assessed_value_psf * sqft * a.property_tax.effective_rate
+            0.0
+            if a.property_tax.included_in_nnn
+            else a.property_tax.assessed_value_psf * sqft * a.property_tax.effective_rate
         ),
-        capex_total=a.capex.fitout_psf * sqft,
+        capex_total=math.fsum(upfront_capex(a, sqft)),
         capex_years=a.capex.life_years,
         other_opex_annual=other_opex,
     )

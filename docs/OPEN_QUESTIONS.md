@@ -14,14 +14,24 @@
 - **OEWS join key (M2).** For 94401–94404, HUD ZIP–CBSA division `41884` is still `GeoContext.cbsa`. BLS OEWS for the San Francisco–Oakland metro is stored under parent CBSA `41860` (San Francisco-Oakland-Fremont, CA). `oews_area_for_cbsa` maps `41884` to `41860`.
 - **Staleness (M2).** `staleness_status(as_of, ttl_days, today)` is implemented and unit-tested. It is not a column. `missing` means no `as_of`. `fresh` runs through half of `ttl_days`, `aging` through `ttl_days`, and `stale` after that. Eighteen months is 548 days. Broker rent "aging after 2 quarters, stale after 4" is that rule with a 4-quarter TTL.
 
+## Resolved by the revised scope and research (Jacob, 2026-11-08)
+
+- **Scope.** Gravity catchment, `$/delivery` + top 3, scenarios, map, and a 10-year DCF with standalone and incremental views. The default discount rate is Tesla WACC 13.6%. Tesla internal data, home delivery, service repair, and multi-site optimization are out. See PLAN, ADR-0004, and ADR-0005.
+- **Catchment** (was 4). Huff gravity model, β = 2, net of existing delivery centers. Radius is a fallback only (ADR-0004).
+- **Base annual deliveries** (was 1). 3,000 / 4,500 / 6,500, now a calibration fallback behind the catchment.
+- **Staffing and SOCs** (was 2). Minimum 10 FTE, 300 deliveries per FTE, and the delivery-role SOC mix in `labor.wage_mix`. Values are ASSUMPTION build-ups for Jacob to tune.
+- **Vehicle mix** (was 3). Model Y 0.70 / Model 3 0.27 / Cybertruck 0.03 / S, X 0.
+- **Capex** (was 5). $100 /SF hard fit-out + 20% soft/contingency + $780k equipment, life 10 years (range in the YAML).
+
 ## Still open — product / modeling
 
-1. **Base annual deliveries** at a “median” demand score (placeholder 2,500).
-2. **Staffing curve** — headcount vs deliveries; SOCs beyond 49-3023.
-3. **Vehicle mix defaults** for the demo.
-4. **Catchment** — fixed miles vs neighbor ZCTAs.
-5. **Capex $/SF and life** — still auto-defaulted (not user-typed); confirm the placeholder band ($80–$150 /SF, 10 years).
-6. **Delivery-center property type for rent** — industrial / flex / auto-service blend weights in the rent model.
+- **Delivery-center property type for rent** — industrial / flex / auto-service blend weights in the rent model.
+- **Property tax vs NNN.** The default treats the landlord's property tax as inside `opex_load` (`property_tax.included_in_nnn: true`). Confirm, or set it to false to charge it separately.
+- **Incremental lens inputs.** `constraint_share` at Colma/Sunnyvale (0.5 / 0.75 / 1.0) decides the incremental verdict. Also open: the status-quo expansion rent ($1.74, South SF), whether equipment belongs in the expansion annuity, proximity uplift (0 / 1 / 3%), and whether to include the $250 order fee in the standalone fee.
+- **Discount rate.** Corporate WACC 13.6% (default) or a project rate near 9.7%.
+- **Horizon and terminal value.** 10-year lease and no TV (default), Tesla's 7.7-year average (the YAML low rounds it to 8), or renewal.
+- **Tax.** California non-conformity (39-year / 7-year straight line, lease-end write-off) needs a tax advisor. A single 27.98% rate is the simpler alternative.
+- **Freight.** A per-mile function of factory-to-site distance would generalize the standalone lens beyond the Bay Area.
 
 ## Still open — engineering
 

@@ -54,9 +54,9 @@ Do not add PySide6. Do not embed a web engine. On Debian/Ubuntu, Tkinter's C mod
 3. **Storage** — connection, migrations, repository. The only SQL.
 4. **Ingest** — `fetch_*` for allowlisted hosts. Returns dataclasses. No SQL.
 5. **Rent resolver** (`dce.data.rent_resolver`) — fallback chain in DATA_SOURCES §8 and ADR-0003. Reads SQLite only.
-6. **Model** — demand, costs, drivers. No I/O, no network, no LLM.
-7. **Scenarios** — mix and wage grid, Spearman checks. Calls the model. No I/O.
-8. **Geo** — catchment and Folium HTML, then the OS browser.
+6. **Model** — demand, costs, drivers, and the 10-year DCF (`dce.model.dcf`, ADR-0005). No I/O, no network, no LLM.
+7. **Scenarios** — mix, wage, discount-rate, and growth grid; Spearman checks; NPV tornado. Calls the model. No I/O.
+8. **Geo** — gravity catchment net of existing delivery centers (ADR-0004) and Folium HTML, then the OS browser.
 9. **Extract** — optional PDF extraction. `pdf_llm` is the only module that may call an LLM. Nothing in `model/`, `scenarios/`, or the calculate path may import it.
 
 ## Determinism

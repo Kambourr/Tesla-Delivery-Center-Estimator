@@ -122,7 +122,7 @@ def test_top3_shares_sum_to_at_most_one(golden: dict[str, Any], scenario_id: str
 
 def test_golden_matches_independent_hand_arithmetic(golden: dict[str, Any]) -> None:
     """Re-derive the base case with plain arithmetic, no dce imports, so the golden is not
-    only the model checking itself. Numbers mirror assumptions.yaml 2026.11.0 and the
+    only the model checking itself. Numbers mirror assumptions.yaml 2026.11.1 and the
     frozen inputs."""
     score = (
         (750_000 / 500_000) ** 0.5
@@ -130,18 +130,18 @@ def test_golden_matches_independent_hand_arithmetic(golden: dict[str, Any]) -> N
         * ((45_000 / 600_000) / 0.03) ** 0.5
         * (28 / 27) ** -0.25
     )
-    deliveries = 2_500 * score
-    headcount = max(8.0, deliveries / 250)
+    deliveries = 4_500 * score
+    headcount = max(10.0, deliveries / 300)
     lease = 1.58 * 12 * 25_000 * 1.15
-    labor = headcount * 72_000 * 1.30
+    labor = headcount * 72_000 * 1.35
     utilities = 15 * 25_000 * 0.28 + 0.006 * 25_000 * 28 * 12
-    property_tax = 250 * 25_000 * 0.011
-    capex = 115 * 25_000 / 10
+    property_tax = 0.0  # included in the NNN opex_load
+    capex = (100 * 25_000 * 1.20 + 780_000) / 10
     other_opex = 0.08 * (lease + labor)
     total = lease + labor + utilities + property_tax + capex + other_opex
 
     base = golden["cases"]["base"]
-    assert golden["assumptions_version"] == "2026.11.0"
+    assert golden["assumptions_version"] == "2026.11.1"
     assert base["estimated_annual_deliveries"] == pytest.approx(deliveries, rel=1e-12)
     assert base["annualized_total_cost"] == pytest.approx(total, abs=0.005)
     assert base["cost_per_delivery"] == round(total / deliveries, 2)

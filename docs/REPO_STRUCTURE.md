@@ -28,10 +28,15 @@ delivery-center-estimator/
 │   ├── AGENT_HANDOFF.md
 │   ├── STATUS.md
 │   ├── OPEN_QUESTIONS.md
+│   ├── research/                  # public-data research behind the defaults (2026-11-08)
+│   │   ├── tesla_delivery_ops_research.md
+│   │   └── dcf_design.md
 │   └── adr/
 │       ├── 0001-tkinter-browser-map.md
 │       ├── 0002-macos-pyinstaller.md
-│       └── 0003-rent-fallback-no-scraping.md
+│       ├── 0003-rent-fallback-no-scraping.md
+│       ├── 0004-gravity-catchment.md
+│       └── 0005-dcf-dual-benefit-views.md
 ├── src/
 │   └── dce/
 │       ├── __init__.py
@@ -64,7 +69,8 @@ delivery-center-estimator/
 │       │   ├── types.py
 │       │   ├── demand.py
 │       │   ├── costs.py
-│       │   └── drivers.py
+│       │   ├── drivers.py
+│       │   └── dcf.py             # 10-year DCF, NPV/IRR/payback
 │       ├── scenarios/
 │       │   ├── grid.py
 │       │   └── robustness.py

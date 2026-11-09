@@ -1,7 +1,7 @@
 # Status
 
 **As of:** 2026-11-09
-**Phase:** Catchment allocation (delivery centers, CEC ZEV sales, gravity and nearest-center). Pull request not merged.
+**Phase:** Catchment allocation (delivery centers, CEC ZEV sales, gravity and nearest-center). Pull request [#6](https://github.com/Kambourr/Tesla-Delivery-Center-Estimator/pull/6) is open and not merged.
 
 | Milestone | Status |
 |---|---|

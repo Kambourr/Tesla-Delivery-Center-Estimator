@@ -1,13 +1,13 @@
 # Status
 
 **As of:** 2026-11-09
-**Phase:** M2 public loaders (Census ACS, BLS OEWS, California DMV). Pull request not merged.
+**Phase:** M2 public loaders (Census ACS, BLS OEWS, California DMV). Pull request: https://github.com/Kambourr/Tesla-Delivery-Center-Estimator/pull/4 — not merged.
 
 | Milestone | Status |
 |---|---|
 | M0 Repo bootstrap | Done. Merged as #1 (`8fb16ee`) |
 | M1 SQLite + ZIP stub | Done. Merged as #2 (`312d501`) |
-| M2 Public loaders | Implemented on `cursor/m2-public-loaders-c599`. Pull request not merged |
+| M2 Public loaders | Implemented on `cursor/m2-public-loaders-c599`. Pull request: https://github.com/Kambourr/Tesla-Delivery-Center-Estimator/pull/4 — not merged |
 | M3 Cost/demand model | Not started |
 | M4 Scenarios + robustness | Not started |
 | M5 Map | Not started |

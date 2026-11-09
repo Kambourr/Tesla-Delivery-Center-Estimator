@@ -28,3 +28,8 @@ def get_connection(user_data_dir: Path) -> sqlite3.Connection:
     conn.execute("PRAGMA foreign_keys = ON")
     migrate(conn)
     return conn
+
+
+def enable_wal(conn: sqlite3.Connection) -> None:
+    """Let a precompute writer and its worker readers share one database."""
+    conn.execute("PRAGMA journal_mode=WAL")

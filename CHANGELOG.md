@@ -4,8 +4,32 @@ All notable changes to this project are recorded here.
 
 ## Unreleased
 
+### Changed
+
+- An observed industrial broker seed is used directly. The ACS rent factor
+  no longer scales a CBSA that already has a broker comp. `94402` is the
+  Kidder Mathews rate, $25.68 per square foot per year. ZIPs with no rent
+  of their own use the county, then CBSA, state, and national median of
+  ACS gross rent, and that rung is marked as a fallback. `MODEL_VERSION`
+  is `2026.11.4-rent-ladder`, so stored rows from the previous rent
+  formula are recomputed.
+
 ### Added
 
+- `estimate(zip)` uses that ZIP's own inputs: ACS demand, the CBSA OEWS
+  SOC 49-3023 wage (national row for micropolitan and non-metro), the rent
+  resolver, CEC Tesla totals in California, and the Cox/KBB residual
+  allocation elsewhere. Each input is on `EstimateResult.provenance`.
+  Energy and demand charges stay the PG&E B-10 fallback for every ZIP.
+  San Mateo 94402 moves off the old $2.14 / fallback-wage / 2025-extract
+  case. The published 4,400-delivery model is unchanged. See `docs/STATUS.md`.
+- `dce precompute` stores a `dce.ui_result.v1` document per ZIP, built by
+  `build_ui_result`, with `model_version` and `inputs_hash`. The job is
+  resumable, spawned across processes, and writes an error row instead of
+  aborting. `get_zip_result` / `get_zip_results` read it.
+  `make precompute` is the Bay Area sample. The document is canonical
+  JSON and does not depend on the clock or on an LLM.
+- Schema version 6 adds `zip_result`.
 - County Tesla calibration and a handover factor. California ZIP demand is
   BEV times that county's 2025 CEC Tesla total (49,704 / 94,131 only where
   the extract has no CEC row), then times 1.00 / 1.10 / 1.30. Base 1.10 is

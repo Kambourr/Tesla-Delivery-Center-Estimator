@@ -1,22 +1,9 @@
-"""Write a Folium customer-base map to HTML.
+"""Retired Folium stub.
 
-Contract
---------
-``render_customer_map(geo, scored_features, out_path) -> Path``
-
-Choropleth of catchment block groups or ZCTAs. Fill is the normalized
-demand proxy (0–100). Marker at the candidate ZIP centroid. Legend.
-Write ``outputs/maps/{zip}_{timestamp}.html`` (the caller chooses
-``out_path``).
-
-Basemap: prefer embedded simplified geometry with no external tile URLs so
-the polygons render offline. If a tile layer is used, document that the
-basemap may be blank offline. Do not download tiles in this function.
-
-The Tkinter shell opens ``out_path`` via ``webbrowser.open``. This module
-does not open a window.
-
-Milestone M0: stub. Folium is a dependency but is not imported here yet.
+The desktop map is MapLibre in ``dce.app`` (ADR-0006). Nothing on the
+estimate or precompute path imports this module. ``render_customer_map``
+remains so older imports fail with ``NotImplementedError`` instead of
+``ImportError``.
 """
 
 from __future__ import annotations
@@ -35,5 +22,5 @@ def render_customer_map(
     scored_features: gpd.GeoDataFrame,
     out_path: Path,
 ) -> Path:
-    """Write the Folium HTML map. Not implemented in M0."""
+    """Retired. The desktop map is ``dce.app``."""
     raise NotImplementedError("dce.geo.folium_map.render_customer_map is a stub (M0)")

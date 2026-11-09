@@ -45,7 +45,8 @@ def test_bundled_seed_keeps_94402_and_does_not_export_peninsula_rent(tmp_path: P
         assert local.ev.source == "cec"
         assert local.ev.tesla_bev_sales is not None
         assert local.rent is not None
-        assert local.rent.tier == "zip_adjusted_cbsa"
+        assert local.rent.tier == "cbsa_raw"
+        assert local.rent.rent_psf_year == pytest.approx(25.68)
         assert "Kidder" in local.rent.citation
         austin = resolve_rent("73301", conn)
     finally:

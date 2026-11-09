@@ -100,6 +100,8 @@ class EstimateResult:
     map_path: str | None
     catchment: CatchmentSummary | None = None  # gravity base + nearest low case
     dcf: DcfViews | None = None  # M3.5b; standalone + incremental lenses (ADR-0005)
+    provenance: tuple[InputProvenance, ...] = ()  # source, geography, fallback, pre-shock value
+    nearby_centers: tuple[NearbyCenter, ...] = ()  # delivery centers inside the 60-mile drive cap
 ```
 
 ## Signatures
@@ -221,7 +223,7 @@ Built in `dce.geo.catchment`. The orchestrator loads centers and ZIP demand and 
 - California ZIP demand is `BEV_z × (CEC Tesla_county / Σ BEV in the county) × handover_factor`. Counties with no CEC Tesla row in the extract keep 49,704 / 94,131. The handover factor is 1.00 / 1.10 / 1.30; `estimate` uses 1.10.
 - `radius_miles` is a straight-line fallback used only when `centers` is empty. `demand.base_annual_deliveries` is the calibration fallback only when ZIP-level EV data is missing.
 - No network and no SQL in the geo module.
-- On the raw extract (BEV × 49,704 / 94,131) and the nine Bay Area research centers, San Mateo 94402 is still 4,370 nearest-center deliveries and 5,523 gravity deliveries. The research text says gravity is about 5,720. That gap is not the 60-mile cap, the Gazetteer centroid, or rounding the Tesla share. `estimate` does not use that series. With the county anchor, handover 1.10, and the US delivery list it is 5,808 gravity and 4,389 nearest. See `docs/STATUS.md`.
+- On the raw extract (BEV × 49,704 / 94,131) and the nine Bay Area research centers, San Mateo 94402 is still 4,370 nearest-center deliveries and 5,523 gravity deliveries. The research text says gravity is about 5,720. That gap is not the 60-mile cap, the Gazetteer centroid, or rounding the Tesla share. `estimate` does not use that series. It uses the nationwide 2026 CEC seed, annualized from three quarters, handover 1.10, and the US delivery list. See `docs/STATUS.md` for the current 94402 figures.
 
 ## DCF (M3.5b, ADR-0005)
 
@@ -244,7 +246,7 @@ Built in `dce.geo.catchment`. The orchestrator loads centers and ZIP demand and 
 def resolve_rent(zip_code: str, conn: sqlite3.Connection) -> RentResolution: ...
 ```
 
-Fallback chain, first hit wins: ZIP-adjusted CBSA industrial (broker seed × frozen ACS income/density/home-value model, calibrated on the GSA Lease Inventory) → county → raw CBSA → state → national → HUD SAFMR or ZORI proxy with confidence `low`.
+Fallback chain, first hit wins: observed CBSA industrial seed, unadjusted, then county GSA (ACS factor only when that CBSA has no seed), state and national industrial seeds, HUD SAFMR, this ZCTA's ACS gross rent, then the county, CBSA, state, and national median of ACS gross rent. Every rung after the observed seed is a fallback.
 
 `RentResolution` carries `rent_psf_year`, `rent_psf_month`, `property_type`, `tier`, `confidence`, `as_of`, and `citation`. ZIP → CBSA is the HUD crosswalk.
 
@@ -252,12 +254,18 @@ Fallback chain, first hit wins: ZIP-adjusted CBSA industrial (broker seed × fro
 
 ```python
 def estimate(
-    zip_code: str, scenario: Scenario | None = None, overrides: Mapping[str, object] | None = None
+    zip_code: str,
+    scenario: Scenario | None = None,
+    overrides: Mapping[str, object] | None = None,
+    *,
+    data_dir: Path | None = None,
 ) -> EstimateResult: ...
 ```
 
-Resolves the ZIP, builds ZIP demand (California: CEC county Tesla totals times the base handover factor 1.10; other states: a state Tesla total, or state EV registrations times `fallback_tesla_ev_share`), builds the gravity catchment against the US delivery list (nearest-center is the low case), feeds `gravity.total_deliveries_per_year` into the cost model and into `run_dcf_views`, and returns both benefit views. The building stays 25,000 square feet. The default discount rate is the Tesla WACC on the assumptions table (13.6%). `overrides` may include `rent_psf_month`. ZIP alone must succeed for a ZIP the demo cache can resolve. The San Mateo path reads the committed demo cache and does not use the network. Never imports `extract.pdf_llm`.
+Resolves the ZIP, loads that ZIP's ACS fields, rent, and OEWS wage through `load_zip_local`, and builds origin demand for the whole crosswalk. California demand is the 2026 CEC ZIP battery-electric count times the county Tesla share, times 4/3 because the file is three quarters, times handover 1.10. Other states share the Cox/KBB 2025 US Tesla total minus the 2025 CEC California Tesla total, weighted by households and income. The gravity catchment runs against the US delivery list (nearest-center is the low case). Gravity deliveries feed the cost model and `run_dcf_views`. With no scenario argument, the result is the base outcome (explicit base fee, WACC, and horizon, and no price or volume shock). `provenance` records each input. `overrides` may include `rent_psf_month`. Energy and demand rates are the PG&E B-10 fallback for every ZIP. The building stays 25,000 square feet. No network. Never imports `extract.pdf_llm`.
+
+`dce.precompute.precompute` calls `dce.app.results.build_ui_result` for each ZIP and stores the document. `get_zip_result` / `get_zip_results` read it. See `docs/contracts/precompute_results.md`.
 
 ## GUI and CLI
 
-Tkinter in `dce.app`. Required field is the ZIP. "Open map" uses `webbrowser.open` on the Folium HTML file. No PySide6 and no embedded web engine. The calculate path must not import `extract.pdf_llm`. CLI lives in `dce.cli` and calls `orchestrator.estimate`.
+The desktop map is pywebview plus MapLibre in `dce.app` (ADR-0006). It reads a `dce.ui_result.v1` document. CLI lives in `dce.cli`. `dce estimate` calls `orchestrator.estimate`. `dce precompute` calls `dce.precompute.precompute` and does not open SQLite itself. The calculate path must not import `extract.pdf_llm`. There is no LLM call on this path.

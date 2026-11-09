@@ -5,7 +5,7 @@ else
 PYTHON := python3
 endif
 
-.PHONY: setup lint typecheck test build check app zip-inputs zcta-boundaries
+.PHONY: setup lint typecheck test build check app zip-inputs zcta-boundaries precompute
 
 setup:
 	python3 -m venv .venv
@@ -39,3 +39,7 @@ zip-inputs:
 
 zcta-boundaries:
 	$(PYTHON) scripts/build_zcta_boundaries.py --cache /tmp/dce-public
+
+# Nine Bay Area counties. The full nation is `dce precompute` with no --sample.
+precompute:
+	$(PYTHON) -m dce precompute --sample bay-area

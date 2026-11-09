@@ -6,8 +6,8 @@
   "energy_citation": "PG&E Schedule B-10 rates effective 2026-03-01, the rates used in docs/research/dcf_design.md section 2.",
   "as_of": "2026-11-08",
   "notes": [
-    "Resolved San Mateo operating inputs for estimate(zip) until the rent fallback and the rate loaders are wired. The user does not type them.",
-    "Wage is not in this file. The estimator uses labor.fallback_wage_hourly because the demo OEWS row is SOC 49-3023, which is service-center staff, not the delivery-role mix.",
+    "Energy and demand charges are the PG&E B-10 fallback used for every ZIP until an EIA or OpenEI rate is wired. estimate() does not read rent or wage from this file.",
+    "Rent comes from the rent resolver. Wage is the ZIP's CBSA OEWS May 2025 SOC 49-3023 mean, or the national row for a micropolitan or non-metro ZIP. The hourly fallback is used only when no OEWS row exists.",
     "Public sources only. Nothing here is Tesla internal data."
   ]
 }

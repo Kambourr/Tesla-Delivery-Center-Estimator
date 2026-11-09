@@ -116,23 +116,26 @@ All sources below were URL-checked as of 2026-11-08 (America/Los_Angeles). **PUB
 `docs/contracts/zip_data.md`. ZORI is not in the seed (redistribution terms).
 
 ```
-1. zip_adjusted_cbsa   industrial seed × acs_rent_v1     high, or medium if clamped
-2. county_gsa          median of rent_zip_obs source=gsa
-3. cbsa_raw            industrial seed, no ACS factor
-4. state               median of industrial seeds, only when that state has ≥3 CBSA seeds
-5. national            industrial seed stored as CBSA 00000 (none shipped)
-6. hud_safmr           else acs_gross_rent (B25064)      low, residential proxy
+1. cbsa_raw                 observed industrial seed, not ACS-scaled   high
+2. county_gsa               GSA median; ACS factor only when no CBSA seed
+3. state / national         industrial seeds (state needs ≥3 CBSA seeds; national is CBSA 00000)
+4. hud_safmr                2-bedroom monthly, converted
+5. acs_gross_rent           this ZCTA's B25064
+6. acs_gross_rent_county    then _cbsa, _state, _national medians of B25064
 ```
 
 The shipped industrial seed is one row: CBSA `41884`, $25.68/sf/year
 ($2.14/sf/month), as_of 2026-09-30, Kidder Mathews Peninsula Industrial
 Market Report Q3 2026
 (https://kidder.com/market-reports/peninsula-industrial-market-report/).
-`acs_rent_v1` uses the ZCTA median gross rent ratio only
-(`b_acs_rent = 1`; income, density, and home value exponents are 0 until a
-GSA fit). A single Bay Area headline cannot become the California or
-national rent. Other ZIPs use their own ACS `B25064` rent, converted as
-`monthly * 12 / 1000`, and are marked `residential_proxy` at low confidence.
+That rate is used as published for every ZIP in `41884`, including
+`94402`. `acs_rent_v1` (`b_acs_rent = 1`; income, density, and home value
+exponents are 0) adjusts a borrowed county GSA base only, and only when
+the ZIP's CBSA has no broker seed. A single Bay Area headline cannot
+become the California or national rent. ZIPs outside `41884` use SAFMR or
+their own ACS `B25064` rent, then the county, CBSA, state, and national
+median of that rent. Conversion is monthly × 12 / 1000. The ratio is 1
+until a GSA fit. Those rungs are `residential_proxy` at low confidence.
 
 UI shows: resolved `$/SF/yr`, **source tier**, **confidence**, **as_of**, staleness badge. Never a blank requiring typing.
 

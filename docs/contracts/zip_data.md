@@ -153,15 +153,18 @@ The chain, in order:
 
 | Tier id | When | Confidence |
 |---|---|---|
-| `zip_adjusted_cbsa` | An industrial seed exists for `geo.cbsa` and ACS can form the factor | `high`, or `medium` if the factor was clamped |
-| `county_gsa` | County median of `rent_zip_obs` with `source = 'gsa'` | `medium` |
-| `cbsa_raw` | Industrial seed, but ACS inputs for the factor are missing | `medium` |
+| `cbsa_raw` | An industrial seed exists for `geo.cbsa`. The observed rate is used directly | `high` |
+| `county_gsa` | No CBSA seed. County median of `rent_zip_obs` with `source = 'gsa'`. The ACS factor is applied only on this borrowed base | `medium` |
 | `state` | Median of industrial seeds in the state, and at least 3 distinct CBSA seeds | `medium` |
 | `national` | Industrial seed stored under CBSA `00000` | `low` |
 | `hud_safmr` | Newest `rent_safmr` 2-bedroom monthly rent, converted | `low` |
-| `acs_gross_rent` | ACS `B25064` monthly rent, converted | `low` |
+| `acs_gross_rent` | This ZCTA's ACS `B25064` monthly rent, converted | `low` |
+| `acs_gross_rent_county` | Median of ZCTA ACS gross rents in the dominant county | `low` |
+| `acs_gross_rent_cbsa` | Median of ZCTA ACS gross rents in the CBSA | `low` |
+| `acs_gross_rent_state` | Median of ZCTA ACS gross rents in the state | `low` |
+| `acs_gross_rent_national` | Median of ZCTA ACS gross rents in the US | `low` |
 
-`RentResolutionError` when none of those exist. The ZIP is on `.zip_code`.
+`RentResolutionError` when the ZIP is missing from the crosswalk, or when the file has no ACS gross rent anywhere and none of the earlier rungs hit. The ZIP is on `.zip_code`.
 
 The factor is model `acs_rent_v1`:
 
@@ -192,8 +195,10 @@ California ZIP in another CBSA, does not receive that number. One metro seed
 is not enough for the state tier. There is no national industrial row, so
 that tier does nothing until a curator adds CBSA `00000`.
 
-`94402` resolves on `zip_adjusted_cbsa` because `41884` has the Kidder row
-and ACS rent. A ZIP whose only input is ACS rent resolves on `acs_gross_rent`.
+`94402` resolves on `cbsa_raw` at the Kidder headline, $25.68 per square
+foot per year. The ACS factor is not applied on top of that observed
+submarket comp. A ZIP with no industrial seed and no rent of its own uses
+the county, CBSA, state, or national ACS median and is marked as a fallback.
 
 ## Boundaries for MapLibre
 
@@ -217,17 +222,28 @@ the nationwide click map.
 Clicking a polygon passes `properties.zcta` to `load_zip_local`. Comparing
 two ZIPs is two calls.
 
-## What is not wired yet
+## What `estimate` reads
 
-`estimate()` still resolves the ZIP and then loads the San Mateo operating
-inputs. A ZIP outside that demo raises `OperatingInputError` after
-`resolve_zip` succeeds. The map and the precompute should call
-`load_zip_local` and use `local.rent` and `local.wages` instead of the Bay
-Area baseline. `docs/MODULE_CONTRACTS.md` should point here.
+`estimate(zip)` calls `load_zip_local` after `resolve_zip`. Demand,
+households, income, rent, and the OEWS wage come from that ZIP. The wage
+is SOC 49-3023 mean annual pay for the ZIP's CBSA, or the national row
+when the ZIP is micropolitan or non-metro. The hourly fallback is used
+only when no OEWS row exists. SOC 49-3023 is the series stored for every
+metro. It is not a delivery-role mix.
 
-The model still reads `labor.fallback_wage_hourly` rather than the OEWS
-delivery-mix wages on `ZipLocalData.wages`. Replacing `acs_rent_v1`'s zero
-income, density, and home-value exponents is a calibration against the GSA
-Lease Inventory. Those coefficients live in `data/seed/rent_model_coeffs.json`
-and in `rent_model_coeffs`. Until that fit exists, the ZIP adjustment is the
-ACS median gross rent ratio only.
+California origin demand is the ZIP's 2026 CEC battery-electric count
+(the seed is Q1–Q3) times that county's Tesla share, times 4/3, times the
+base handover factor 1.10. Outside California the seed has no state Tesla
+total. The job allocates Cox/KBB 2025 US Tesla sales 589,160 minus the
+CEC 2025 California Tesla total 169,650 by households and income. The
+EV-share term is 1. A suppressed income uses the $80,000 reference.
+
+Energy and demand charges are still the PG&E B-10 figures in
+`data/demo/san_mateo/operating_inputs.json` for every ZIP. No EIA or
+OpenEI loader is wired. `mean_commute` is null: ACS S0801 is not in the
+national summary file.
+
+`acs_rent_v1` still has zero income, density, and home-value exponents.
+The ZIP adjustment is the ACS median gross rent ratio only, until a fit
+against the GSA Lease Inventory exists. Those coefficients live in
+`data/seed/rent_model_coeffs.json`.

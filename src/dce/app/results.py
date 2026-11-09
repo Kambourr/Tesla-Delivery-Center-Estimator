@@ -11,14 +11,13 @@ assumption file's base prices. Do not import ``dce.extract.pdf_llm``.
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass
-from datetime import UTC, datetime
+from dataclasses import asdict, dataclass
+from pathlib import Path
 
 import yaml
 
 from dce.app.mapdata import load_centers, lookup_centroid
 from dce.config import assumptions_path
-from dce.data.operating_inputs import load_san_mateo_operating_inputs
 from dce.model.assumptions import ModelAssumptions, parse_assumptions
 from dce.model.costs import build_cost_inputs
 from dce.model.dcf import DcfResult
@@ -43,6 +42,9 @@ from dce.scenarios.types import ScenarioResult
 UI_RESULT_SCHEMA = "dce.ui_result.v1"
 UI_COMPARE_SCHEMA = "dce.ui_compare.v1"
 UI_MAP_SCHEMA = "dce.ui_map.v1"
+# Wall-clock time is not part of the document. Two runs of the same inputs
+# write this same timestamp so the JSON is byte-identical.
+COMPUTED_AT = "2026-11-09T00:00:00+00:00"
 
 _DRIVER_LABELS = {
     "labor": "Labor",
@@ -84,9 +86,22 @@ class _Prepared:
     lon: float
 
 
-def build_ui_result(zip_code: str) -> dict[str, object]:
-    """Return the dashboard document for one ZIP. No network."""
-    prepared = _prepare(zip_code)
+def build_ui_result(
+    zip_code: str,
+    *,
+    source: str = "computed",
+    computed_at: str = COMPUTED_AT,
+    data_dir: Path | None = None,
+) -> dict[str, object]:
+    """Return the dashboard document for one ZIP. No network.
+
+    ``source`` is ``computed`` for a live call and ``precomputed`` for a
+    stored row. ``computed_at`` defaults to the input vintage, not the
+    clock, so a second run of the same inputs is the same document.
+    ``data_dir`` is forwarded to ``estimate`` when a batch uses its own
+    database.
+    """
+    prepared = _prepare(zip_code, data_dir=data_dir)
     scenarios = run_scenario_grid(
         prepared.geo,
         prepared.steady,
@@ -94,6 +109,8 @@ def build_ui_result(zip_code: str) -> dict[str, object]:
         outcome_scenarios(prepared.assumptions),
         prepared.assumptions,
         catchment=prepared.catchment,
+        provenance=prepared.result.provenance,
+        nearby_centers=prepared.result.nearby_centers,
     )
     bars = dcf_tornado(
         TornadoInputs(
@@ -111,8 +128,8 @@ def build_ui_result(zip_code: str) -> dict[str, object]:
     return {
         "schema": UI_RESULT_SCHEMA,
         "zip_code": result.geo.zip_code,
-        "source": "computed",
-        "computed_at": datetime.now(UTC).isoformat(),
+        "source": source,
+        "computed_at": computed_at,
         "geo": {
             "zip_code": result.geo.zip_code,
             "zcta": result.geo.zcta,
@@ -146,6 +163,7 @@ def build_ui_result(zip_code: str) -> dict[str, object]:
         "scenarios": {row.scenario_id: _scenario_card(row) for row in scenarios},
         "tornado": tornado_rows(bars),
         "nearby_centers": _nearby(prepared),
+        "provenance": [asdict(row) for row in result.provenance],
     }
 
 
@@ -244,25 +262,26 @@ def ui_result_problems(payload: object) -> list[str]:
     return problems
 
 
-def _prepare(zip_code: str) -> _Prepared:
+def _prepare(zip_code: str, *, data_dir: Path | None = None) -> _Prepared:
     """Take the headline from ``estimate`` and the prices the scenarios need.
 
-    ``estimate`` applies the base handover factor. The volume passed into
-    the scenario grid is that result, not a demand series rebuilt here.
+    ``estimate`` applies the base handover factor and the ZIP's own rent
+    and wage. The scenario grid uses those same prices, read back from
+    the result's provenance, so the base card matches the headline.
     """
-    result = estimate(zip_code)
+    result = estimate(zip_code, data_dir=data_dir)
     if result.dcf is None or result.catchment is None:
         raise EstimateDataError(f"ZIP {zip_code} did not produce a catchment and a DCF.")
     assumptions = parse_assumptions(_load_assumptions())
-    rates = load_san_mateo_operating_inputs()
     steady = result.catchment.gravity.deliveries_per_year
+    values = {row.name: row.value for row in result.provenance}
     costs = build_cost_inputs(
         assumptions,
-        rent_psf_month=rates.rent_psf_month,
-        wage_annual=assumptions.labor.fallback_wage_hourly * assumptions.labor.paid_hours_per_fte,
-        energy_rate_kwh=rates.energy_rate_kwh,
-        demand_rate_kw=rates.demand_rate_kw,
-        annual_deliveries=result.estimated_annual_deliveries,
+        rent_psf_month=_required(result.geo.zip_code, "rent_psf_month", values),
+        wage_annual=_required(result.geo.zip_code, "wage_annual", values),
+        energy_rate_kwh=_required(result.geo.zip_code, "energy_rate_kwh", values),
+        demand_rate_kw=_required(result.geo.zip_code, "demand_rate_kw", values),
+        annual_deliveries=steady,
     )
     point = lookup_centroid(result.geo.zcta) or lookup_centroid(result.geo.zip_code)
     if point is None:
@@ -278,6 +297,13 @@ def _prepare(zip_code: str) -> _Prepared:
         lat=point[0],
         lon=point[1],
     )
+
+
+def _required(zip_code: str, name: str, values: dict[str, float | None]) -> float:
+    value = values.get(name)
+    if value is None:
+        raise EstimateDataError(f"ZIP {zip_code} has no {name} on its provenance.")
+    return value
 
 
 def _load_assumptions() -> dict[str, object]:

@@ -1,0 +1,63 @@
+name: macOS app
+
+# Unsigned Apple Silicon .app. Separate from CI: tests stay on every push,
+# and this workflow does not run them. It does not create a release.
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "**"
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  app:
+    name: arm64 .app
+    runs-on: macos-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Confirm Apple Silicon
+        run: |
+          uname -sm
+          test "$(uname -s)" = "Darwin"
+          test "$(uname -m)" = "arm64"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install tippecanoe
+        run: brew install tippecanoe
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev,packaging]"
+
+      - name: Build the offline app
+        run: make app-bundle
+
+      - name: Packaged smoke test
+        run: python -m pytest tests/packaging/test_frozen_app.py -q
+        env:
+          DCE_FROZEN_BIN: dist/DeliveryCenterEstimator.app/Contents/MacOS/DeliveryCenterEstimator
+          DCE_REQUIRE_FROZEN: "1"
+
+      - name: Zip the app
+        run: ditto -c -k --keepParent dist/DeliveryCenterEstimator.app dist/DeliveryCenterEstimator-macos-arm64.zip
+
+      - name: Report size, precompute, and latency
+        run: python scripts/print_app_report.py
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: DeliveryCenterEstimator-macos-arm64
+          path: |
+            dist/DeliveryCenterEstimator-macos-arm64.zip
+            dist/app-report.json
+          if-no-files-found: error

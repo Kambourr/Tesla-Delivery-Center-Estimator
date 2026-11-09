@@ -1411,6 +1411,17 @@ def national_seed_loaded(conn: sqlite3.Connection) -> bool:
     return True
 
 
+def count_zip_results(conn: sqlite3.Connection) -> dict[str, int]:
+    """Return how many stored rows are ``ok`` and how many are ``error``.
+
+    Statuses that are absent are reported as zero so a report can print both.
+    """
+    counts = {"ok": 0, "error": 0}
+    for status, count in conn.execute("SELECT status, COUNT(*) FROM zip_result GROUP BY status"):
+        counts[str(status)] = int(count)
+    return counts
+
+
 def list_fresh_zip_results(
     conn: sqlite3.Connection,
     *,

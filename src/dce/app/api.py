@@ -27,7 +27,12 @@ from dce.app.mapdata import (
     nationwide_zip_index,
     zip_index,
 )
-from dce.app.paths import shipped_zcta_path, zcta_pmtiles_path, zcta_pmtiles_url
+from dce.app.paths import (
+    OFFLINE_BASEMAP_STYLE,
+    shipped_zcta_path,
+    zcta_pmtiles_path,
+    zcta_pmtiles_url,
+)
 from dce.app.precomputed import lookup_zip_result
 from dce.app.results import (
     UI_COMPARE_SCHEMA,
@@ -102,6 +107,7 @@ class AppApi:
             "zip_index": nationwide_zip_index() if tiles else zip_index(zcta),
             "centers": centers,
             "basemap_style": self._basemap_style,
+            "basemap_fallback": OFFLINE_BASEMAP_STYLE,
             "zcta_name": self._zcta_path.name,
             "boundaries": {
                 "mode": "pmtiles" if tiles else "geojson",

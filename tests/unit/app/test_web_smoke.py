@@ -72,6 +72,10 @@ def test_page_assets_are_local_and_the_bridge_methods_exist() -> None:
     assert "openmaptiles" in style["sources"]
     glyphs = style["glyphs"]
     assert isinstance(glyphs, str) and glyphs.startswith("https://")
+    offline = json.loads((WEB / "vendor" / "basemap-offline.json").read_text(encoding="utf-8"))
+    assert offline["sources"] == {}
+    assert "https://" not in json.dumps(offline)
+    assert "vendor/basemap-offline.json" in script
 
 
 def test_preview_server_serves_the_page_and_the_api(tmp_path: Path) -> None:

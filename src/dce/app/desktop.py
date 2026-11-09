@@ -21,6 +21,9 @@ from dce.app.server import PreviewServer
 
 def launch() -> int:
     """Show the desktop window. Blocks until the window closes."""
+    from dce.app.runtime import prepare_packaged_results
+
+    prepare_packaged_results()
     api = AppApi(
         zcta_path=zcta_geojson_path(),
         results_path=ui_results_path(),

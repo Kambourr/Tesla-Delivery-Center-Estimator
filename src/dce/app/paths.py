@@ -1,8 +1,10 @@
 """Filesystem locations for the desktop UI.
 
-The ZCTA shapes, the basemap style, and a precomputed-results file are
-configurable so other work can land without editing this package. The
-shipped Bay Area GeoJSON is the default until that file exists.
+ZIP polygons come from ``data/geo``. The committed Bay Area GeoJSON is the
+sample. ``data/geo/zcta_us.pmtiles`` (built by ``make zcta-boundaries``,
+gitignored) is the nationwide archive when that file is present. A
+precomputed dashboard document is read through
+:mod:`dce.app.precomputed`, not from a table this package creates.
 """
 
 from __future__ import annotations
@@ -11,12 +13,14 @@ import os
 import sys
 from pathlib import Path
 
-from dce.config import user_data_dir
+from dce.config import bundled_seed_dir, user_data_dir
 
 _ZCTA_ENV = "DCE_ZCTA_GEOJSON"
+_PMTILES_ENV = "DCE_ZCTA_PMTILES"
 _RESULTS_ENV = "DCE_UI_RESULTS_PATH"
 _STYLE_ENV = "DCE_BASEMAP_STYLE"
 _DEFAULT_STYLE = "vendor/basemap-style.json"
+_PMTILES_URL = "tiles/zcta_us.pmtiles"
 
 
 def web_dir() -> Path:
@@ -29,21 +33,48 @@ def web_dir() -> Path:
     return Path(__file__).resolve().parent / "web"
 
 
+def geo_dir() -> Path:
+    """Return ``data/geo``, next to the bundled seed."""
+    return bundled_seed_dir().parent / "geo"
+
+
 def shipped_zcta_path() -> Path:
-    """Return the Bay Area ZCTA GeoJSON that ships with the app."""
-    return web_dir() / "fixtures" / "bay_area_zcta.geojson"
+    """Return the committed Bay Area ZCTA GeoJSON."""
+    return geo_dir() / "zcta_bay_area.geojson"
 
 
 def zcta_geojson_path() -> Path:
-    """Return the ZCTA file the map should load.
+    """Return the ZCTA GeoJSON the map loads when the PMTiles archive is absent.
 
-    ``DCE_ZCTA_GEOJSON`` replaces the shipped fixture. The national extract
-    should set that variable. A missing override falls back to the fixture.
+    ``DCE_ZCTA_GEOJSON`` replaces the Bay Area sample. The sample is the
+    file ``make zcta-boundaries`` writes for the nine Bay Area counties.
     """
     override = os.environ.get(_ZCTA_ENV, "").strip()
     if override:
         return Path(override).expanduser()
     return shipped_zcta_path()
+
+
+def zcta_pmtiles_path() -> Path | None:
+    """Return the nationwide PMTiles archive when that file exists.
+
+    ``DCE_ZCTA_PMTILES`` names an archive. Otherwise the path is
+    ``data/geo/zcta_us.pmtiles``, which ``make zcta-boundaries`` writes and
+    git ignores. A missing file means the map uses the GeoJSON sample.
+    """
+    override = os.environ.get(_PMTILES_ENV, "").strip()
+    if override:
+        path = Path(override).expanduser()
+        return path if path.is_file() else None
+    candidate = geo_dir() / "zcta_us.pmtiles"
+    if candidate.is_file():
+        return candidate
+    return None
+
+
+def zcta_pmtiles_url() -> str:
+    """Return the page path the preview server uses for the archive."""
+    return _PMTILES_URL
 
 
 def basemap_style() -> str:

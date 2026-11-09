@@ -16,8 +16,12 @@ datas = [
     (str(root / "data" / "seed"), "data/seed"),
     (str(root / "data" / "defaults"), "data/defaults"),
     (str(root / "data" / "demo"), "data/demo"),
+    (str(root / "data" / "geo" / "zcta_bay_area.geojson"), "data/geo"),
     (str(root / "tests" / "fixtures" / "hud_9440x.json"), "tests/fixtures/hud_9440x.json"),
 ]
+pmtiles = root / "data" / "geo" / "zcta_us.pmtiles"
+if pmtiles.is_file():
+    datas.append((str(pmtiles), "data/geo"))
 
 a = Analysis(
     [str(root / "src" / "dce" / "app" / "__main__.py")],

@@ -2,7 +2,8 @@
 
 JavaScript calls :meth:`bootstrap`, :meth:`get_result`, and :meth:`compare`.
 A result is read from a precomputed file or from
-``dce.storage.repository.get_ui_result`` when that function exists. Otherwise
+:func:`dce.app.precomputed.lookup_zip_result` (the forthcoming
+``get_zip_result`` / ``get_zip_results`` API). Otherwise
 :func:`dce.app.results.build_ui_result` runs on a worker thread, and the
 value is cached for the rest of the process. The page shows a skeleton
 while that call is in flight. The second request for the same ZIP does not
@@ -19,8 +20,15 @@ from concurrent.futures import Future, ThreadPoolExecutor
 from pathlib import Path
 from threading import Lock
 
-from dce.app.mapdata import MapDataError, load_centers, load_zcta, zip_index
-from dce.app.paths import shipped_zcta_path
+from dce.app.mapdata import (
+    MapDataError,
+    load_centers,
+    load_zcta,
+    nationwide_zip_index,
+    zip_index,
+)
+from dce.app.paths import shipped_zcta_path, zcta_pmtiles_path, zcta_pmtiles_url
+from dce.app.precomputed import lookup_zip_result
 from dce.app.results import (
     UI_COMPARE_SCHEMA,
     UI_MAP_SCHEMA,
@@ -35,6 +43,7 @@ from dce.model.errors import ModelError
 from dce.orchestrator import EstimateDataError
 
 Reader = Callable[[str], object]
+_DISCOVER = object()
 
 
 class AppApi:
@@ -50,6 +59,7 @@ class AppApi:
         basemap_style: str = "vendor/basemap-style.json",
         precomputed_reader: Reader | None = None,
         use_repository: bool = False,
+        pmtiles_path: Path | None | object = _DISCOVER,
     ) -> None:
         self._zcta_path = shipped_zcta_path() if zcta_path is None else zcta_path
         self._results_path = results_path
@@ -58,6 +68,12 @@ class AppApi:
         self._basemap_style = basemap_style
         self._reader = precomputed_reader
         self._use_repository = use_repository
+        if pmtiles_path is _DISCOVER:
+            self._pmtiles_path = zcta_pmtiles_path()
+        elif isinstance(pmtiles_path, Path):
+            self._pmtiles_path = pmtiles_path
+        else:
+            self._pmtiles_path = None
         self._memory: dict[str, dict[str, object]] = {}
         self._inflight: dict[str, Future[dict[str, object]]] = {}
         self._lock = Lock()
@@ -78,14 +94,23 @@ class AppApi:
             centers = [dict(row) for row in load_centers()]
         except (OSError, MapDataError) as exc:
             return _fail("map_failed", str(exc))
+        tiles = self._pmtiles_path is not None and self._pmtiles_path.is_file()
         return {
             "ok": True,
             "schema": UI_MAP_SCHEMA,
             "zcta": zcta,
-            "zip_index": zip_index(zcta),
+            "zip_index": nationwide_zip_index() if tiles else zip_index(zcta),
             "centers": centers,
             "basemap_style": self._basemap_style,
             "zcta_name": self._zcta_path.name,
+            "boundaries": {
+                "mode": "pmtiles" if tiles else "geojson",
+                "pmtiles": zcta_pmtiles_url() if tiles else None,
+                "source_layer": "zcta",
+                "id_property": "zcta",
+                "minzoom": 3,
+                "maxzoom": 8,
+            },
         }
 
     def get_result(self, zip_code: str) -> dict[str, object]:
@@ -284,18 +309,5 @@ def _load_json(path: Path) -> object:
 
 
 def _read_repository(zip_code: str) -> dict[str, object] | None:
-    """Call ``get_ui_result(zip)`` if storage has grown that function.
-
-    The function is optional. A failure here means "no precomputed row",
-    and the ZIP is computed instead. This module does not open SQLite.
-    """
-    import dce.storage.repository as repository
-
-    getter = getattr(repository, "get_ui_result", None)
-    if not callable(getter):
-        return None
-    try:
-        raw = getter(zip_code)
-    except Exception:
-        return None
-    return _accept(raw, zip_code)
+    """Ask the precompute adapter. A miss means the ZIP is computed."""
+    return _accept(lookup_zip_result(zip_code), zip_code)

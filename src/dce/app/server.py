@@ -33,10 +33,17 @@ _TYPES = {
 class PreviewServer:
     """Serve the UI until :meth:`stop`."""
 
-    def __init__(self, api: AppApi, host: str = "127.0.0.1", port: int = 0) -> None:
+    def __init__(
+        self,
+        api: AppApi,
+        host: str = "127.0.0.1",
+        port: int = 0,
+        pmtiles: Path | None = None,
+    ) -> None:
         self._api = api
         self._host = host
         self._port = port
+        self._pmtiles = pmtiles if pmtiles is not None and pmtiles.is_file() else None
         self._httpd: ThreadingHTTPServer | None = None
         self._thread: threading.Thread | None = None
 
@@ -52,7 +59,7 @@ class PreviewServer:
 
     def start(self) -> str:
         """Start the server on a background thread and return its base URL."""
-        handler = _handler(self._api, web_dir())
+        handler = _handler(self._api, web_dir(), self._pmtiles)
         self._httpd = ThreadingHTTPServer((self._host, self._port), handler)
         self._thread = threading.Thread(
             target=self._httpd.serve_forever,
@@ -73,8 +80,9 @@ class PreviewServer:
             self._thread = None
 
 
-def _handler(api: AppApi, web: Path) -> type[BaseHTTPRequestHandler]:
+def _handler(api: AppApi, web: Path, pmtiles: Path | None) -> type[BaseHTTPRequestHandler]:
     root = web.resolve()
+    archive = pmtiles.resolve() if pmtiles is not None else None
 
     class Handler(BaseHTTPRequestHandler):
         def do_GET(self) -> None:  # noqa: N802
@@ -90,6 +98,12 @@ def _handler(api: AppApi, web: Path) -> type[BaseHTTPRequestHandler]:
             if compare_match:
                 _send_json(self, api.compare(compare_match.group(1), compare_match.group(2)))
                 return
+            if path == "/tiles/zcta_us.pmtiles":
+                if archive is None:
+                    self.send_error(404)
+                    return
+                _send_range(self, archive, "application/octet-stream")
+                return
             file_path = _static_file(root, path)
             if file_path is None:
                 self.send_error(404)
@@ -99,6 +113,7 @@ def _handler(api: AppApi, web: Path) -> type[BaseHTTPRequestHandler]:
             self.send_header(
                 "Content-Type", _TYPES.get(file_path.suffix, "application/octet-stream")
             )
+            self.send_header("Accept-Ranges", "bytes")
             self.send_header("Content-Length", str(len(body)))
             self.send_header("Cache-Control", "no-cache")
             self.end_headers()
@@ -122,6 +137,72 @@ def _static_file(root: Path, url_path: str) -> Path | None:
     if candidate.is_file():
         return candidate
     return None
+
+
+_BYTE_RANGE = re.compile(r"bytes=(\d*)-(\d*)$")
+
+
+def _send_range(handler: BaseHTTPRequestHandler, path: Path, content_type: str) -> None:
+    """Serve one file, honoring a single ``Range: bytes=`` request.
+
+    The PMTiles client reads the archive with range requests so a national
+    tile set does not have to be downloaded up front.
+    """
+    size = path.stat().st_size
+    start, end, partial = _range_bounds(handler.headers.get("Range"), size)
+    if start is None or end is None:
+        handler.send_response(416)
+        handler.send_header("Content-Range", f"bytes */{size}")
+        handler.end_headers()
+        return
+    length = end - start + 1
+    handler.send_response(206 if partial else 200)
+    handler.send_header("Content-Type", content_type)
+    handler.send_header("Accept-Ranges", "bytes")
+    handler.send_header("Content-Length", str(length))
+    if partial:
+        handler.send_header("Content-Range", f"bytes {start}-{end}/{size}")
+    handler.send_header("Cache-Control", "public, max-age=86400")
+    handler.end_headers()
+    with path.open("rb") as handle:
+        handle.seek(start)
+        remaining = length
+        while remaining > 0:
+            chunk = handle.read(min(remaining, 256 * 1024))
+            if not chunk:
+                break
+            handler.wfile.write(chunk)
+            remaining -= len(chunk)
+
+
+def _range_bounds(header: str | None, size: int) -> tuple[int | None, int | None, bool]:
+    """Return ``start``, ``end`` (inclusive), and whether the request was a range.
+
+    ``(None, None, False)`` means the range was not satisfiable.
+    """
+    if size <= 0:
+        if header:
+            return None, None, False
+        return 0, -1, False
+    if not header:
+        return 0, size - 1, False
+    match = _BYTE_RANGE.fullmatch(header.strip())
+    if match is None:
+        return None, None, False
+    raw_start, raw_end = match.group(1), match.group(2)
+    if raw_start == "" and raw_end == "":
+        return None, None, False
+    if raw_start == "":
+        suffix = int(raw_end)
+        if suffix <= 0:
+            return None, None, False
+        start = max(size - suffix, 0)
+        return start, size - 1, True
+    start = int(raw_start)
+    end = int(raw_end) if raw_end else size - 1
+    if start >= size or start > end:
+        return None, None, False
+    return start, min(end, size - 1), True
 
 
 def _send_json(handler: BaseHTTPRequestHandler, payload: object) -> None:

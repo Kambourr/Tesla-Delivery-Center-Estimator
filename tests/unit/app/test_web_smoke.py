@@ -52,7 +52,7 @@ def test_page_assets_are_local_and_the_bridge_methods_exist() -> None:
     library = (WEB / "vendor" / "maplibre-gl.js").read_text(encoding="utf-8")
     tags = _Tags()
     tags.feed(page)
-    assert tags.scripts == ["vendor/maplibre-gl.js", "app.js"]
+    assert tags.scripts == ["vendor/maplibre-gl.js", "vendor/pmtiles.js", "app.js"]
     assert tags.stylesheets == ["vendor/maplibre-gl.css", "app.css"]
     assert len(tags.icons) == 1 and tags.icons[0].startswith("data:image/svg+xml")
     for url in tags.scripts + tags.stylesheets + tags.icons:
@@ -63,6 +63,9 @@ def test_page_assets_are_local_and_the_bridge_methods_exist() -> None:
     assert "bootstrap" in script and "get_result" in script and "compare" in script
     for name in ("bootstrap", "get_result", "compare"):
         assert hasattr(AppApi, name)
+    protocol = (WEB / "vendor" / "pmtiles.js").read_text(encoding="utf-8")
+    assert "Protocol" in protocol
+    assert "var pmtiles" in protocol
     assert library.startswith("/**")
     assert "MapLibre GL JS" in library.splitlines()[1]
     assert len(library) > 100_000
@@ -112,6 +115,22 @@ def test_preview_server_serves_the_page_and_the_api(tmp_path: Path) -> None:
         escaped = connection.getresponse()
         assert escaped.status == 404
         escaped.read()
+        archive = tmp_path / "zcta_us.pmtiles"
+        archive.write_bytes(b"pmtiles-bytes-0123456789")
+        tiles = PreviewServer(api, pmtiles=archive)
+        try:
+            tile_base = tiles.start()
+            parsed_tiles = urlparse(tile_base)
+            connection = http.client.HTTPConnection(
+                parsed_tiles.hostname, parsed_tiles.port, timeout=5
+            )
+            connection.request("GET", "/tiles/zcta_us.pmtiles", headers={"Range": "bytes=0-6"})
+            partial = connection.getresponse()
+            assert partial.status == 206
+            assert partial.getheader("Content-Range") == "bytes 0-6/24"
+            assert partial.read() == b"pmtiles"
+        finally:
+            tiles.stop()
     finally:
         server.stop()
         api.close()

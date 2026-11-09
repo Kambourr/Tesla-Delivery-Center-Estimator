@@ -33,6 +33,8 @@
   let cashLens = "standalone";
   let tornadoAll = false;
   let hovered = null;
+  let sourceLayer = null;
+  let protocolReady = false;
   const touched = new Set();
   let readyResolve = function () {};
   const ready = new Promise(function (resolve) { readyResolve = resolve; });
@@ -138,10 +140,34 @@
     map.setStyle(FALLBACK_STYLE);
   }
 
+  function installPmtiles() {
+    if (protocolReady || !window.pmtiles || !maplibregl.addProtocol) return;
+    const protocol = new pmtiles.Protocol();
+    maplibregl.addProtocol("pmtiles", protocol.tile);
+    protocolReady = true;
+  }
+
   function addOverlays(body) {
     if (map.getSource("zcta")) return;
-    map.addSource("zcta", { type: "geojson", data: body.zcta, promoteId: "zip" });
-    map.addLayer({
+    const boundaries = body.boundaries || {};
+    const useTiles = boundaries.mode === "pmtiles" && boundaries.pmtiles && window.pmtiles;
+    sourceLayer = useTiles ? (boundaries.source_layer || "zcta") : null;
+    if (useTiles) {
+      installPmtiles();
+      const archive = new URL(boundaries.pmtiles, window.location.href).href;
+      const idProperty = boundaries.id_property || "zcta";
+      const promote = {};
+      promote[sourceLayer] = idProperty;
+      map.addSource("zcta", {
+        type: "vector",
+        url: "pmtiles://" + archive,
+        promoteId: promote,
+      });
+    } else {
+      map.addSource("zcta", { type: "geojson", data: body.zcta, promoteId: "zip" });
+    }
+    const layerExtra = sourceLayer ? { "source-layer": sourceLayer } : {};
+    map.addLayer(Object.assign({
       id: "zcta-fill",
       type: "fill",
       source: "zcta",
@@ -162,8 +188,8 @@
           0.05,
         ],
       },
-    });
-    map.addLayer({
+    }, layerExtra));
+    map.addLayer(Object.assign({
       id: "zcta-line",
       type: "line",
       source: "zcta",
@@ -182,7 +208,7 @@
           0.7,
         ],
       },
-    });
+    }, layerExtra));
     map.addSource("centers", {
       type: "geojson",
       data: {
@@ -388,7 +414,7 @@
     if (!map.getLayer("zcta-fill")) return;
     const hits = map.queryRenderedFeatures(event.point, { layers: ["zcta-fill"] });
     if (!hits.length) return;
-    const zip = hits[0].properties && hits[0].properties.zip;
+    const zip = zipOf(hits[0]);
     if (!zip) return;
     if (compareOn) {
       if (!slotA) slotA = zip;
@@ -402,7 +428,8 @@
   function onZipMove(event) {
     if (!event.features || !event.features.length) return;
     map.getCanvas().style.cursor = "pointer";
-    const zip = event.features[0].properties.zip;
+    const zip = zipOf(event.features[0]);
+    if (!zip) return;
     if (hovered && hovered !== zip) setState(hovered, { hover: false });
     hovered = zip;
     setState(zip, { hover: true });
@@ -429,10 +456,20 @@
     map.easeTo({ center: [row.lon, row.lat], zoom: Math.max(map.getZoom(), 10.2), duration: 450 });
   }
 
+  function zipOf(feature) {
+    const props = (feature && feature.properties) || {};
+    const value = props.zip || props.zcta || feature.id;
+    const text = String(value == null ? "" : value);
+    return /^\d{5}$/.test(text) ? text : null;
+  }
+
   function setState(zip, state) {
-    if (!map || !mapReady || !byZip.has(zip)) return;
+    if (!map || !mapReady) return;
+    if (!sourceLayer && !byZip.has(zip)) return;
     touched.add(zip);
-    map.setFeatureState({ source: "zcta", id: zip }, state);
+    const target = { source: "zcta", id: zip };
+    if (sourceLayer) target.sourceLayer = sourceLayer;
+    map.setFeatureState(target, state);
   }
 
   function clearPaint() {

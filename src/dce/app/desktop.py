@@ -9,7 +9,13 @@ HTML under ``dce.app.web``.
 from __future__ import annotations
 
 from dce.app.api import AppApi
-from dce.app.paths import basemap_style, ui_cache_dir, ui_results_path, zcta_geojson_path
+from dce.app.paths import (
+    basemap_style,
+    ui_cache_dir,
+    ui_results_path,
+    zcta_geojson_path,
+    zcta_pmtiles_path,
+)
 from dce.app.server import PreviewServer
 
 
@@ -22,8 +28,9 @@ def launch() -> int:
         persist_cache=True,
         basemap_style=basemap_style(),
         use_repository=True,
+        pmtiles_path=zcta_pmtiles_path(),
     )
-    server = PreviewServer(api)
+    server = PreviewServer(api, pmtiles=zcta_pmtiles_path())
     url = server.start()
     try:
         import webview

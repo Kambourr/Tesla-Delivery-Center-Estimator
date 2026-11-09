@@ -1,14 +1,11 @@
 """Build the JSON document the map dashboard renders.
 
-The headline numbers are the same pipeline as
-:func:`dce.orchestrator.estimate`: gravity catchment, static cost, and both
-DCF views. Low / base / high cards and the NPV tornado come from
-``dce.scenarios`` on those same inputs.
-
-This module mirrors the orchestrator's input assembly so the dashboard can
-run scenarios without a second copy of the cost model. A
-``prepare_estimate`` on the orchestrator should replace ``_prepare`` when
-that helper exists. Do not import ``dce.extract.pdf_llm``.
+Headline cost, deliveries, catchment, and both DCF views come from
+:func:`dce.orchestrator.estimate` with its own defaults, including the base
+handover factor. This module does not rebuild ZIP demand or pick a
+handover factor of its own. Low / base / high cards and the NPV tornado
+come from ``dce.scenarios``, using that estimate's volume and the parsed
+assumption file's base prices. Do not import ``dce.extract.pdf_llm``.
 """
 
 from __future__ import annotations
@@ -19,29 +16,21 @@ from datetime import UTC, datetime
 
 import yaml
 
-from dce.app.mapdata import load_centers
+from dce.app.mapdata import load_centers, lookup_centroid
 from dce.config import assumptions_path
-from dce.data.catchment_demand import build_catchment_demand, delivery_center_sites
-from dce.data.operating_inputs import OperatingInputError, load_san_mateo_operating_inputs
-from dce.geo.catchment import CatchmentCase, catchment_features
-from dce.geo.resolve import resolve_zip
+from dce.data.operating_inputs import load_san_mateo_operating_inputs
 from dce.model.assumptions import ModelAssumptions, parse_assumptions
-from dce.model.costs import annualized_components, annualized_total, build_cost_inputs
-from dce.model.costs import cost_per_delivery as cost_per_delivery_of
-from dce.model.dcf import DcfResult, run_dcf_views
-from dce.model.demand import apply_delivery_shock
-from dce.model.drivers import top_drivers
+from dce.model.costs import build_cost_inputs
+from dce.model.dcf import DcfResult
 from dce.model.types import (
     CatchmentCaseSummary,
     CatchmentSummary,
-    CatchmentZipVolume,
-    CenterVolumeTaken,
     CostInputs,
     EstimateResult,
     GeoContext,
     Scenario,
 )
-from dce.orchestrator import EstimateDataError
+from dce.orchestrator import EstimateDataError, estimate
 from dce.scenarios import (
     TornadoInputs,
     dcf_tornado,
@@ -256,74 +245,38 @@ def ui_result_problems(payload: object) -> list[str]:
 
 
 def _prepare(zip_code: str) -> _Prepared:
-    """Assemble the same inputs ``estimate`` uses, then the baseline result."""
-    geo = resolve_zip(zip_code)
+    """Take the headline from ``estimate`` and the prices the scenarios need.
+
+    ``estimate`` applies the base handover factor. The volume passed into
+    the scenario grid is that result, not a demand series rebuilt here.
+    """
+    result = estimate(zip_code)
+    if result.dcf is None or result.catchment is None:
+        raise EstimateDataError(f"ZIP {zip_code} did not produce a catchment and a DCF.")
     assumptions = parse_assumptions(_load_assumptions())
-    scenario = Scenario(
-        vehicle_mix=dict(assumptions.vehicle_mix),
-        wage_shock=0.0,
-        rent_shock=0.0,
-        delivery_shock=0.0,
-    )
-    if geo.state != "CA":
-        raise OperatingInputError(
-            "Resolved rent is bundled for the San Mateo demo. "
-            "A non-California ZIP needs the rent fallback, which is not wired yet, "
-            "or an explicit rent_psf_month override."
-        )
     rates = load_san_mateo_operating_inputs()
-    demand = build_catchment_demand(geo)
-    features = catchment_features(geo, delivery_center_sites(), demand)
-    steady = features.gravity.total_deliveries_per_year
-    shocked = apply_delivery_shock(steady, scenario)
+    steady = result.catchment.gravity.deliveries_per_year
     costs = build_cost_inputs(
         assumptions,
         rent_psf_month=rates.rent_psf_month,
         wage_annual=assumptions.labor.fallback_wage_hourly * assumptions.labor.paid_hours_per_fte,
         energy_rate_kwh=rates.energy_rate_kwh,
         demand_rate_kw=rates.demand_rate_kw,
-        annual_deliveries=shocked,
+        annual_deliveries=result.estimated_annual_deliveries,
     )
-    components = annualized_components(costs, scenario)
-    candidate = next(
-        (row for row in demand if row.zip_code in {geo.zip_code, geo.zcta}),
-        None,
-    )
-    if candidate is None or candidate.lat is None or candidate.lon is None:
-        raise EstimateDataError(f"ZIP {geo.zip_code} has no centroid.")
-    catchment = CatchmentSummary(
-        zip_code=features.zip_code,
-        beta=features.beta,
-        gravity=_summary_case(features.gravity),
-        nearest=_summary_case(features.nearest),
-    )
-    result = EstimateResult(
-        geo=geo,
-        scenario=scenario,
-        cost_per_delivery=cost_per_delivery_of(components, shocked),
-        annualized_total_cost=annualized_total(components),
-        estimated_annual_deliveries=shocked,
-        components=components,
-        drivers=top_drivers(components),
-        map_path=None,
-        catchment=catchment,
-        dcf=run_dcf_views(
-            costs,
-            assumptions,
-            steady_deliveries=steady,
-            scenario=scenario,
-        ),
-    )
+    point = lookup_centroid(result.geo.zcta) or lookup_centroid(result.geo.zip_code)
+    if point is None:
+        raise EstimateDataError(f"ZIP {result.geo.zip_code} has no centroid.")
     return _Prepared(
-        geo=geo,
+        geo=result.geo,
         assumptions=assumptions,
-        scenario=scenario,
+        scenario=result.scenario,
         costs=costs,
         steady=steady,
-        catchment=catchment,
+        catchment=result.catchment,
         result=result,
-        lat=candidate.lat,
-        lon=candidate.lon,
+        lat=point[0],
+        lon=point[1],
     )
 
 
@@ -338,22 +291,6 @@ def _load_assumptions() -> dict[str, object]:
     if not isinstance(loaded, dict):
         raise EstimateDataError("Assumptions file must be a mapping.")
     return {str(key): value for key, value in loaded.items()}
-
-
-def _summary_case(case: CatchmentCase) -> CatchmentCaseSummary:
-    return CatchmentCaseSummary(
-        method=case.method,
-        beta=case.beta,
-        zips=tuple(
-            CatchmentZipVolume(row.zip_code, row.deliveries_per_year, row.share)
-            for row in case.zips
-        ),
-        deliveries_per_year=case.total_deliveries_per_year,
-        taken_from=tuple(
-            CenterVolumeTaken(row.center_id, row.name, row.deliveries_per_year)
-            for row in case.taken_from
-        ),
-    )
 
 
 def _case(case: CatchmentCaseSummary) -> dict[str, object]:

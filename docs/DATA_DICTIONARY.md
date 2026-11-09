@@ -24,7 +24,7 @@ The only required input is `zip_code`. Everything else is an assumption default,
 | `scenario_id` | str | e.g. `base`, `wage_p20`, `mix_alt` |
 | `spearman_drivers` | float | vs baseline driver ranks |
 | `spearman_zips` | float? | When batch comparing ZIPs |
-| `map_path` | path | Folium HTML |
+| `map_path` | path | Unused by the GUI. The map is MapLibre in the window (ADR-0006). `estimate` leaves this `None`. |
 | `staleness` | list[{source, as_of, status}] | UI badges |
 
 ## Cost components (`name` keys)

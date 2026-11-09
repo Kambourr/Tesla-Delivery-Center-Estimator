@@ -2,7 +2,7 @@
 
 Each milestone is sized for one coding agent. Acceptance is binary.
 
-Decisions locked on 2026-11-09 (see PLAN and ARCHITECTURE): Tkinter, macOS Apple Silicon `.app` as the primary artifact, zero required inputs with automatic rent, bundled SQLite seed, LLM only in `dce.extract.pdf_llm`.
+Decisions locked on 2026-11-09 (see PLAN and ARCHITECTURE): macOS Apple Silicon `.app` as the primary artifact, zero required inputs with automatic rent, bundled SQLite seed, LLM only in `dce.extract.pdf_llm`. The shell is a pywebview window and a local MapLibre page (ADR-0006), which supersedes the Tkinter and Folium wording in M5 and M7 below.
 
 **Revised scope (Jacob, 2026-11-08).** A candidate ZIP returns a gravity catchment net of existing Tesla delivery centers (deliveries a year and the volume taken from each center), `$/delivery` with the top 3 drivers, scenarios, a map, and a 10-year DCF (NPV, IRR, simple and discounted payback, yearly cash-flow table) showing both the standalone and the incremental benefit views. Out of scope: Tesla internal data, home delivery, service repair, and multi-site optimization. Two milestones, M3.5a and M3.5b, sit between M3 and M4; later numbers are unchanged. Research: `docs/research/`. Decisions: ADR-0004, ADR-0005.
 
@@ -34,17 +34,21 @@ Decisions locked on 2026-11-09 (see PLAN and ARCHITECTURE): Tkinter, macOS Apple
 **Deliver:** `scenarios/grid.py`, `scenarios/robustness.py`; CLI `estimate --scenario-grid`. `Scenario` gains optional `discount_rate_shock`, `growth_shock`, and `benefit_mode`. `expand_default_scenarios` adds WACC low/high (9.7% / 16.3%) and growth 0% / 10%. `dcf_tornado(base_inputs, ranges)` returns `(driver, npv_low, npv_high)` sorted by swing, using the `ModelAssumptions.ranges` low/high values. Driver-rank Spearman also ranks NPV drivers. Default vehicle mix comes from `assumptions.vehicle_mix`.
 **Accept:** Grid emits baseline + wage±20% + alternate mix + WACC low/high + growth 0/10%; Spearman driver-rank vs baseline is in [−1, 1]; a test proves wage+20% does not change lease dollars. The San Mateo standalone tornado ranks deliveries first, and every bar brackets the base NPV.
 
-## M5 — Map (gravity catchment + Folium HTML)
-**Deliver:** Demo GeoPackage for San Mateo ZCTAs; `geo/folium_map.py` rendering the M3.5a catchment: core polygon where `P_cz ≥ 0.5`, other ZCTAs shaded by `P_cz`, a candidate marker, and markers for existing centers labeled with the volume taken from each. HTML is a file the GUI will open in the system browser. Offline note in the README (polygons must not depend on a live tile server).
-**Accept:** `94402` writes HTML with at least one polygon layer, a candidate marker, and at least one existing-center marker; a test checks the file exists and contains a Folium / GeoJSON snippet.
+## M5 — Map (gravity catchment on the MapLibre page)
+
+ADR-0006 replaces the Folium HTML file this milestone originally named. The polygons are `data/geo` (Bay Area GeoJSON, and PMTiles when built).
+**Deliver:** MapLibre draws ZCTA polygons and existing delivery centers. The gravity catchment is a highlight on the selected ZIP's neighbors. Polygons do not depend on a live tile server. The dark basemap may.
+**Accept:** The Bay Area sample includes `94402`. With no PMTiles archive the page still draws those polygons. A headless test loads the page and the bootstrap payload.
 
 ## M6 — Rent fallback, crosswalks, and rates (still no scraping)
 **Deliver:** Bundled rent seed (CBSA industrial asking rents cited to public CBRE / Cushman / Colliers / JLL reports), HUD ZIP→CBSA fixture or seed, frozen ACS rent-model coefficients, GSA calibration notes, `resolve_rent` fallback chain (ZIP-adjusted CBSA → county → CBSA → state → national → HUD SAFMR/ZORI proxy flagged low-confidence). EIA/OpenEI loaders. PG&E manual extract JSON for B-10/B-19 cached. Optional advanced rent override is not required for the accept path.
 **Accept:** Estimating a ZIP uses resolved rent when no override is present and shows tier, confidence, `as_of`, and citation. No LoopNet/Crexi code path exists (search gate in CI). First-launch path reads the bundled seed and does not require network.
 
-## M7 — Tkinter GUI + macOS PyInstaller .app
-**Deliver:** Tkinter form (ZIP, scenario presets, Refresh data, Run, staleness and rent-confidence badges, Open map via the system browser). Results show `$/delivery` with the top 3 drivers, catchment deliveries and the volume taken from each center, and the DCF: standalone NPV / IRR / paybacks as the headline, the incremental lens beside it, the yearly cash-flow table (CSV export), and the cumulative-FCF payback chart. Optional advanced rent override may be present and must not be required. `packaging/dce_macos.spec` and `scripts/build_macos.sh` produce an arm64 `.app` that bundles `data/seed`. A Windows EXE is out of this milestone.
-**Accept:** On Apple Silicon the `.app` builds; a headless smoke launch exits 0; offline first launch from the bundled seed works for 94401–94404. Document right-click → Open for Gatekeeper.
+## M7 — MapLibre GUI + macOS PyInstaller .app
+
+ADR-0006 replaces the Tkinter form this milestone originally named. `python -m dce.app` opens the window. `scripts/build_macos.sh` builds the arm64 `.app`.
+**Deliver:** The window shows `$/delivery` with the top 3 drivers, catchment deliveries, standalone and incremental NPV / IRR / paybacks, low/base/high, an NPV tornado, the 10-year cash-flow table, and nearby centers. `packaging/dce_macos.spec` bundles `data/seed` and `data/geo/zcta_bay_area.geojson`. A Windows EXE is out of this milestone.
+**Accept:** `make check` passes with no display. On Apple Silicon the `.app` builds. Document right-click → Open for Gatekeeper.
 
 ## M8 — Polish / handoff
 **Deliver:** README quickstart brought current, STATUS update, sample screenshots (optional), OPEN_QUESTIONS resolved or parked.

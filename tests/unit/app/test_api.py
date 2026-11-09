@@ -48,6 +48,10 @@ def test_bootstrap_loads_bay_area_fixture_and_centers() -> None:
     assert isinstance(centers, list)
     assert "colma" in {row["center_id"] for row in centers if isinstance(row, dict)}
     assert str(body["basemap_style"]).startswith("vendor/")
+    boundaries = body["boundaries"]
+    assert isinstance(boundaries, dict)
+    assert boundaries["mode"] in {"geojson", "pmtiles"}
+    assert boundaries["source_layer"] == "zcta"
 
 
 def test_94402_matches_estimate_and_carries_the_dashboard_fields() -> None:
@@ -61,7 +65,9 @@ def test_94402_matches_estimate_and_carries_the_dashboard_fields() -> None:
     assert result["drivers"][0]["name"] == "labor"  # type: ignore[index]
     assert [row["name"] for row in result["drivers"]] == ["labor", "lease", "capex"]  # type: ignore[index, union-attr]
     standalone = result["dcf"]["standalone"]  # type: ignore[index]
-    assert standalone["npv"] == pytest.approx(13.92e6, abs=0.05e6)  # type: ignore[index]
+    assert baseline.dcf is not None
+    assert standalone["npv"] == pytest.approx(baseline.dcf.standalone.npv)
+    assert standalone["npv"] == pytest.approx(15.00e6, abs=0.05e6)  # type: ignore[index]
     assert result["tornado"][0]["driver"] == "deliveries"  # type: ignore[index]
     base = result["scenarios"]["base"]  # type: ignore[index]
     assert base["standalone"]["npv"] == pytest.approx(standalone["npv"], abs=1.0)  # type: ignore[index]
@@ -162,7 +168,7 @@ def test_bad_precomputed_falls_through(tmp_path: Path, monkeypatch: pytest.Monke
 
 def test_repository_hook_is_optional(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
-        "dce.storage.repository.get_ui_result",
+        "dce.storage.repository.get_zip_result",
         lambda zip_code: _minimal(zip_code),
         raising=False,
     )
@@ -277,6 +283,46 @@ def test_disk_cache_survives_a_new_api(tmp_path: Path, monkeypatch: pytest.Monke
     assert calls["n"] == 1
 
 
+def test_pmtiles_archive_switches_the_map_to_nationwide_tiles(tmp_path: Path) -> None:
+    archive = tmp_path / "zcta_us.pmtiles"
+    archive.write_bytes(b"not a real archive")
+    api = _api(pmtiles_path=archive)
+    try:
+        body = api.bootstrap()
+    finally:
+        api.close()
+    assert body["ok"] is True
+    boundaries = body["boundaries"]
+    assert isinstance(boundaries, dict)
+    assert boundaries["mode"] == "pmtiles"
+    assert boundaries["pmtiles"] == "tiles/zcta_us.pmtiles"
+    assert boundaries["minzoom"] == 3
+    assert boundaries["maxzoom"] == 8
+    index = body["zip_index"]
+    assert isinstance(index, list)
+    assert any(row.get("zip") == "94402" for row in index if isinstance(row, dict))
+    assert any(row.get("zip") == "00601" for row in index if isinstance(row, dict))
+
+
+def test_precompute_adapter_prefers_get_zip_result(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(
+        "dce.storage.repository.get_zip_result",
+        lambda zip_code: _minimal(zip_code),
+        raising=False,
+    )
+    monkeypatch.setattr(
+        "dce.app.api.build_ui_result",
+        lambda _zip: (_ for _ in ()).throw(AssertionError("computed")),
+    )
+    api = _api(use_repository=True, pmtiles_path=None)
+    try:
+        body = api.get_result("94401")
+    finally:
+        api.close()
+    assert body["source"] == "precomputed"
+    assert body["result"]["zip_code"] == "94401"  # type: ignore[index]
+
+
 def test_missing_zcta_file_is_an_error(tmp_path: Path) -> None:
     api = _api(zcta_path=tmp_path / "missing.geojson")
     try:
@@ -295,3 +341,4 @@ def test_build_script_refuses_to_cross_compile() -> None:
     spec = (ROOT / "packaging" / "dce_macos.spec").read_text(encoding="utf-8")
     assert "dce/app/web" in spec
     assert "data/seed" in spec
+    assert "data/geo" in spec

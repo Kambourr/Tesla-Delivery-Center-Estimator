@@ -40,10 +40,11 @@ and the center markers on a flat dark background.
 
 The document shape is `docs/contracts/ui_results.md` (`dce.ui_result.v1`).
 
-Until the national ZCTA extract lands, polygons load from
-`DCE_ZCTA_GEOJSON` or, by default, the Bay Area fixture shipped in
-`src/dce/app/web/fixtures/`. Charts are SVG drawn by the page. No chart
-library and no CDN script.
+Polygons load from `data/geo/zcta_bay_area.geojson`, or from
+`DCE_ZCTA_GEOJSON`. When `data/geo/zcta_us.pmtiles` is present (the
+gitignored archive from `make zcta-boundaries`, layer `zcta`, zooms 3–8),
+the page draws that nationwide set through the vendored PMTiles protocol.
+Charts are SVG drawn by the page. No chart library and no CDN script.
 
 `make app` opens the window. `make build` still runs `scripts/build_macos.sh`,
 which runs PyInstaller only on macOS arm64. CI does not build the app.
@@ -55,14 +56,14 @@ which runs PyInstaller only on macOS arm64. CI does not build the app.
 - Do not add Tkinter or PySide6 to the shell.
 - `dce.geo.folium_map` is no longer how the GUI shows a map.
 - The frozen app bundles `dce/app/web`, `data/seed`, `data/defaults`,
-  `data/demo`, and the HUD fixture. `dce.config._project_root` and
-  `dce.geo.resolve._fixture_path` still walk parents for `pyproject.toml`
-  and do not yet understand PyInstaller's `_MEIPASS`. A `.app` built from
-  the spec will not resolve 94402 until that lookup is taught. See the PR
-  that introduced this ADR.
-- Precomputed rows are read from `DCE_UI_RESULTS_PATH` or, when storage adds
-  it, `dce.storage.repository.get_ui_result(zip_code) -> str | dict | None`.
-  This package does not open SQLite.
+  `data/demo`, and `data/geo/zcta_bay_area.geojson`. It also bundles
+  `data/geo/zcta_us.pmtiles` when that file is present at build time.
+  `dce.config.bundle_root` and `dce.geo.resolve._fixture_path` read
+  `sys._MEIPASS` so a packaged app finds the seed without `pyproject.toml`
+  beside the code.
+- Precomputed rows are read from `DCE_UI_RESULTS_PATH` or from
+  `get_zip_result` / `get_zip_results` through `dce.app.precomputed`.
+  This package does not open SQLite and does not create a results table.
 - Gatekeeper is unchanged: right-click the `.app` and choose Open the first
   time.
 - A Windows EXE stays optional and later (ADR-0002).

@@ -19,10 +19,14 @@ First hit wins:
      A directory contains `{zip}.json` files, each one result object.
    - If that variable is unset and `<user data>/ui_results` already exists,
      it is used the same way. The app does not create it.
-   - `dce.storage.repository.get_ui_result(zip_code)`, when that function
-     exists. It should return the JSON text or the object, or `None`.
-     The app does not open SQLite and does not run SQL. A missing function
-     or a raised error is treated as "no row".
+   - `dce.app.precomputed.lookup_zip_result(zip_code)`. That adapter calls
+     `get_zip_result(zip)` and then `get_zip_results([zip])` on
+     `dce.precompute` if that module exists, and otherwise the same names
+     on `dce.storage.repository`. The contract for those functions is
+     `docs/contracts/precompute_results.md` (owned by the precompute
+     work). This package does not create a results table and does not
+     open SQLite. A missing function, a raised error, or a payload that
+     is not `dce.ui_result.v1` for this ZIP is "no row".
 3. The on-disk cache `<user data>/ui_cache/{zip}.json`, written after a
    compute when the desktop app is running.
 4. A compute, on a worker thread named `dce-ui_*`. The bridge reports
@@ -34,22 +38,11 @@ computed.
 
 The user-data directory is the one in ADR-0002 (`dce.config.user_data_dir`).
 
-## Suggested storage table
+## Precomputed rows
 
-Not created by this package. When the batch job lands, this is the shape
-`get_ui_result` should read:
-
-```sql
-CREATE TABLE ui_result (
-  zip_code TEXT PRIMARY KEY,
-  schema TEXT NOT NULL,
-  payload_json TEXT NOT NULL,
-  computed_at TEXT NOT NULL
-);
-```
-
-`payload_json` is one `dce.ui_result.v1` object. `get_ui_result(zip_code)`
-returns that text, or `None` when the ZIP is absent.
+The batch job owns the table and the read API. This package only calls
+`get_zip_result` / `get_zip_results` through the adapter above. It does
+not declare a table of its own.
 
 ## Result object
 
@@ -220,12 +213,23 @@ are cold.
 
 ### ZCTA GeoJSON
 
-`DCE_ZCTA_GEOJSON` replaces the shipped Bay Area fixture. The file is a
-GeoJSON FeatureCollection. Each polygon's ZIP is the first of these
+The committed sample is `data/geo/zcta_bay_area.geojson` (the file
+`make zcta-boundaries` writes for the nine Bay Area counties).
+`DCE_ZCTA_GEOJSON` replaces it. Each polygon's ZIP is the first of these
 properties that is a 5-digit string: `zip`, `zcta`, `ZCTA5CE20`,
 `ZCTA5CE10`, `GEOID20`, `GEOID10`. The app rewrites that to
 `properties.zip` and sets the feature id to the same string so hover and
 selection can use MapLibre feature-state.
+
+When `data/geo/zcta_us.pmtiles` exists, or `DCE_ZCTA_PMTILES` names an
+archive, the page draws that instead. It is vector tiles, layer `zcta`,
+zooms 3 through 8, one property `zcta`. `make zcta-boundaries` builds it
+and git ignores it. The protocol is the vendored `vendor/pmtiles.js`
+(Protomaps PMTiles, BSD-3). The preview server answers byte-range
+requests at `/tiles/zcta_us.pmtiles`. The Bay Area GeoJSON stays in the
+bootstrap payload so a missing archive still has polygons. Search on the
+nationwide map uses the 2024 Gazetteer centroids in
+`data/seed/zcta_centroid_2024.csv`.
 
 `properties.lat` and `properties.lon` are optional. When they are missing,
 the search box uses the average of the polygon's coordinates.

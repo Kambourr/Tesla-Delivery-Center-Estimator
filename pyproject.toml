@@ -51,7 +51,6 @@ dce = [
     "app/web/*.css",
     "app/web/*.js",
     "app/web/vendor/*",
-    "app/web/fixtures/*",
 ]
 
 [tool.ruff]

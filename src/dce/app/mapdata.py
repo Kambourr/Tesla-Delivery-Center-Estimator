@@ -8,10 +8,12 @@ whatever polygons did load.
 
 from __future__ import annotations
 
+import csv
 import json
 from functools import lru_cache
 from pathlib import Path
 
+from dce.config import bundled_seed_dir
 from dce.data.ingest.delivery_centers import (
     DeliveryCenterError,
     load_us_delivery_centers,
@@ -74,10 +76,15 @@ def load_centers() -> tuple[dict[str, object], ...]:
 
 
 def zip_index(collection: dict[str, object]) -> list[dict[str, object]]:
-    """Return ``zip``, ``lat``, and ``lon`` for every feature, sorted by ZIP."""
+    """Return ``zip``, ``lat``, and ``lon`` for every feature, sorted by ZIP.
+
+    A Gazetteer internal point replaces the ring average when the seed has
+    that ZCTA.
+    """
     features = collection.get("features")
     if not isinstance(features, list):
         return []
+    centroids = _centroids()
     index: list[dict[str, object]] = []
     for feature in features:
         if not isinstance(feature, dict):
@@ -85,14 +92,45 @@ def zip_index(collection: dict[str, object]) -> list[dict[str, object]]:
         props = feature.get("properties")
         if not isinstance(props, dict):
             continue
-        index.append(
-            {
-                "zip": props.get("zip"),
-                "lat": props.get("lat"),
-                "lon": props.get("lon"),
-            }
-        )
+        zip_code = str(props.get("zip") or "")
+        point = centroids.get(zip_code)
+        lat: object = point[0] if point is not None else props.get("lat")
+        lon: object = point[1] if point is not None else props.get("lon")
+        index.append({"zip": zip_code, "lat": lat, "lon": lon})
     return index
+
+
+def nationwide_zip_index() -> list[dict[str, object]]:
+    """Return every 2024 Gazetteer internal point, for search on the PMTiles map."""
+    return [
+        {"zip": zcta, "lat": lat, "lon": lon} for zcta, (lat, lon) in sorted(_centroids().items())
+    ]
+
+
+def lookup_centroid(zcta: str) -> tuple[float, float] | None:
+    """Return the 2024 Gazetteer internal point for one ZCTA, if the seed has it."""
+    return _centroids().get(zcta)
+
+
+@lru_cache(maxsize=1)
+def _centroids() -> dict[str, tuple[float, float]]:
+    path = bundled_seed_dir() / "zcta_centroid_2024.csv"
+    found: dict[str, tuple[float, float]] = {}
+    if not path.is_file():
+        return found
+    try:
+        text = path.read_text(encoding="utf-8")
+    except OSError:
+        return found
+    for row in csv.DictReader(text.splitlines()):
+        zcta = (row.get("zcta") or "").strip()
+        if len(zcta) != 5 or not zcta.isdigit():
+            continue
+        try:
+            found[zcta] = (float(row["lat"]), float(row["lon"]))
+        except (KeyError, TypeError, ValueError):
+            continue
+    return found
 
 
 def _normalize_collection(raw: object, path: Path) -> dict[str, object]:

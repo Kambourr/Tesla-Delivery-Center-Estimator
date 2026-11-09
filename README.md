@@ -4,7 +4,7 @@ Desktop app that answers: **what if Tesla opens a delivery center in ZIP X?**
 
 It will estimate cost per delivery, the top three cost drivers, and a customer-base map. It uses **public data only**. It never uses Tesla internal data, and it never scrapes LoopNet or Crexi.
 
-**Status:** milestone M1 (SQLite schema, OS data paths, and local ZIP resolution for 94401–94404). The CLI is still a stub. There is no cost model, GUI, network loader, or bundled seed database yet.
+**Status:** milestone M2 (Census ACS, BLS OEWS, and California DMV vehicle counts for San Mateo). The CLI is still a stub. There is no cost model or GUI yet.
 
 ## Locked decisions
 
@@ -29,7 +29,14 @@ python -m dce --help
 
 `make check` runs ruff, mypy, and pytest. `pip install -e .` installs the package without the dev tools. Use `pip install -e ".[dev]"` if you are not using the Makefile.
 
-Copy `.env.example` to `.env` only when a later milestone calls Census, BLS, EIA, or HUD. M0 does not read `.env` and does not make network calls.
+Copy `.env.example` to `.env` only when you refresh Census, BLS, EIA, or HUD. The San Mateo demo does not need those keys:
+
+```bash
+python scripts/fetch_demo_cache.py --db /tmp/dce-demo/dce.sqlite
+python scripts/check_staleness.py --db /tmp/dce-demo/dce.sqlite
+```
+
+That loads ACS population and income for 94401–94404, May 2025 OEWS SOC 49-3023 for the San Francisco–Oakland–Fremont metro (CBSA 41860), and DMV light-duty vehicle counts. `--refresh` calls the allowlisted hosts. Census refresh needs `CENSUS_API_KEY`. Tests do not use the network.
 
 Tkinter is in the Python standard library (it is not a pip dependency). On Debian or Ubuntu, install the `python3-tk` system package before the GUI milestone. The M0 app package does not import Tkinter, so headless test runs do not need it.
 

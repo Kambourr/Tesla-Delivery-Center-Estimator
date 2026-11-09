@@ -6,6 +6,19 @@ All notable changes to this project are recorded here.
 
 ### Added
 
+- M2 public loaders for Census ACS 5-year ZCTA facts, BLS OEWS metro wages
+  (SOC 49-3023), and California DMV light-duty fuel counts by ZIP. Fetch stays
+  on `api.census.gov`, `api.bls.gov`, and `data.ca.gov`. SQL upsert and
+  `source_registry.as_of` stay in storage. The San Mateo demo
+  (`scripts/fetch_demo_cache.py`, `data/demo/san_mateo`) loads 94401–94404
+  without API keys. Census refresh needs `CENSUS_API_KEY`.
+- Staleness classification (`fresh` / `aging` / `stale` / `missing`) from
+  `as_of` and `ttl_days`. Eighteen months is 548 days. Aging is the second
+  half of the TTL. `scripts/check_staleness.py` prints one line per source.
+- OEWS join key for the San Mateo ZIPs: HUD division `41884` maps to parent
+  CBSA `41860` (San Francisco-Oakland-Fremont, CA). `GeoContext.cbsa` is
+  unchanged.
+- Schema version 2 adds `zcta_acs.median_home_value` (ACS `B25077_001E`).
 - M1 SQLite schema and idempotent migrations for the data-dictionary tables
   (`source_registry`, `zcta_acs`, `oews_wage`, `ev_zip`, `utility_rate`,
   `rent_default`, `extract_cache`) and the ZIP geography tables

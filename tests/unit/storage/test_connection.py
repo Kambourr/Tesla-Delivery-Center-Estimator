@@ -45,8 +45,10 @@ def test_get_connection_is_idempotent(tmp_path: Path) -> None:
     second = get_connection(tmp_path)
     try:
         assert get_source(second, "census_acs") == record
-        versions = second.execute("SELECT version FROM schema_migrations").fetchall()
-        assert versions == [(1,)]
+        versions = second.execute(
+            "SELECT version FROM schema_migrations ORDER BY version"
+        ).fetchall()
+        assert versions == [(1,), (2,)]
     finally:
         second.close()
 

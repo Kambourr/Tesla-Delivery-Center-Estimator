@@ -88,6 +88,16 @@ def test_zip_resolve_does_not_use_sql_or_network() -> None:
         assert hit is None, f"geo/resolve.py imports {module}"
 
 
+def test_m2_loaders_do_not_open_sqlite_or_import_storage() -> None:
+    banned = ("sqlite3", "dce.storage", "dce.model", "dce.extract")
+    loaders = ("census_acs.py", "bls_oews.py", "ca_ev.py")
+    ingest = SRC / "data" / "ingest"
+    for name in loaders:
+        for module in _imported_modules(ingest / name):
+            hit = _hits(module, banned)
+            assert hit is None, f"data/ingest/{name} imports {module}"
+
+
 def test_pdf_llm_stays_inside_extract() -> None:
     for path in _python_files(SRC):
         if path.name == "pdf_llm.py":

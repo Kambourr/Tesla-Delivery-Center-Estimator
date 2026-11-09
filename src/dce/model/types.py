@@ -1,8 +1,14 @@
 """Frozen dataclasses shared by the model and the orchestrator.
 
 These types are the contract in ``docs/MODULE_CONTRACTS.md``. They carry
-data only. M0 has no constructors beyond the dataclass defaults and no
-calculation methods.
+data only: no constructors beyond the dataclass defaults and no
+calculation methods. Validation happens in the functions that consume them
+(``dce.model.demand``, ``dce.model.costs``, ``dce.model.drivers``).
+
+Units: money is USD, periods are per year unless the name says ``month``.
+``CostInputs.opex_load`` is a fraction (0.15 means +15%).
+``CostInputs.wage_load`` is a multiplier (1.30 means +30%).
+``CostInputs.demand_rate_kw`` is USD per kW per month.
 
 ``CostInputs.rent_psf_month`` is the rent the model should use after
 :func:`dce.data.rent_resolver.resolve_rent` (or after an optional advanced

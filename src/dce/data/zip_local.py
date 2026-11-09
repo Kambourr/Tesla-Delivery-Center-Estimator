@@ -94,8 +94,14 @@ class ZipLocalData:
     ev: ZipEvLocal
 
 
-def load_zip_local(zip_code: str, conn: sqlite3.Connection) -> ZipLocalData:
-    """Return local geography, ACS, rent, wages, and EV facts for one ZIP."""
+def load_zip_local(
+    zip_code: str, conn: sqlite3.Connection, *, persist_rent: bool = True
+) -> ZipLocalData:
+    """Return local geography, ACS, rent, wages, and EV facts for one ZIP.
+
+    ``persist_rent`` writes ``rent_resolved_cache``. Batch callers can skip
+    the write. The resolved rent is the same either way.
+    """
     code = _zip(zip_code)
     zctas = list_zip_zctas(conn, code)
     counties = list_zip_counties(conn, code)
@@ -115,7 +121,7 @@ def load_zip_local(zip_code: str, conn: sqlite3.Connection) -> ZipLocalData:
     )
     centroid = get_zcta_centroid(conn, zcta, "2024")
     acs = get_latest_zcta_acs(conn, zcta)
-    rent, rent_error = _rent(code, conn)
+    rent, rent_error = _rent(code, conn, persist_rent=persist_rent)
     oews_area = oews_area_for_cbsa(cbsa) if len(cbsa) == 5 else ""
     wages = list_oews_wages(conn, oews_area) if oews_area else ()
     wage_basis = "cbsa" if wages else "national"
@@ -146,9 +152,11 @@ def load_zip_local(zip_code: str, conn: sqlite3.Connection) -> ZipLocalData:
     )
 
 
-def _rent(zip_code: str, conn: sqlite3.Connection) -> tuple[RentResolution | None, str | None]:
+def _rent(
+    zip_code: str, conn: sqlite3.Connection, *, persist_rent: bool
+) -> tuple[RentResolution | None, str | None]:
     try:
-        return resolve_rent(zip_code, conn), None
+        return resolve_rent(zip_code, conn, write_cache=persist_rent), None
     except RentResolutionError as exc:
         return None, str(exc)
 

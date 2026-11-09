@@ -22,6 +22,7 @@ from dce.data.operating_inputs import OperatingInputError
 from dce.geo.resolve import ZipResolutionError
 from dce.model.errors import ModelError
 from dce.orchestrator import EstimateDataError, estimate
+from dce.precompute import format_report, precompute
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -51,6 +52,34 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Print the full result as JSON, including both yearly cash-flow tables.",
     )
+    precompute_parser = commands.add_parser(
+        "precompute",
+        help="Estimate every resolvable ZIP and store the result for an instant read.",
+    )
+    precompute_parser.add_argument(
+        "--sample",
+        choices=("bay-area",),
+        help="Estimate the nine Bay Area counties instead of every US ZIP.",
+    )
+    precompute_parser.add_argument(
+        "--limit",
+        type=int,
+        help="Stop after this many ZIPs. Useful with --sample bay-area in CI.",
+    )
+    precompute_parser.add_argument(
+        "--workers",
+        type=int,
+        help="Worker processes. Fewer than 32 ZIPs stays on one process.",
+    )
+    precompute_parser.add_argument(
+        "--retry-errors",
+        action="store_true",
+        help="Estimate again a ZIP whose stored row is an error for this inputs hash.",
+    )
+    precompute_parser.add_argument(
+        "--data-dir",
+        help="Directory for dce.sqlite. Defaults to the per-user application directory.",
+    )
     return parser
 
 
@@ -64,6 +93,8 @@ def main(argv: list[str] | None = None) -> int:
     if args.command is None:
         build_parser().print_help()
         return 0
+    if args.command == "precompute":
+        return _precompute(args)
     try:
         result = estimate(args.zip_code)
     except (
@@ -76,4 +107,22 @@ def main(argv: list[str] | None = None) -> int:
         print(f"dce: {exc}", file=sys.stderr)
         return 2
     print(render_json(result) if args.json else render_text(result))
+    return 0
+
+
+def _precompute(args: argparse.Namespace) -> int:
+    from pathlib import Path
+
+    try:
+        report = precompute(
+            data_dir=None if args.data_dir is None else Path(args.data_dir),
+            sample=args.sample,
+            limit=args.limit,
+            workers=args.workers,
+            retry_errors=args.retry_errors,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"dce: {exc}", file=sys.stderr)
+        return 2
+    print(format_report(report))
     return 0

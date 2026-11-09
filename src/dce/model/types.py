@@ -134,6 +134,38 @@ class CatchmentSummary:
 
 
 @dataclass(frozen=True)
+class InputProvenance:
+    """Where one number that entered the estimate came from.
+
+    ``geography_level`` is ``zip``, ``zcta``, ``county``, ``cbsa``, ``state``,
+    ``national``, or ``demo``. ``fallback`` is true when a documented
+    substitute was used (national wage, residential rent proxy, a reference
+    value for a suppressed ACS field, the non-California Tesla allocation).
+    ``value`` is the number the model saw, before scenario shocks.
+    """
+
+    name: str
+    value: float | None
+    unit: str
+    source: str
+    geography_level: str
+    geography_id: str
+    fallback: bool
+    detail: str
+
+
+@dataclass(frozen=True)
+class NearbyCenter:
+    """An existing delivery center inside the 60-mile drive cap."""
+
+    center_id: str
+    name: str
+    straight_line_miles: float
+    drive_miles: float
+    deliveries_taken_per_year: float
+
+
+@dataclass(frozen=True)
 class EstimateResult:
     """Full result for one ZIP and one scenario.
 
@@ -143,7 +175,8 @@ class EstimateResult:
     after ``scenario.delivery_shock``; that is the ``$/delivery`` denominator.
     ``dcf`` is the cash-flow view at the unshocked gravity total: the
     standalone lens (headline) and the incremental lens (check), with capex
-    as year-0 cash (ADR-0005).
+    as year-0 cash (ADR-0005). ``provenance`` records each resolved input.
+    ``nearby_centers`` are existing delivery centers within the drive cap.
     """
 
     geo: GeoContext
@@ -156,3 +189,5 @@ class EstimateResult:
     map_path: str | None
     catchment: CatchmentSummary | None = None
     dcf: DcfViews | None = None
+    provenance: tuple[InputProvenance, ...] = ()
+    nearby_centers: tuple[NearbyCenter, ...] = ()

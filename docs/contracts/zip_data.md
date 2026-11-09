@@ -217,17 +217,28 @@ the nationwide click map.
 Clicking a polygon passes `properties.zcta` to `load_zip_local`. Comparing
 two ZIPs is two calls.
 
-## What is not wired yet
+## What `estimate` reads
 
-`estimate()` still resolves the ZIP and then loads the San Mateo operating
-inputs. A ZIP outside that demo raises `OperatingInputError` after
-`resolve_zip` succeeds. The map and the precompute should call
-`load_zip_local` and use `local.rent` and `local.wages` instead of the Bay
-Area baseline. `docs/MODULE_CONTRACTS.md` should point here.
+`estimate(zip)` calls `load_zip_local` after `resolve_zip`. Demand,
+households, income, rent, and the OEWS wage come from that ZIP. The wage
+is SOC 49-3023 mean annual pay for the ZIP's CBSA, or the national row
+when the ZIP is micropolitan or non-metro. The hourly fallback is used
+only when no OEWS row exists. SOC 49-3023 is the series stored for every
+metro. It is not a delivery-role mix.
 
-The model still reads `labor.fallback_wage_hourly` rather than the OEWS
-delivery-mix wages on `ZipLocalData.wages`. Replacing `acs_rent_v1`'s zero
-income, density, and home-value exponents is a calibration against the GSA
-Lease Inventory. Those coefficients live in `data/seed/rent_model_coeffs.json`
-and in `rent_model_coeffs`. Until that fit exists, the ZIP adjustment is the
-ACS median gross rent ratio only.
+California origin demand is the ZIP's 2026 CEC battery-electric count
+(the seed is Q1–Q3) times that county's Tesla share, times 4/3, times the
+base handover factor 1.10. Outside California the seed has no state Tesla
+total. The job allocates Cox/KBB 2025 US Tesla sales 589,160 minus the
+CEC 2025 California Tesla total 169,650 by households and income. The
+EV-share term is 1. A suppressed income uses the $80,000 reference.
+
+Energy and demand charges are still the PG&E B-10 figures in
+`data/demo/san_mateo/operating_inputs.json` for every ZIP. No EIA or
+OpenEI loader is wired. `mean_commute` is null: ACS S0801 is not in the
+national summary file.
+
+`acs_rent_v1` still has zero income, density, and home-value exponents.
+The ZIP adjustment is the ACS median gross rent ratio only, until a fit
+against the GSA Lease Inventory exists. Those coefficients live in
+`data/seed/rent_model_coeffs.json`.

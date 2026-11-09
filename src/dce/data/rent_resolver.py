@@ -107,8 +107,14 @@ class _Coeffs:
     as_of: str
 
 
-def resolve_rent(zip_code: str, conn: sqlite3.Connection) -> RentResolution:
-    """Resolve asking rent from SQLite. See the module docstring for the chain."""
+def resolve_rent(
+    zip_code: str, conn: sqlite3.Connection, *, write_cache: bool = True
+) -> RentResolution:
+    """Resolve asking rent from SQLite. See the module docstring for the chain.
+
+    ``write_cache`` stores the row in ``rent_resolved_cache``. A batch caller
+    can skip that write. The number does not change.
+    """
     code = _zip(zip_code)
     zcta_rows = list_zip_zctas(conn, code)
     counties = list_zip_counties(conn, code)
@@ -131,6 +137,7 @@ def resolve_rent(zip_code: str, conn: sqlite3.Connection) -> RentResolution:
     if seed is not None and adjusted_inputs:
         return _store(
             conn,
+            write_cache,
             _from_base(
                 code,
                 seed.rent_psf_year * factor,
@@ -159,6 +166,7 @@ def resolve_rent(zip_code: str, conn: sqlite3.Connection) -> RentResolution:
         amount = base * factor if adjusted_inputs else base
         return _store(
             conn,
+            write_cache,
             _from_base(
                 code,
                 amount,
@@ -177,6 +185,7 @@ def resolve_rent(zip_code: str, conn: sqlite3.Connection) -> RentResolution:
     if seed is not None:
         return _store(
             conn,
+            write_cache,
             _from_base(
                 code,
                 seed.rent_psf_year,
@@ -194,6 +203,7 @@ def resolve_rent(zip_code: str, conn: sqlite3.Connection) -> RentResolution:
         amount, state_as_of, citation = state_rent
         return _store(
             conn,
+            write_cache,
             _from_base(
                 code,
                 amount,
@@ -210,6 +220,7 @@ def resolve_rent(zip_code: str, conn: sqlite3.Connection) -> RentResolution:
     if national is not None:
         return _store(
             conn,
+            write_cache,
             _from_base(
                 code,
                 national.rent_psf_year,
@@ -228,12 +239,15 @@ def resolve_rent(zip_code: str, conn: sqlite3.Connection) -> RentResolution:
     safmr = get_latest_safmr(conn, code)
     if safmr is not None:
         return _store(
-            conn, _residential(code, safmr.rent_2br_month, coeffs, safmr, tier="hud_safmr")
+            conn,
+            write_cache,
+            _residential(code, safmr.rent_2br_month, coeffs, safmr, tier="hud_safmr"),
         )
 
     if acs is not None and acs.median_gross_rent is not None and acs.median_gross_rent > 0:
         return _store(
             conn,
+            write_cache,
             _residential(
                 code,
                 acs.median_gross_rent,
@@ -321,9 +335,13 @@ def _from_base(
 
 
 def _store(
-    conn: sqlite3.Connection, packed: tuple[RentResolution, dict[str, object]]
+    conn: sqlite3.Connection,
+    write_cache: bool,
+    packed: tuple[RentResolution, dict[str, object]],
 ) -> RentResolution:
     resolution, components = packed
+    if not write_cache:
+        return resolution
     upsert_rent_cache(
         conn,
         RentCacheRecord(
@@ -377,14 +395,24 @@ def _coeffs(record: RentModelRecord | None) -> _Coeffs:
     )
 
 
+# sqlite3.Connection has no instance dict, so the CBSA median cache lives here.
+_RENT_REFS: dict[tuple[int, str, int], dict[str, float | None]] = {}
+
+
 def _references(conn: sqlite3.Connection, cbsa: str, year: int | None) -> dict[str, float | None]:
     if cbsa == "" or year is None:
         return {"rent": None, "income": None, "home": None}
-    return {
+    key = (id(conn), cbsa, year)
+    cached = _RENT_REFS.get(key)
+    if cached is not None:
+        return cached
+    found = {
         "rent": _median(acs_positive_values_for_cbsa(conn, cbsa, year, "median_gross_rent")),
         "income": _median(acs_positive_values_for_cbsa(conn, cbsa, year, "median_hh_income")),
         "home": _median(acs_positive_values_for_cbsa(conn, cbsa, year, "median_home_value")),
     }
+    _RENT_REFS[key] = found
+    return found
 
 
 def _factor(

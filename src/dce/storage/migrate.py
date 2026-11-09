@@ -21,6 +21,9 @@ non-California demand fallback weights ZIPs by that count. Version 3
 Version 5 adds the nationwide ZIP inputs: ACS median gross rent, gazetteer
 land area, crosswalk names and ratios, and the rent-resolution tables from
 ``docs/DATA_SOURCES.md`` section 8 plus ``rent_safmr``.
+
+Version 6 adds ``zip_result``, the precomputed estimate for one ZIP. The
+row is replaced when the model version or the inputs hash changes.
 """
 
 from __future__ import annotations
@@ -44,6 +47,7 @@ def migrate(conn: sqlite3.Connection) -> None:
     _apply_version_3(conn)
     _apply_version_4(conn)
     _apply_version_5(conn)
+    _apply_version_6(conn)
 
 
 def _apply_version_2(conn: sqlite3.Connection) -> None:
@@ -213,5 +217,34 @@ def _apply_version_5(conn: sqlite3.Connection) -> None:
     conn.execute(
         "INSERT INTO schema_migrations (version, applied_at) "
         "VALUES (5, strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))"
+    )
+    conn.commit()
+
+
+_VERSION_6_SQL = """
+CREATE TABLE IF NOT EXISTS zip_result (
+    zip TEXT PRIMARY KEY CHECK (length(zip) = 5),
+    model_version TEXT NOT NULL,
+    inputs_hash TEXT NOT NULL,
+    status TEXT NOT NULL CHECK (status IN ('ok', 'error')),
+    reason TEXT,
+    payload_json TEXT NOT NULL,
+    computed_at TEXT NOT NULL,
+    elapsed_ms REAL
+);
+
+CREATE INDEX IF NOT EXISTS zip_result_fresh
+    ON zip_result (model_version, inputs_hash, status);
+"""
+
+
+def _apply_version_6(conn: sqlite3.Connection) -> None:
+    existing = conn.execute("SELECT 1 FROM schema_migrations WHERE version = 6").fetchone()
+    if existing is not None:
+        return
+    conn.executescript(_VERSION_6_SQL)
+    conn.execute(
+        "INSERT INTO schema_migrations (version, applied_at) "
+        "VALUES (6, strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))"
     )
     conn.commit()

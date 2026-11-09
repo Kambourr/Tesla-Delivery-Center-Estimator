@@ -22,15 +22,25 @@ ENERGY = 0.2875
 DEMAND_RATE = 20.50
 
 
-def _research_views(steady: float) -> tuple[float, float | None, float | None, float | None, float]:
+def _research_views(
+    steady: float,
+    *,
+    rent: float = RENT,
+    wage_annual: float | None = None,
+) -> tuple[float, float | None, float | None, float | None, float]:
     raw = yaml.safe_load(assumptions_path().read_text(encoding="utf-8"))
     assert isinstance(raw, dict)
     assumptions = parse_assumptions(raw)
     scenario = Scenario(vehicle_mix=dict(assumptions.vehicle_mix), wage_shock=0.0)
+    wage = (
+        assumptions.labor.fallback_wage_hourly * assumptions.labor.paid_hours_per_fte
+        if wage_annual is None
+        else wage_annual
+    )
     costs = build_cost_inputs(
         assumptions,
-        rent_psf_month=RENT,
-        wage_annual=assumptions.labor.fallback_wage_hourly * assumptions.labor.paid_hours_per_fte,
+        rent_psf_month=rent,
+        wage_annual=wage,
         energy_rate_kwh=ENERGY,
         demand_rate_kw=DEMAND_RATE,
         annual_deliveries=steady,
@@ -70,20 +80,22 @@ def test_estimate_94402_matches_research_adjusted_for_gravity_volume(
     assert result.dcf is not None
     gravity = result.catchment.gravity.deliveries_per_year
     nearest = result.catchment.nearest.deliveries_per_year
-    assert nearest == pytest.approx(4389.2, abs=1)
-    assert gravity == pytest.approx(5808.3, abs=1)
+    assert gravity == pytest.approx(5565.2, abs=1)
+    assert nearest == pytest.approx(4468.8, abs=1)
+    assert nearest < gravity
     assert result.estimated_annual_deliveries == pytest.approx(gravity)
     assert [row.center_id for row in result.catchment.gravity.taken_from[:2]] == [
         "colma",
         "sunnyvale",
     ]
     assert result.catchment.nearest.zips
-    assert len(result.catchment.nearest.zips) == 20
+    # The 2026 nationwide surface puts one more ZIP in the nearest-center case.
+    assert len(result.catchment.nearest.zips) == 21
     taken = sum(row.deliveries_per_year for row in result.catchment.gravity.taken_from)
     assert taken == pytest.approx(gravity, abs=1)
 
     assert [driver.name for driver in result.drivers] == ["labor", "lease", "capex"]
-    assert result.cost_per_delivery == pytest.approx(489.19, abs=0.05)
+    assert result.cost_per_delivery == pytest.approx(640.55, abs=0.05)
     assert result.dcf.standalone.discount_rate == pytest.approx(0.136)
     assert result.map_path is None
 
@@ -95,11 +107,20 @@ def test_estimate_94402_matches_research_adjusted_for_gravity_volume(
     assert anchor_payback == pytest.approx(1.7, abs=0.05)
     assert anchor_incremental == pytest.approx(-2.8e6, abs=0.25e6)
 
+    by_name = {row.name: row for row in result.provenance}
+    rent = by_name["rent_psf_month"].value
+    wage = by_name["wage_annual"].value
+    assert rent is not None and wage is not None
     adjusted_npv, adjusted_irr, adjusted_payback, adjusted_disc, adjusted_incremental = (
-        _research_views(gravity)
+        _research_views(gravity, rent=rent, wage_annual=wage)
     )
     standalone = result.dcf.standalone
     incremental = result.dcf.incremental
+    assert standalone.npv == pytest.approx(10.455e6, abs=1.0e4)
+    assert standalone.irr == pytest.approx(0.693, abs=0.002)
+    assert standalone.simple_payback_years == pytest.approx(1.585, abs=0.01)
+    assert standalone.discounted_payback_years == pytest.approx(1.870, abs=0.01)
+    assert incremental.npv == pytest.approx(-4.070e6, abs=1.0e4)
     assert standalone.npv == pytest.approx(adjusted_npv, abs=1.0)
     assert standalone.irr == pytest.approx(adjusted_irr, abs=1e-9)
     assert standalone.simple_payback_years == pytest.approx(adjusted_payback, abs=1e-9)
@@ -108,14 +129,9 @@ def test_estimate_94402_matches_research_adjusted_for_gravity_volume(
     assert incremental.simple_payback_years is None
     assert incremental.discounted_payback_years is None
 
-    # Gravity 5,808 versus the research case at 4,400. These are the adjusted
-    # figures the pipeline must keep producing. Building size is unchanged.
-    assert standalone.npv == pytest.approx(15.00e6, abs=0.05e6)
-    assert standalone.irr == pytest.approx(0.906, abs=0.01)
-    assert standalone.simple_payback_years == pytest.approx(1.24, abs=0.05)
-    assert standalone.discounted_payback_years == pytest.approx(1.43, abs=0.05)
-    assert incremental.npv == pytest.approx(-2.61e6, abs=0.05e6)
-    assert incremental.npv == pytest.approx(-2.8e6, abs=0.25e6)
+    # Local OEWS wage, ZIP-adjusted rent, and the 2026 CEC annualization move
+    # both lenses off the old fallback-wage / $2.14 / 2025-extract case.
+    # The 4,400-delivery reconstruction above is the published-model lock.
     assert len(standalone.years) == 11
     assert standalone.years[0].capex == pytest.approx(3_780_000)
 

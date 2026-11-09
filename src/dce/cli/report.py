@@ -38,6 +38,25 @@ def render_text(result: EstimateResult) -> str:
         )
         lines.extend(_taken_lines(gravity))
         lines.append("")
+    if result.provenance:
+        lines.append("Inputs")
+        for row in result.provenance:
+            if row.name not in {
+                "rent_psf_month",
+                "wage_annual",
+                "energy_rate_kwh",
+                "demand_rate_kw",
+                "catchment_deliveries",
+                "zip_origin_deliveries",
+            }:
+                continue
+            fallback = "fallback" if row.fallback else "local"
+            shown = "missing" if row.value is None else f"{row.value:,.4g}"
+            lines.append(
+                f"  {row.name}: {shown} {row.unit} "
+                f"({row.source}, {row.geography_level} {row.geography_id}, {fallback})"
+            )
+        lines.append("")
     lines.append(f"Cost per delivery: {_dollars(result.cost_per_delivery)}")
     lines.append(f"  Annualized cost: {_dollars(result.annualized_total_cost)}")
     lines.append("  Top drivers:")
@@ -51,10 +70,10 @@ def render_text(result: EstimateResult) -> str:
         lines.append(
             f"  {'Year':>4}  {'Deliveries':>12}  {'Benefit':>14}  {'Opex':>14}  {'FCF':>14}"
         )
-        for row in result.dcf.standalone.years:
+        for cash in result.dcf.standalone.years:
             lines.append(
-                f"  {row.year:4d}  {row.deliveries:12,.1f}  "
-                f"{_dollars(row.benefit):>14}  {_dollars(row.opex):>14}  {_dollars(row.fcf):>14}"
+                f"  {cash.year:4d}  {cash.deliveries:12,.1f}  "
+                f"{_dollars(cash.benefit):>14}  {_dollars(cash.opex):>14}  {_dollars(cash.fcf):>14}"
             )
         lines.append("Incremental yearly cash flows are included in --json.")
     return "\n".join(lines)

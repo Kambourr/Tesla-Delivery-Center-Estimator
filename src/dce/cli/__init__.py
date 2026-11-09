@@ -2,8 +2,9 @@
 
 Contract: ``python -m dce --help`` prints usage and exits 0. The only
 required input, once estimation exists, is a US ZIP. This package must not
-import ``dce.extract.pdf_llm`` and must not open SQLite itself; it calls
-:func:`dce.orchestrator.estimate`.
+import ``dce.extract.pdf_llm`` and must not open SQLite itself. ``estimate``
+calls :func:`dce.orchestrator.estimate`. ``precompute`` calls
+:func:`dce.precompute.precompute`, which is the module that opens the database.
 """
 
 from dce.cli.main import build_parser, main

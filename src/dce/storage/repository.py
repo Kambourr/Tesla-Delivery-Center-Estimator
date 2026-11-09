@@ -1205,6 +1205,185 @@ def list_zev_zip_year(
     )
 
 
+def list_zip_counties_all(conn: sqlite3.Connection) -> tuple[ZipCountyRecord, ...]:
+    """Return every ZIP-county row."""
+    query = (
+        "SELECT zip, county_fips, state, tot_ratio, county_name, as_of FROM zip_county "
+        "ORDER BY zip, tot_ratio DESC, county_fips"
+    )
+    return tuple(_zip_county_from_row(row) for row in conn.execute(query))
+
+
+def list_zip_cbsas_all(conn: sqlite3.Connection) -> tuple[ZipCbsaRecord, ...]:
+    """Return every ZIP-CBSA row."""
+    query = (
+        "SELECT zip, cbsa, tot_ratio, cbsa_name, as_of FROM zip_cbsa "
+        "ORDER BY zip, tot_ratio DESC, cbsa"
+    )
+    return tuple(_zip_cbsa_from_row(row) for row in conn.execute(query))
+
+
+def list_zip_zctas_all(conn: sqlite3.Connection) -> tuple[ZipZctaRecord, ...]:
+    """Return every ZIP-ZCTA row."""
+    query = "SELECT zip, zcta, tot_ratio FROM zip_zcta ORDER BY zip, tot_ratio DESC, zcta"
+    return tuple(_zip_zcta_from_row(row) for row in conn.execute(query))
+
+
+def list_zcta_acs_year(conn: sqlite3.Connection, year: int) -> tuple[ZctaAcsRecord, ...]:
+    """Return every ACS row for one year."""
+    query = (
+        "SELECT zcta, year, population, median_hh_income, vehicles_available, "
+        "mean_commute, median_home_value, households, median_gross_rent FROM zcta_acs "
+        "WHERE year = ?"
+    )
+    return tuple(_zcta_from_row(row) for row in conn.execute(query, (year,)))
+
+
+def list_zcta_centroids(conn: sqlite3.Connection, vintage: str) -> tuple[ZctaCentroidRecord, ...]:
+    """Return every centroid for one gazetteer vintage."""
+    query = "SELECT zcta, lat, lon, vintage, as_of, land_sqmi FROM zcta_centroid WHERE vintage = ?"
+    return tuple(_centroid_from_row(row) for row in conn.execute(query, (vintage,)))
+
+
+def list_zev_zip_sales(
+    conn: sqlite3.Connection, *, source: str = "cec"
+) -> tuple[ZevZipSalesRecord, ...]:
+    """Return every stored ZIP sales row for one source."""
+    query = (
+        "SELECT zip, state, data_year, quarter, fuel_type, vehicles, as_of, source "
+        "FROM zev_sales_zip WHERE source = ?"
+    )
+    return tuple(_zev_zip_from_row(row) for row in conn.execute(query, (source,)))
+
+
+def list_zev_county_sales(
+    conn: sqlite3.Connection, *, source: str = "cec"
+) -> tuple[ZevCountySalesRecord, ...]:
+    """Return every stored county sales row for one source."""
+    query = (
+        "SELECT county, state, data_year, quarter, fuel_type, make, vehicles, as_of, source "
+        "FROM zev_sales_county WHERE source = ?"
+    )
+    return tuple(_zev_county_from_row(row) for row in conn.execute(query, (source,)))
+
+
+@dataclass(frozen=True)
+class ZipResultRecord:
+    """One precomputed estimate, or the reason that ZIP could not be estimated."""
+
+    zip_code: str
+    model_version: str
+    inputs_hash: str
+    status: str
+    reason: str | None
+    payload_json: str
+    computed_at: str
+    elapsed_ms: float | None = None
+
+
+def upsert_zip_results(conn: sqlite3.Connection, rows: Sequence[ZipResultRecord]) -> None:
+    """Insert or replace precomputed rows in one transaction."""
+    conn.executemany(
+        """
+        INSERT INTO zip_result (
+            zip, model_version, inputs_hash, status, reason, payload_json, computed_at, elapsed_ms
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(zip) DO UPDATE SET
+            model_version = excluded.model_version,
+            inputs_hash = excluded.inputs_hash,
+            status = excluded.status,
+            reason = excluded.reason,
+            payload_json = excluded.payload_json,
+            computed_at = excluded.computed_at,
+            elapsed_ms = excluded.elapsed_ms
+        """,
+        [
+            (
+                row.zip_code,
+                row.model_version,
+                row.inputs_hash,
+                row.status,
+                row.reason,
+                row.payload_json,
+                row.computed_at,
+                row.elapsed_ms,
+            )
+            for row in rows
+        ],
+    )
+    conn.commit()
+
+
+def get_zip_result_row(conn: sqlite3.Connection, zip_code: str) -> ZipResultRecord | None:
+    """Return the stored result for one ZIP, or ``None``."""
+    query = (
+        "SELECT zip, model_version, inputs_hash, status, reason, payload_json, "
+        "computed_at, elapsed_ms FROM zip_result WHERE zip = ?"
+    )
+    row = conn.execute(query, (zip_code,)).fetchone()
+    if row is None:
+        return None
+    return _zip_result_from_row(row)
+
+
+def get_zip_result_rows(
+    conn: sqlite3.Connection, zip_codes: Sequence[str]
+) -> tuple[ZipResultRecord, ...]:
+    """Return stored results for the requested ZIPs. Missing ZIPs are omitted."""
+    if not zip_codes:
+        return ()
+    found: list[ZipResultRecord] = []
+    for code in zip_codes:
+        row = get_zip_result_row(conn, code)
+        if row is not None:
+            found.append(row)
+    return tuple(found)
+
+
+def national_seed_loaded(conn: sqlite3.Connection) -> bool:
+    """Return whether the nationwide ZIP seed is already in this database.
+
+    The thresholds match ``data/seed/coverage.json`` with some room, so a
+    partial demo database is reloaded and a full one is not.
+    """
+    counts = {
+        "zip_zcta": 40_000,
+        "zcta_acs": 30_000,
+        "zev_sales_zip": 7_000,
+        "oews_wage": 300,
+    }
+    for table, minimum in counts.items():
+        row = conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()
+        if row is None or int(row[0]) < minimum:
+            return False
+    return True
+
+
+def list_fresh_zip_results(
+    conn: sqlite3.Connection,
+    *,
+    model_version: str,
+    inputs_hash: str,
+    include_errors: bool,
+) -> set[str]:
+    """Return ZIPs whose stored row matches this model version and inputs hash.
+
+    Error rows are included only when ``include_errors`` is true. A resume
+    then leaves a failed ZIP in place instead of trying it again.
+    """
+    if include_errors:
+        query = (
+            "SELECT zip FROM zip_result WHERE model_version = ? AND inputs_hash = ? "
+            "AND status IN ('ok', 'error')"
+        )
+    else:
+        query = (
+            "SELECT zip FROM zip_result WHERE model_version = ? AND inputs_hash = ? "
+            "AND status = 'ok'"
+        )
+    return {str(row[0]) for row in conn.execute(query, (model_version, inputs_hash))}
+
+
 def list_zev_county_year(
     conn: sqlite3.Connection, county: str, *, source: str = "cec"
 ) -> tuple[ZevCountySalesRecord, ...]:
@@ -1253,6 +1432,20 @@ def _zip_cbsa_from_row(row: sqlite3.Row | tuple[object, ...]) -> ZipCbsaRecord:
         tot_ratio=_required_float(tot_ratio),
         cbsa_name="" if cbsa_name is None else str(cbsa_name),
         as_of=None if as_of is None else str(as_of),
+    )
+
+
+def _zip_result_from_row(row: sqlite3.Row | tuple[object, ...]) -> ZipResultRecord:
+    zip_code, model_version, inputs_hash, status, reason, payload, computed_at, elapsed = row
+    return ZipResultRecord(
+        zip_code=str(zip_code),
+        model_version=str(model_version),
+        inputs_hash=str(inputs_hash),
+        status=str(status),
+        reason=None if reason is None else str(reason),
+        payload_json=str(payload),
+        computed_at=str(computed_at),
+        elapsed_ms=_optional_float(elapsed),
     )
 
 

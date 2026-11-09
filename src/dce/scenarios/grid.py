@@ -69,6 +69,8 @@ from dce.model.types import (
     CostInputs,
     EstimateResult,
     GeoContext,
+    InputProvenance,
+    NearbyCenter,
     Scenario,
 )
 from dce.scenarios import ranges as r
@@ -247,6 +249,8 @@ def run_scenario(
     assumptions: Assumptions | ModelAssumptions,
     *,
     catchment: CatchmentSummary | None = None,
+    provenance: tuple[InputProvenance, ...] = (),
+    nearby_centers: tuple[NearbyCenter, ...] = (),
 ) -> ScenarioResult:
     """Evaluate one scenario the way ``estimate(zip)`` evaluates its baseline."""
     a = parse_assumptions(assumptions)
@@ -267,6 +271,8 @@ def run_scenario(
         map_path=None,
         catchment=catchment,
         dcf=run_dcf_views(year1, a, steady_deliveries=steady, scenario=scenario, dcf=dcf),
+        provenance=provenance,
+        nearby_centers=nearby_centers,
     )
     return ScenarioResult(named=named, result=result)
 
@@ -279,6 +285,8 @@ def run_scenario_grid(
     assumptions: Assumptions | ModelAssumptions,
     *,
     catchment: CatchmentSummary | None = None,
+    provenance: tuple[InputProvenance, ...] = (),
+    nearby_centers: tuple[NearbyCenter, ...] = (),
 ) -> list[ScenarioResult]:
     """Evaluate every scenario in order. Scenario ids must be unique."""
     ids = [named.scenario_id for named in scenarios]
@@ -287,7 +295,16 @@ def run_scenario_grid(
         raise InvalidInputError(f"scenario ids must be unique; repeated: {duplicates}")
     a = parse_assumptions(assumptions)
     return [
-        run_scenario(geo, steady_deliveries, costs, named, a, catchment=catchment)
+        run_scenario(
+            geo,
+            steady_deliveries,
+            costs,
+            named,
+            a,
+            catchment=catchment,
+            provenance=provenance,
+            nearby_centers=nearby_centers,
+        )
         for named in scenarios
     ]
 

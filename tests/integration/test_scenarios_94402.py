@@ -12,28 +12,33 @@ import pytest
 import yaml
 
 from dce.config import assumptions_path
-from dce.data.operating_inputs import load_san_mateo_operating_inputs
 from dce.model.assumptions import ModelAssumptions, parse_assumptions
 from dce.model.costs import build_cost_inputs
-from dce.model.types import CostInputs
+from dce.model.types import CostInputs, EstimateResult
 from dce.orchestrator import estimate
 from dce.scenarios.grid import expand_default_scenarios, outcome_scenarios, run_scenario_grid
 from dce.scenarios.robustness import driver_rank_stability
 from dce.scenarios.tornado import TornadoInputs, dcf_tornado
 
 
-def _inputs(steady: float) -> tuple[ModelAssumptions, CostInputs]:
+def _inputs(result: EstimateResult) -> tuple[ModelAssumptions, CostInputs]:
     raw = yaml.safe_load(assumptions_path().read_text(encoding="utf-8"))
     assert isinstance(raw, dict)
     assumptions = parse_assumptions(raw)
-    rates = load_san_mateo_operating_inputs()
+    values = {row.name: row.value for row in result.provenance}
+    rent = values["rent_psf_month"]
+    wage = values["wage_annual"]
+    energy = values["energy_rate_kwh"]
+    demand = values["demand_rate_kw"]
+    assert result.catchment is not None
+    assert rent is not None and wage is not None and energy is not None and demand is not None
     costs = build_cost_inputs(
         assumptions,
-        rent_psf_month=rates.rent_psf_month,
-        wage_annual=assumptions.labor.fallback_wage_hourly * assumptions.labor.paid_hours_per_fte,
-        energy_rate_kwh=rates.energy_rate_kwh,
-        demand_rate_kw=rates.demand_rate_kw,
-        annual_deliveries=steady,
+        rent_psf_month=rent,
+        wage_annual=wage,
+        energy_rate_kwh=energy,
+        demand_rate_kw=demand,
+        annual_deliveries=result.catchment.gravity.deliveries_per_year,
     )
     return assumptions, costs
 
@@ -42,7 +47,7 @@ def test_grid_baseline_reproduces_estimate_94402() -> None:
     base = estimate("94402")
     assert base.catchment is not None and base.dcf is not None
     steady = base.catchment.gravity.deliveries_per_year
-    assumptions, costs = _inputs(steady)
+    assumptions, costs = _inputs(base)
 
     named = expand_default_scenarios(assumptions.vehicle_mix, assumptions) + outcome_scenarios(
         assumptions
@@ -50,7 +55,14 @@ def test_grid_baseline_reproduces_estimate_94402() -> None:
     results = {
         res.scenario_id: res
         for res in run_scenario_grid(
-            base.geo, steady, costs, named, assumptions, catchment=base.catchment
+            base.geo,
+            steady,
+            costs,
+            named,
+            assumptions,
+            catchment=base.catchment,
+            provenance=base.provenance,
+            nearby_centers=base.nearby_centers,
         )
     }
     assert results["baseline"].result == base
@@ -72,7 +84,7 @@ def test_tornado_94402_ranks_deliveries_first_and_brackets_base() -> None:
     base = estimate("94402")
     assert base.catchment is not None and base.dcf is not None
     steady = base.catchment.gravity.deliveries_per_year
-    assumptions, costs = _inputs(steady)
+    assumptions, costs = _inputs(base)
 
     bars = dcf_tornado(
         TornadoInputs(

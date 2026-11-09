@@ -21,7 +21,9 @@ from dce.model.types import GeoContext
 
 # 2025 CEC county sheet, 9-county Bay Area: Tesla Electric 49,704 / Electric 94,131.
 _BAY_TESLA_BEV_RATIO = 49704 / 94131
-_FIXTURE = Path(__file__).resolve().parents[2] / "fixtures" / "geo" / "san_mateo_94402_bev_2025.csv"
+_FIXTURE = (
+    Path(__file__).resolve().parents[3] / "data" / "demo" / "san_mateo" / "catchment_bev_2025.csv"
+)
 _GEO = GeoContext(
     zip_code="94402",
     zcta="94402",
@@ -35,11 +37,13 @@ def test_san_mateo_94402_matches_the_research_catchment() -> None:
     result = catchment_features(_GEO, _bay_area_centers(), _bay_area_demand(), beta=2)
     nearest = result.nearest.total_deliveries_per_year
     gravity = result.gravity.total_deliveries_per_year
-    # Research §4.4: 4,370 nearest-center deliveries over 20 ZCTAs (called
-    # about 4,400 in the method summary) and about 5,700 Huff deliveries at
-    # beta 2. With the specified 60-mile drive cap, gravity is about 5,520.
-    assert nearest == pytest.approx(4370, abs=50)
-    assert gravity == pytest.approx(5700, abs=250)
+    # Research §4.4: 4,370 nearest-center deliveries over 20 ZCTAs, and Huff
+    # beta 2 "about 5,720". The reproducible gravity total on this fixture,
+    # with the ADR-0004 60-mile drive cap and all nine delivery centers, is
+    # 5,523. The cap, the centroids, and rounding 49,704/94,131 to 0.528 do
+    # not close that gap (see the catchment module docstring and STATUS).
+    assert nearest == pytest.approx(4370, abs=1)
+    assert gravity == pytest.approx(5522.8, abs=1)
     assert len(result.nearest.zips) == 20
     assert result.gravity.beta == 2
     assert result.nearest.beta is None

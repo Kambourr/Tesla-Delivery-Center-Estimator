@@ -21,10 +21,12 @@ from dce.storage.repository import (
 def test_public_rows_round_trip_and_replace(tmp_path: Path) -> None:
     conn = get_connection(tmp_path)
     try:
-        acs = ZctaAcsRecord("94402", 2024, 25475.0, 172522.0, 18262.0, 26.2, 2000001.0)
+        acs = ZctaAcsRecord(
+            "94402", 2024, 25475.0, 172522.0, 18262.0, 26.2, 2000001.0, households=10125.0
+        )
         upsert_zcta_acs(conn, acs)
         assert get_zcta_acs(conn, "94402", 2024) == acs
-        replaced = ZctaAcsRecord("94402", 2024, None, None, None, None, None)
+        replaced = ZctaAcsRecord("94402", 2024, None, None, None, None, None, households=None)
         upsert_zcta_acs(conn, replaced)
         assert get_zcta_acs(conn, "94402", 2024) == replaced
         assert get_zcta_acs(conn, "94402", 2023) is None

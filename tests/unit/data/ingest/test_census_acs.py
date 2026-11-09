@@ -18,12 +18,13 @@ def _detailed_table() -> list[list[str]]:
         [
             "NAME",
             "B01003_001E",
+            "B11001_001E",
             "B19013_001E",
             "B25046_001E",
             "B25077_001E",
             "zip code tabulation area",
         ],
-        ["ZCTA5 94402", "25475", "172522", "18262", "2000001", "94402"],
+        ["ZCTA5 94402", "25475", "10125", "172522", "18262", "2000001", "94402"],
     ]
 
 
@@ -36,13 +37,14 @@ def _subject_table() -> list[list[str]]:
 
 def test_parse_keeps_population_income_and_treats_sentinels_as_missing() -> None:
     table = _detailed_table()
-    table[1][2] = "-666666666"
+    table[1][3] = "-666666666"
     rows = parse_census_table(table, year=2024)
     assert len(rows) == 1
     row = rows[0]
     assert row.zcta == "94402"
     assert row.year == 2024
     assert row.population == 25475
+    assert row.households == 10125
     assert row.median_hh_income is None
     assert row.vehicles_available == 18262
     assert row.median_home_value == 2000001
@@ -63,10 +65,13 @@ def test_fetch_builds_census_urls_and_does_not_store_the_key(
     monkeypatch.setattr(census_acs, "request_json", fake_json)
     row = fetch_zcta_acs("94402", year=2024, api_key="secret-key")
     assert row.population == 25475
+    assert row.households == 10125
     assert row.median_hh_income == 172522
     assert row.mean_commute == 26.2
     assert row.median_home_value == 2000001
     assert len(seen) == 2
+    assert "B11001_001E" in seen[0]
+    assert "B11001_001E" not in seen[1]
     assert all(url.startswith("https://api.census.gov/data/2024/acs/acs5") for url in seen)
     assert all("key=secret-key" in url for url in seen)
     assert all("zip%20code%20tabulation%20area:94402" in url for url in seen)

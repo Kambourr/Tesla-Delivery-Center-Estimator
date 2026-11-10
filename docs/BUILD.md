@@ -23,6 +23,8 @@ This is the offline app. It does not pass `--sample` or `--limit`.
 3. `dce precompute --data-dir data/results` for every resolvable US ZIP.
    The job is resumable. A second run leaves fresh rows in place.
 4. Checkpoint the SQLite file so the bundle is one database, not a WAL pair.
+   The precompute has already vacuumed it with 512-byte pages. A nationwide
+   file is about 249 MB (41,034 `ok` rows), and the `.app` is about 330 MB.
 5. PyInstaller (`packaging/dce_macos.spec`) writes
    `dist/DeliveryCenterEstimator.app`.
 

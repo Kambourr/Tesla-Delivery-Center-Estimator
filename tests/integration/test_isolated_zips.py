@@ -19,6 +19,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from dce.orchestrator import estimate
 from dce.precompute import precompute
 
@@ -70,3 +72,23 @@ def test_a_served_zip_does_not_use_the_isolated_rung() -> None:
     result = estimate("94402")
     origin = next(row for row in result.provenance if row.name == "zip_origin_deliveries")
     assert "Isolated ZIP fallback" not in origin.detail
+
+
+# Goldens on 2026.11.9-compact-results: broker rents, commercial tax on real
+# property, and the DoD construction factor apply on top of the isolated
+# origin. A territory ZCTA has no ACS households, so the proxy is one
+# household. The two Alaska ZCTAs take the DoD county factor (2.97 and 3.17).
+# (deliveries per year, cost per delivery, standalone NPV)
+ISOLATED_GOLDEN = {
+    "96799": (0.003947761649340268, 427259571.3274323, -8616327.816918382),
+    "99635": (0.15261197391415274, 14951451.000060724, -13159469.22533848),
+    "99774": (0.003947761649340268, 591444901.5406477, -13586509.499917928),
+}
+
+
+def test_isolated_zip_goldens() -> None:
+    for code, (deliveries, per_delivery, npv) in ISOLATED_GOLDEN.items():
+        result = estimate(code)
+        assert result.estimated_annual_deliveries == pytest.approx(deliveries, rel=1e-9)
+        assert result.cost_per_delivery == pytest.approx(per_delivery, rel=1e-9)
+        assert result.dcf.standalone.npv == pytest.approx(npv, abs=1.0)

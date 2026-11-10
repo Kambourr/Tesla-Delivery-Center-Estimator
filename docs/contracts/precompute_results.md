@@ -16,7 +16,7 @@ document.
 
 ## Table
 
-Schema migration version 7. The only SQL is in `dce.storage`. Version 6
+Schema migration version 7 (version 8 is the separate `rent_market` table). The only SQL is in `dce.storage`. Version 6
 created `zip_result` with `payload_json` as text. Version 7 stores that
 column as a BLOB. New rows are zlib level 9 of the canonical JSON.
 `dce.storage.repository` expands the BLOB on read, and it still accepts a
@@ -125,12 +125,12 @@ metro and state), `state`, or `national`. `fitout_index` has source
 `cbsa`, `state`, or `national`, or `bea_rpp_goods_2024` when the DoD table
 has no row for the place. `rent_psf_month` tries the broker rows first:
 `broker_county` (county), Kidder `cbsa_raw` (CBSA 41884), then
-`broker_cbsa`, before the ACS rungs. On
+`broker_cbsa`, before the ACS rungs. Since
 `2026.11.8-broker-rents-commercial-tax-acf` these broker rents, the
 real-property tax rate, and the DoD fit-out factor apply together.
-Field names and the document shape are unchanged from earlier
-`dce.ui_result.v1` documents; only the values and `model_version`
-differ, so rows from `2026.11.7-broker-rents` are stale.
+`2026.11.9-compact-results` keeps those numbers and stores the compact
+document described above, so rows from `2026.11.8-broker-rents-commercial-tax-acf`
+and earlier are stale.
 
 The headline deliveries, cost, catchment, and both DCF views are the base
 outcome, which is what `estimate(zip)` returns.

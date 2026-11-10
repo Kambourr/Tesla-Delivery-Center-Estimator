@@ -1,9 +1,11 @@
-"""Goldens for broker market rents on 2026.11.8-broker-rents-commercial-tax-acf.
+"""Goldens for broker market rents, set on 2026.11.8-broker-rents-commercial-tax-acf.
 
 Broker rents (#18) and the commercial tax class plus DoD construction cost
 factor apply together. Deliveries and wage come from the same seed as main.
 "Before" is main (2026.11.7-broker-rents, BEA goods fit-out, fixtures-exempt
-tax not grossed up). "After" is this model.
+tax not grossed up). "After" is this model. The values are unchanged on
+2026.11.9-compact-results, which changes storage and only the ZIPs with no
+catchment.
 
 | ZIP | Rent rung | Before ($/delivery, NPV) | After ($/delivery, NPV) |
 |---|---|---|---|
@@ -81,8 +83,8 @@ GOLDEN = {
 }
 
 
-def test_model_version_is_the_combined_stamp() -> None:
-    assert MODEL_VERSION == "2026.11.8-broker-rents-commercial-tax-acf"
+def test_model_version_is_the_compact_results_stamp() -> None:
+    assert MODEL_VERSION == "2026.11.9-compact-results"
 
 
 @pytest.mark.parametrize("zip_code", sorted(GOLDEN))

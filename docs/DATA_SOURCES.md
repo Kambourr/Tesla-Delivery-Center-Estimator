@@ -206,7 +206,7 @@ Market Report Q3 2026
 That rate is used as published for every ZIP in `41884`, including
 `94402`, and it keeps precedence over any CBSA broker row.
 
-`rent_market.csv` (added in model `2026.11.7-broker-rents`, current model `2026.11.8-broker-rents-commercial-tax-acf`) adds 50 broker rows:
+`rent_market.csv` (added in model `2026.11.7-broker-rents`, current model `2026.11.9-compact-results`) adds 50 broker rows:
 29 CBSAs or metro divisions and 21 counties, all Cushman & Wakefield
 MarketBeat Q3 2026 (as_of 2026-09-30). Each row has `source`, `report`,
 `quarter`, `url`, the figure as printed (`reported_rent`, `reported_unit`,

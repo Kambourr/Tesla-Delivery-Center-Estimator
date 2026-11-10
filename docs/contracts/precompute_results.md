@@ -40,7 +40,7 @@ again.
 `data/demo/san_mateo/operating_inputs.json`, and these seed files:
 `coverage.json`, `zev_zip_sales.csv`, `zev_county_sales.csv`,
 `zcta_acs_2024.csv`, `zcta_centroid_2024.csv`, `zip_crosswalk.csv`,
-`oews_metro_2025.csv`, `rent_cbsa.csv`, `rent_model_coeffs.json`,
+`oews_metro_2025.csv`, `rent_cbsa.csv`, `rent_market.csv`, `rent_model_coeffs.json`,
 `electricity_commercial.csv`, `county_utility.csv`,
 `property_tax_commercial.csv`, `bea_rpp_2024.csv`.
 
@@ -107,7 +107,7 @@ has no deliveries, so cost per delivery is undefined.
   "zip_code": "96799",
   "status": "error",
   "reason": "EstimateDataError: ZIP 96799 has no deliveries inside the 60-mile catchment, so cost per delivery is undefined.",
-  "model_version": "2026.11.5-local-costs",
+  "model_version": "2026.11.7-broker-rents",
   "inputs_hash": "<sha256>",
   "computed_at": "2026-11-09T00:00:00+00:00"
 }

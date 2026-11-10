@@ -25,6 +25,7 @@ EXPECTED_TABLES = {
     "zev_sales_zip",
     "zev_sales_county",
     "rent_cbsa",
+    "rent_market",
     "rent_zip_obs",
     "rent_model_coeffs",
     "rent_resolved_cache",
@@ -68,7 +69,7 @@ def test_migrate_creates_dictionary_and_crosswalk_tables(tmp_path: Path) -> None
         assert "cbsa" in _column_names(conn, "zip_cbsa")
         assert _column_names(conn, "zip_zcta") == ["zip", "zcta", "tot_ratio"]
         versions = conn.execute("SELECT version FROM schema_migrations ORDER BY version").fetchall()
-        assert versions == [(1,), (2,), (3,), (4,), (5,), (6,)]
+        assert versions == [(1,), (2,), (3,), (4,), (5,), (6,), (8,)]
         assert "median_home_value" in _column_names(conn, "zcta_acs")
         assert "households" in _column_names(conn, "zcta_acs")
         assert "median_gross_rent" in _column_names(conn, "zcta_acs")
@@ -95,6 +96,26 @@ def test_migrate_is_idempotent_and_keeps_rows(tmp_path: Path) -> None:
         migrate(conn)
         assert get_source(conn, "hud_crosswalk") == record
         versions = conn.execute("SELECT COUNT(*) FROM schema_migrations").fetchone()
-        assert versions == (6,)
+        assert versions == (7,)
     finally:
         conn.close()
+
+
+def test_rent_market_table_heals_when_version_8_is_recorded_without_it(tmp_path: Path) -> None:
+    conn = _connect(tmp_path)
+    try:
+        migrate(conn)
+        assert "rent_market" in _tables(conn)
+        conn.execute("DROP TABLE rent_market")
+        conn.commit()
+        migrate(conn)
+        assert "url" in _column_names(conn, "rent_market")
+        count = conn.execute("SELECT COUNT(*) FROM schema_migrations WHERE version = 8").fetchone()
+        assert count == (1,)
+    finally:
+        conn.close()
+
+
+def _tables(conn: sqlite3.Connection) -> set[str]:
+    rows = conn.execute("SELECT name FROM sqlite_master WHERE type = 'table'").fetchall()
+    return {str(row[0]) for row in rows}

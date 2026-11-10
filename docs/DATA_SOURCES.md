@@ -169,26 +169,64 @@ These inputs are still one number for every ZIP. A public regional series was no
 `docs/contracts/zip_data.md`. ZORI is not in the seed (redistribution terms).
 
 ```
-1. cbsa_raw                 observed industrial seed, not ACS-scaled   high
-2. county_gsa               GSA median; ACS factor only when no CBSA seed
-3. state / national         industrial seeds (state needs ≥3 CBSA seeds; national is CBSA 00000)
-4. hud_safmr                2-bedroom monthly, converted
-5. acs_gross_rent           this ZCTA's B25064
-6. acs_gross_rent_county    then _cbsa, _state, _national medians of B25064
+1. broker_county            broker market rent for the ZIP's county (borough / submarket)   high (medium for office_showroom_proxy)
+2. cbsa_raw                 observed industrial seed (Kidder 41884), not ACS-scaled          high
+3. broker_cbsa              broker market rent for the ZIP's CBSA or metro division          high
+4. county_gsa               GSA median; ACS factor only when no CBSA seed
+5. state / national         rent_cbsa industrial seeds (state needs ≥3 CBSA seeds; national is CBSA 00000)
+6. hud_safmr                2-bedroom monthly, converted
+7. acs_gross_rent           this ZCTA's B25064
+8. acs_gross_rent_county    then _cbsa, _state, _national medians of B25064
 ```
 
-The shipped industrial seed is one row: CBSA `41884`, $25.68/sf/year
+`rent_cbsa.csv` still has one row: CBSA `41884`, $25.68/sf/year
 ($2.14/sf/month), as_of 2026-09-30, Kidder Mathews Peninsula Industrial
 Market Report Q3 2026
 (https://kidder.com/market-reports/peninsula-industrial-market-report/).
 That rate is used as published for every ZIP in `41884`, including
-`94402`. `acs_rent_v1` (`b_acs_rent = 1`; income, density, and home value
-exponents are 0) adjusts a borrowed county GSA base only, and only when
-the ZIP's CBSA has no broker seed. A single Bay Area headline cannot
-become the California or national rent. ZIPs outside `41884` use SAFMR or
-their own ACS `B25064` rent, then the county, CBSA, state, and national
-median of that rent. Conversion is monthly × 12 / 1000. The ratio is 1
-until a GSA fit. Those rungs are `residential_proxy` at low confidence.
+`94402`, and it keeps precedence over any CBSA broker row.
+
+`rent_market.csv` (model `2026.11.7-broker-rents`) adds 50 broker rows:
+29 CBSAs or metro divisions and 21 counties, all Cushman & Wakefield
+MarketBeat Q3 2026 (as_of 2026-09-30). Each row has `source`, `report`,
+`quarter`, `url`, the figure as printed (`reported_rent`, `reported_unit`,
+`reported_basis`), the annual NNN equivalent (`rent_psf_year`), and a
+`note` naming the table row and column used. Coverage: NYC boroughs
+(Manhattan, Bronx, Brooklyn, Queens, Staten Island), Nassau, Suffolk,
+North and Central New Jersey counties, Los Angeles, Orange County, Inland
+Empire, San Diego, East Bay (36084), Silicon Valley (41940), Seattle,
+Tacoma, Portland, Phoenix, Denver, Las Vegas, Salt Lake City, Boston,
+Cambridge-Newton-Framingham, Washington DC (11694 and 47764),
+Frederick-Gaithersburg-Bethesda, Chicago, Lake County IL, Miami, Fort
+Lauderdale, West Palm Beach, Austin, Dallas, Fort Worth, Houston, Atlanta,
+Philadelphia, and Camden.
+
+**Rent type.** A delivery center is a light-industrial, flex, or showroom
+site. The curator takes the report's flex column (High Tech/Flex, Office
+Service/Flex, IMT/Flex, or FX) from the most specific row that covers the
+mapped geography (`industrial_flex`). When the report publishes no flex
+rent there, the overall weighted industrial rent is used
+(`industrial_overall`). Manhattan has no industrial inventory in the C&W or
+CBRE industrial reports; showroom and flex space there leases in the
+office and loft market, so 36061 uses the Manhattan office overall asking
+rent (`office_showroom_proxy`, confidence medium).
+
+**Units.** Every row is converted to annual NNN dollars per square foot by
+`dce.data.rent_defaults.nnn_rent_psf_year`: monthly × 12; NNN or net used
+as is; full-service gross ÷ (1 + 0.15), the shipped `facility.opex_load`
+base, because the model adds the NNN load back on top of rent. The reader
+rejects a row whose stored `rent_psf_year` does not match that conversion.
+
+**Geography.** County rows come first, so a borough beats its metro.
+`rent_market` rows do not feed the state-median rung, so a metro rent never
+spreads to rural ZIPs in the same state. A ZIP in a covered CBSA but an
+uncovered county (Westchester in 35614, for example) still falls to ACS.
+`acs_rent_v1` never scales a broker row.
+
+ZIPs with no broker row use SAFMR or their own ACS `B25064` rent, then the
+county, CBSA, state, and national median of that rent. Conversion is
+monthly × 12 / 1000. The ratio is 1 until a GSA fit. Those rungs are
+`residential_proxy` at low confidence.
 
 UI shows: resolved `$/SF/yr`, **source tier**, **confidence**, **as_of**, staleness badge. Never a blank requiring typing.
 
@@ -211,6 +249,16 @@ rent_model_coeffs (
 rent_resolved_cache (
   zip TEXT PK, rent_psf_year REAL, property_type TEXT, tier TEXT,
   confidence TEXT, as_of TEXT, components_json TEXT, resolved_at TEXT
+);
+-- Migration 8. Copied from data/seed/rent_market.csv and kept in sync with it.
+rent_market (
+  geography_level TEXT,  -- 'county'|'cbsa'
+  geography_id TEXT, market TEXT, submarket TEXT,
+  property_type TEXT,    -- 'industrial_flex'|'industrial_overall'|'office_showroom_proxy'
+  rent_psf_year REAL,    -- annual NNN equivalent
+  reported_rent REAL, reported_unit TEXT, reported_basis TEXT,
+  source TEXT, report TEXT, quarter TEXT, as_of TEXT, url TEXT, note TEXT, fetched_at TEXT,
+  PRIMARY KEY(geography_level, geography_id)
 );
 ```
 

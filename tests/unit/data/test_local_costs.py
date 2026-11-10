@@ -23,7 +23,7 @@ def _assumptions():
 
 
 def test_model_version_is_the_local_cost_stamp() -> None:
-    assert MODEL_VERSION == "2026.11.5-local-costs"
+    assert MODEL_VERSION == "2026.11.7-broker-rents"
 
 
 def test_94402_keeps_pge_b10() -> None:

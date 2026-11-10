@@ -713,6 +713,32 @@ class RentCbsaRecord:
 
 
 @dataclass(frozen=True)
+class RentMarketRecord:
+    """One broker market-report asking rent for a county or CBSA.
+
+    ``rent_psf_year`` is the annual NNN equivalent; ``reported_*`` is the
+    figure as printed.
+    """
+
+    geography_level: str
+    geography_id: str
+    market: str
+    submarket: str
+    property_type: str
+    rent_psf_year: float
+    reported_rent: float
+    reported_unit: str
+    reported_basis: str
+    source: str
+    report: str
+    quarter: str
+    as_of: str
+    url: str
+    note: str
+    fetched_at: str | None = None
+
+
+@dataclass(frozen=True)
 class RentZipObsRecord:
     """One ZIP rent observation, usually a GSA lease summary."""
 
@@ -1067,6 +1093,62 @@ def list_rent_cbsa_for_codes(
         seen.add(record.cbsa)
         rows.append(record)
     return tuple(rows)
+
+
+_RENT_MARKET_COLUMNS = (
+    "geography_level, geography_id, market, submarket, property_type, rent_psf_year, "
+    "reported_rent, reported_unit, reported_basis, source, report, quarter, as_of, url, "
+    "note, fetched_at"
+)
+
+
+def replace_rent_market(conn: sqlite3.Connection, rows: Sequence[RentMarketRecord]) -> None:
+    """Replace every broker market rent row in one transaction."""
+    conn.execute("DELETE FROM rent_market")
+    conn.executemany(
+        f"INSERT INTO rent_market ({_RENT_MARKET_COLUMNS}) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        [
+            (
+                row.geography_level,
+                row.geography_id,
+                row.market,
+                row.submarket,
+                row.property_type,
+                row.rent_psf_year,
+                row.reported_rent,
+                row.reported_unit,
+                row.reported_basis,
+                row.source,
+                row.report,
+                row.quarter,
+                row.as_of,
+                row.url,
+                row.note,
+                row.fetched_at,
+            )
+            for row in rows
+        ],
+    )
+    conn.commit()
+
+
+def get_rent_market(
+    conn: sqlite3.Connection, geography_level: str, geography_id: str
+) -> RentMarketRecord | None:
+    """Return the broker market rent for one county or CBSA, or ``None``."""
+    row = conn.execute(
+        f"SELECT {_RENT_MARKET_COLUMNS} FROM rent_market "
+        "WHERE geography_level = ? AND geography_id = ?",
+        (geography_level, geography_id),
+    ).fetchone()
+    return None if row is None else _rent_market_from_row(row)
+
+
+def list_rent_market(conn: sqlite3.Connection) -> tuple[RentMarketRecord, ...]:
+    """Return every broker market rent row, ordered by level and id."""
+    query = f"SELECT {_RENT_MARKET_COLUMNS} FROM rent_market ORDER BY geography_level, geography_id"
+    return tuple(_rent_market_from_row(row) for row in conn.execute(query))
 
 
 def list_rent_zip_obs_for_zips(
@@ -1530,6 +1612,45 @@ def _rent_cbsa_from_row(row: sqlite3.Row | tuple[object, ...]) -> RentCbsaRecord
         as_of=str(as_of),
         citation=str(citation),
         broker=str(broker),
+        fetched_at=None if fetched_at is None else str(fetched_at),
+    )
+
+
+def _rent_market_from_row(row: sqlite3.Row | tuple[object, ...]) -> RentMarketRecord:
+    (
+        level,
+        geo_id,
+        market,
+        submarket,
+        property_type,
+        rent,
+        reported,
+        unit,
+        basis,
+        source,
+        report,
+        quarter,
+        as_of,
+        url,
+        note,
+        fetched_at,
+    ) = row
+    return RentMarketRecord(
+        geography_level=str(level),
+        geography_id=str(geo_id),
+        market=str(market),
+        submarket=str(submarket),
+        property_type=str(property_type),
+        rent_psf_year=_required_float(rent),
+        reported_rent=_required_float(reported),
+        reported_unit=str(unit),
+        reported_basis=str(basis),
+        source=str(source),
+        report=str(report),
+        quarter=str(quarter),
+        as_of=str(as_of),
+        url=str(url),
+        note=str(note),
         fetched_at=None if fetched_at is None else str(fetched_at),
     )
 

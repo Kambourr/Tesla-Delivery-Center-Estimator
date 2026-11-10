@@ -246,7 +246,7 @@ Built in `dce.geo.catchment`. The orchestrator loads centers and ZIP demand and 
 def resolve_rent(zip_code: str, conn: sqlite3.Connection) -> RentResolution: ...
 ```
 
-Fallback chain, first hit wins: observed CBSA industrial seed, unadjusted, then county GSA (ACS factor only when that CBSA has no seed), state and national industrial seeds, HUD SAFMR, this ZCTA's ACS gross rent, then the county, CBSA, state, and national median of ACS gross rent. Every rung after the observed seed is a fallback.
+Fallback chain, first hit wins: broker market rent for the ZIP's county (`broker_county`), the observed CBSA industrial seed (`cbsa_raw`, Kidder 41884), broker market rent for the ZIP's CBSA (`broker_cbsa`), all unadjusted; then county GSA (ACS factor only when that CBSA has no seed), state and national `rent_cbsa` industrial seeds, HUD SAFMR, this ZCTA's ACS gross rent, then the county, CBSA, state, and national median of ACS gross rent. Every rung after the three observed broker rungs is a fallback. Broker rows are annual NNN (`dce.data.rent_defaults.nnn_rent_psf_year`).
 
 `RentResolution` carries `rent_psf_year`, `rent_psf_month`, `property_type`, `tier`, `confidence`, `as_of`, and `citation`. ZIP → CBSA is the HUD crosswalk.
 

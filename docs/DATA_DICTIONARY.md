@@ -53,7 +53,7 @@ The only required input is `zip_code`. Everything else is an assumption default,
 ### rent_default
 Logical summary kept for early milestones: `geo_key` (CBSA or county), `rent_psf_month`, `citation`, `as_of`, `confidence` (`high`|`medium`|`low`|`fmr_weak`).
 
-The physical rent tables (bundled seed + resolver cache) are `rent_cbsa`, `rent_zip_obs`, `rent_model_coeffs`, and `rent_resolved_cache` in DATA_SOURCES §8. M1 may create `rent_default`; the rent milestone creates the physical tables. Resolved rent is automatic. `confidence=low` is the HUD SAFMR / ZORI proxy tier.
+The physical rent tables (bundled seed + resolver cache) are `rent_cbsa`, `rent_market` (broker market rents by county or CBSA, migration 8), `rent_zip_obs`, `rent_model_coeffs`, and `rent_resolved_cache` in DATA_SOURCES §8. M1 may create `rent_default`; the rent milestone creates the physical tables. Resolved rent is automatic. `confidence=low` is the HUD SAFMR / ZORI proxy tier.
 
 ### extract_cache
 `pdf_sha256 PK`, `extractor` (`manual`|`llm`), `json TEXT`, `created_at`

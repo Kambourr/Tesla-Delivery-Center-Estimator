@@ -1,7 +1,8 @@
 """Load the bundled nationwide ZIP seed into SQLite.
 
-The files under ``data/seed/`` are public-domain extracts (plus one cited
-broker headline). Loading them does not use the network. ``resolve_zip``
+The files under ``data/seed/`` are public-domain extracts plus cited broker
+headlines (``rent_cbsa.csv`` and ``rent_market.csv``). Loading them does not
+use the network. ``resolve_zip``
 reads the crosswalk CSV directly so the geo package does not open SQLite.
 ``load_zip_seed`` copies the same files into the user database.
 """
@@ -11,17 +12,18 @@ from __future__ import annotations
 import csv
 import sqlite3
 from collections.abc import Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 
 from dce.config import bundled_seed_dir
 from dce.data.ingest.census_acs import ZctaAcs, acs_as_of
 from dce.data.ingest.zcta_gazetteer import ZctaCentroid
 from dce.data.ingest.zip_geography import ZipCrosswalkRow
-from dce.data.rent_defaults import read_rent_model, read_rent_seed
+from dce.data.rent_defaults import read_rent_market_seed, read_rent_model, read_rent_seed
 from dce.storage.repository import (
     OewsWageRecord,
     RentCbsaRecord,
+    RentMarketRecord,
     RentModelRecord,
     SourceRecord,
     ZctaAcsRecord,
@@ -31,7 +33,9 @@ from dce.storage.repository import (
     ZipCbsaRecord,
     ZipCountyRecord,
     ZipZctaRecord,
+    list_rent_market,
     replace_rent_cbsa,
+    replace_rent_market,
     replace_zcta_acs_year,
     replace_zcta_centroids,
     replace_zev_sales,
@@ -47,6 +51,7 @@ ACS_CSV = "zcta_acs_2024.csv"
 OEWS_CSV = "oews_metro_2025.csv"
 RENT_CSV = "rent_cbsa.csv"
 RENT_MODEL_JSON = "rent_model_coeffs.json"
+RENT_MARKET_CSV = "rent_market.csv"
 ZEV_ZIP_CSV = "zev_zip_sales.csv"
 ZEV_COUNTY_CSV = "zev_county_sales.csv"
 _CROSSWALK_FIELDS = (
@@ -97,6 +102,7 @@ class ZipSeedCounts:
     rent_rows: int
     zev_zip_rows: int
     zev_county_rows: int
+    rent_market_rows: int = 0
 
 
 def write_crosswalk_csv(path: Path, rows: Sequence[ZipCrosswalkRow]) -> None:
@@ -339,6 +345,7 @@ def load_zip_seed(
             as_of=model.as_of,
         ),
     )
+    market_rows = sync_rent_market(conn, directory, fetched_at=fetched_at)
     zev_zips, zev_counties = _load_zev(conn, directory, fetched_at=fetched_at)
     _registry(conn, fetched_at=fetched_at, acs_year=year)
     return ZipSeedCounts(
@@ -349,7 +356,65 @@ def load_zip_seed(
         rent_rows=len(rents),
         zev_zip_rows=len(zev_zips),
         zev_county_rows=len(zev_counties),
+        rent_market_rows=market_rows,
     )
+
+
+def sync_rent_market(
+    conn: sqlite3.Connection,
+    seed_dir: Path | None = None,
+    *,
+    fetched_at: str,
+) -> int:
+    """Make ``rent_market`` match the bundled ``rent_market.csv``. Returns the row count.
+
+    A database seeded before this file existed (or from an older copy of it)
+    is rewritten. A database that already matches is left alone, so repeated
+    calls do not write. The bundled CSV is the only writer of this table.
+    """
+    directory = bundled_seed_dir() if seed_dir is None else seed_dir
+    wanted = tuple(
+        RentMarketRecord(
+            geography_level=row.geography_level,
+            geography_id=row.geography_id,
+            market=row.market,
+            submarket=row.submarket,
+            property_type=row.property_type,
+            rent_psf_year=row.rent_psf_year,
+            reported_rent=row.reported_rent,
+            reported_unit=row.reported_unit,
+            reported_basis=row.reported_basis,
+            source=row.source,
+            report=row.report,
+            quarter=row.quarter,
+            as_of=row.as_of,
+            url=row.url,
+            note=row.note,
+        )
+        for row in read_rent_market_seed(directory / RENT_MARKET_CSV)
+    )
+    stored = tuple(replace(row, fetched_at=None) for row in list_rent_market(conn))
+    if stored == wanted:
+        return len(wanted)
+    replace_rent_market(conn, [replace(row, fetched_at=fetched_at) for row in wanted])
+    newest = max(row.as_of for row in wanted)
+    upsert_source(
+        conn,
+        SourceRecord(
+            source_id="broker_rent_market",
+            url=wanted[0].url,
+            as_of=newest,
+            fetched_at=fetched_at,
+            ttl_days=183,
+            license_note=(
+                "Headline asking rents transcribed from public broker market reports "
+                "(Cushman & Wakefield MarketBeats). Facts and citations only; the reports "
+                "are not stored."
+            ),
+            byte_count=None,
+        ),
+    )
+    return len(wanted)
 
 
 def _geography_records(

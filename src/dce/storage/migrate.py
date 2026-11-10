@@ -24,6 +24,10 @@ land area, crosswalk names and ratios, and the rent-resolution tables from
 
 Version 6 adds ``zip_result``, the precomputed estimate for one ZIP. The
 row is replaced when the model version or the inputs hash changes.
+
+Version 8 adds ``rent_market``: broker market-report asking rents by county
+or CBSA, loaded from ``data/seed/rent_market.csv``. Version 7 is left to the
+compact-results change (PR #17) so the two numbers do not collide.
 """
 
 from __future__ import annotations
@@ -58,6 +62,7 @@ def migrate(conn: sqlite3.Connection) -> None:
     _apply_version_4(conn)
     _apply_version_5(conn)
     _apply_version_6(conn)
+    _apply_version_8(conn)
 
 
 def _apply_version_2(conn: sqlite3.Connection) -> None:
@@ -256,5 +261,43 @@ def _apply_version_6(conn: sqlite3.Connection) -> None:
     conn.execute(
         "INSERT INTO schema_migrations (version, applied_at) "
         "VALUES (6, strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))"
+    )
+    conn.commit()
+
+
+_VERSION_8_SQL = """
+CREATE TABLE IF NOT EXISTS rent_market (
+    geography_level TEXT NOT NULL CHECK (geography_level IN ('county', 'cbsa')),
+    geography_id TEXT NOT NULL CHECK (length(geography_id) = 5),
+    market TEXT NOT NULL,
+    submarket TEXT NOT NULL,
+    property_type TEXT NOT NULL,
+    rent_psf_year REAL NOT NULL CHECK (rent_psf_year > 0),
+    reported_rent REAL NOT NULL CHECK (reported_rent > 0),
+    reported_unit TEXT NOT NULL,
+    reported_basis TEXT NOT NULL,
+    source TEXT NOT NULL,
+    report TEXT NOT NULL,
+    quarter TEXT NOT NULL,
+    as_of TEXT NOT NULL,
+    url TEXT NOT NULL,
+    note TEXT NOT NULL,
+    fetched_at TEXT,
+    PRIMARY KEY (geography_level, geography_id)
+);
+"""
+
+
+def _apply_version_8(conn: sqlite3.Connection) -> None:
+    # CREATE ... IF NOT EXISTS runs every time, so a database whose version 8
+    # row was written without this table (for example by another branch
+    # sharing the same user directory) still gets it.
+    conn.executescript(_VERSION_8_SQL)
+    existing = conn.execute("SELECT 1 FROM schema_migrations WHERE version = 8").fetchone()
+    if existing is not None:
+        return
+    conn.execute(
+        "INSERT INTO schema_migrations (version, applied_at) "
+        "VALUES (8, strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))"
     )
     conn.commit()

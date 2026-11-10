@@ -13,7 +13,7 @@ from pathlib import Path
 
 from dce.config import assumptions_path, bundled_seed_dir, demo_data_dir
 
-MODEL_VERSION = "2026.11.5-local-costs"
+MODEL_VERSION = "2026.11.7-broker-rents"
 
 _HASH_FILES = (
     "coverage.json",
@@ -24,6 +24,7 @@ _HASH_FILES = (
     "zip_crosswalk.csv",
     "oews_metro_2025.csv",
     "rent_cbsa.csv",
+    "rent_market.csv",
     "rent_model_coeffs.json",
     "electricity_commercial.csv",
     "county_utility.csv",

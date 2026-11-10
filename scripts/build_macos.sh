@@ -42,6 +42,7 @@ seed_ready() {
     zcta_centroid_2024.csv \
     oews_metro_2025.csv \
     rent_cbsa.csv \
+    rent_market.csv \
     zev_zip_sales.csv \
     coverage.json
   do

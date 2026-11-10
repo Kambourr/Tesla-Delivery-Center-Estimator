@@ -77,12 +77,13 @@ Same seed/SQLite + ZIP + scenario ⇒ identical floats. The LLM never feeds the 
 See DATA_SOURCES §8.
 
 ```
-ZIP-adjusted CBSA industrial
-  → county
-  → raw CBSA
+broker county submarket (rent_market)
+  → observed CBSA industrial seed (rent_cbsa, Kidder 41884)
+  → broker CBSA / metro division (rent_market)
+  → county GSA
   → state
   → national
-  → HUD SAFMR / ZORI proxy (confidence low)
+  → HUD SAFMR / ACS gross-rent proxy (confidence low)
 ```
 
-Seed rents are curated headline asking rents from public CBRE, Cushman, Colliers, and JLL market reports, with citations. ZIP→CBSA is the HUD crosswalk. The ZIP adjustment is a frozen ACS model (income, density, home value) calibrated with the GSA Lease Inventory. No LoopNet, Crexi, or paid CRE API.
+Seed rents are curated headline asking rents from public CBRE, Cushman, Colliers, JLL, Newmark, and Kidder Mathews market reports, with citations (`rent_cbsa.csv`, `rent_market.csv`). ZIP→CBSA is the HUD crosswalk. The ZIP adjustment is a frozen ACS model (income, density, home value) calibrated with the GSA Lease Inventory. No LoopNet, Crexi, or paid CRE API.

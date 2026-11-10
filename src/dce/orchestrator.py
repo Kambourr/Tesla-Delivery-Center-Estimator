@@ -57,7 +57,7 @@ from dce.data.national_demand import (
 from dce.data.operating_inputs import OperatingInputs, load_san_mateo_operating_inputs
 from dce.data.property_tax import PropertyTaxResolution
 from dce.data.zip_local import ZipLocalData, load_zip_local
-from dce.data.zip_seed import load_zip_seed
+from dce.data.zip_seed import load_zip_seed, sync_rent_market
 from dce.geo.catchment import (
     DRIVE_CIRCUITY,
     MAX_DRIVE_MILES,
@@ -95,7 +95,7 @@ _RENT_OVERRIDE = "rent_psf_month"
 _STRAIGHT_CAP_MILES = MAX_DRIVE_MILES / DRIVE_CIRCUITY + 0.05
 _CENTER_CAP_MILES = _STRAIGHT_CAP_MILES * 2
 _SEED_FETCHED_AT = "2026-11-09T00:00:00Z"
-_OBSERVED_RENT_TIERS = frozenset({"cbsa_raw"})
+_OBSERVED_RENT_TIERS = frozenset({"cbsa_raw", "broker_cbsa", "broker_county"})
 
 
 class EstimateDataError(ValueError):
@@ -315,6 +315,9 @@ def _bundle(data_dir: Path | None) -> _Bundle:
     enable_wal(conn)
     if not national_seed_loaded(conn):
         load_zip_seed(conn, fetched_at=_SEED_FETCHED_AT)
+    else:
+        # A database seeded by an older build lacks newer broker rents.
+        sync_rent_market(conn, fetched_at=_SEED_FETCHED_AT)
     assumptions = parse_assumptions(_load_assumptions())
     demand = build_national_demand(conn, handover_factor=assumptions.demand.handover_factor)
     indexed: list[tuple[str, float, float, float]] = []
@@ -462,9 +465,9 @@ def _rent(local: ZipLocalData, overrides: Overrides | None) -> tuple[float, Inpu
 def _rent_geography(local: ZipLocalData, tier: str) -> tuple[str, str]:
     if tier == "acs_gross_rent":
         return "zcta", local.geo.zcta
-    if tier in {"zip_adjusted_cbsa", "cbsa_raw", "acs_gross_rent_cbsa"}:
+    if tier in {"zip_adjusted_cbsa", "cbsa_raw", "broker_cbsa", "acs_gross_rent_cbsa"}:
         return "cbsa", local.geo.cbsa or "none"
-    if tier in {"county_gsa", "acs_gross_rent_county"}:
+    if tier in {"broker_county", "county_gsa", "acs_gross_rent_county"}:
         return "county", local.geo.county_fips
     if tier == "hud_safmr":
         return "zip", local.geo.zip_code

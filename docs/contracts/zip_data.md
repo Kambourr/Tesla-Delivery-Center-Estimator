@@ -153,9 +153,11 @@ The chain, in order:
 
 | Tier id | When | Confidence |
 |---|---|---|
-| `cbsa_raw` | An industrial seed exists for `geo.cbsa`. The observed rate is used directly | `high` |
+| `broker_county` | `rent_market` has a row for `geo.county_fips` (a borough or submarket). Used directly | `high`; `medium` for `office_showroom_proxy` |
+| `cbsa_raw` | An industrial seed exists for `geo.cbsa` in `rent_cbsa`. The observed rate is used directly | `high` |
+| `broker_cbsa` | `rent_market` has a row for `geo.cbsa`. Used directly | `high`; `medium` for `office_showroom_proxy` |
 | `county_gsa` | No CBSA seed. County median of `rent_zip_obs` with `source = 'gsa'`. The ACS factor is applied only on this borrowed base | `medium` |
-| `state` | Median of industrial seeds in the state, and at least 3 distinct CBSA seeds | `medium` |
+| `state` | Median of `rent_cbsa` industrial seeds in the state, and at least 3 distinct CBSA seeds. `rent_market` rows are not counted | `medium` |
 | `national` | Industrial seed stored under CBSA `00000` | `low` |
 | `hud_safmr` | Newest `rent_safmr` 2-bedroom monthly rent, converted | `low` |
 | `acs_gross_rent` | This ZCTA's ACS `B25064` monthly rent, converted | `low` |
@@ -188,12 +190,23 @@ Shipped `unit_sqft` is 1000 and the ratio is 1, so this is a residential
 proxy in dollars per square foot per year. `property_type` is
 `residential_proxy`. It is not the Bay Area industrial headline.
 
-The only shipped industrial row is CBSA `41884`, $25.68 per square foot per
+The only `rent_cbsa` row is CBSA `41884`, $25.68 per square foot per
 year ($2.14 per square foot per month), `as_of` 2026-09-30, Kidder Mathews
 Peninsula Industrial Market Report Q3 2026. A ZIP in another state, and a
 California ZIP in another CBSA, does not receive that number. One metro seed
 is not enough for the state tier. There is no national industrial row, so
 that tier does nothing until a curator adds CBSA `00000`.
+
+`rent_market` holds the broker market-report rows from
+`data/seed/rent_market.csv` (Cushman & Wakefield MarketBeat Q3 2026, 29
+CBSAs and 21 counties). `rent_psf_year` there is already the annual NNN
+equivalent: monthly figures × 12, full-service gross ÷ 1.15. The rent type,
+unit rule, and coverage are in `docs/DATA_SOURCES.md` §8. `sync_rent_market`
+rewrites the table when it differs from the bundled CSV, so a database
+seeded by an older build picks up new rows on the next `estimate`.
+`10001` resolves on `broker_county` 36061 (Manhattan office overall,
+$74.37 full-service gross, $64.67 NNN). `78701` resolves on `broker_cbsa`
+12420 (Austin office service/flex, $15.09 NNN).
 
 `94402` resolves on `cbsa_raw` at the Kidder headline, $25.68 per square
 foot per year. The ACS factor is not applied on top of that observed

@@ -12,7 +12,7 @@ import pytest
 from dce.orchestrator import estimate
 
 
-def test_austin_78701_uses_its_own_wage_rent_and_national_demand() -> None:
+def test_austin_78701_uses_its_own_wage_broker_rent_and_national_demand() -> None:
     result = estimate("78701")
     assert result.geo.state == "TX"
     assert result.geo.county_fips == "48453"
@@ -27,9 +27,11 @@ def test_austin_78701_uses_its_own_wage_rent_and_national_demand() -> None:
     assert wage.geography_level == "cbsa"
     assert wage.geography_id == "12420"
     assert wage.fallback is False
-    assert rent.source == "acs_gross_rent"
-    assert rent.fallback is True
-    assert rent.geography_level == "zcta"
+    assert rent.source == "broker_cbsa"
+    assert rent.fallback is False
+    assert rent.geography_level == "cbsa"
+    assert rent.geography_id == "12420"
+    assert rent.value == pytest.approx(15.09 / 12)
     assert deliveries.source == "cox_kbb_2025"
     assert deliveries.fallback is True
     assert deliveries.geography_level == "national"

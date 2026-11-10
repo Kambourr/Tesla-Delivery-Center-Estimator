@@ -6,6 +6,8 @@ All notable changes to this project are recorded here.
 
 ### Changed
 
+- Rent uses broker market-report asking rents before the ACS residential proxy. `data/seed/rent_market.csv` has 50 cited Cushman & Wakefield MarketBeat Q3 2026 rows (29 CBSAs or metro divisions, 21 counties, including the NYC boroughs, Long Island, and North Jersey). New tiers: `broker_county`, then the existing Kidder `cbsa_raw`, then `broker_cbsa`. Flex rents where published, otherwise overall industrial; Manhattan uses the office overall asking rent as a showroom proxy. Monthly figures × 12 and full-service gross ÷ 1.15 give annual NNN. Migration 8 adds `rent_market`; `sync_rent_market` refreshes an already-seeded database. 10001 moves from $3.36 to $5.39 per square foot per month ($513 to $606 per delivery); 94402 is unchanged. `MODEL_VERSION` is `2026.11.7-broker-rents`.
+
 - Electricity, commercial property tax, and fit-out are local. The ladder is a utility tariff (PG&E Schedule B-10 on PG&E territory), then the EIA-861 utility average, then the state price, then the U.S. price. An average sets the demand charge to 0. The Lincoln Institute rate for the studied city shifts the NNN load. Fit-out uses the BEA goods price parity. Wage, rent, and each ZIP's own demand are unchanged. `MODEL_VERSION` is `2026.11.5-local-costs`.
 - An observed industrial broker seed is used directly. The ACS rent factor
   no longer scales a CBSA that already has a broker comp. `94402` is the

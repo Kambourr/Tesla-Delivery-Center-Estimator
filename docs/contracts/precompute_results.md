@@ -97,8 +97,14 @@ rate on real property, at `county`, `cbsa` (a studied city in the same
 metro and state), `state`, or `national`. `fitout_index` has source
 `dod_ufs_3_701_01_2026` (DoD construction area cost factor) at `county`,
 `cbsa`, `state`, or `national`, or `bea_rpp_goods_2024` when the DoD table
-has no row for the place. Field names and the document shape are
-unchanged from earlier `dce.ui_result.v1` documents.
+has no row for the place. `rent_psf_month` tries the broker rows first:
+`broker_county` (county), Kidder `cbsa_raw` (CBSA 41884), then
+`broker_cbsa`, before the ACS rungs. On
+`2026.11.8-broker-rents-commercial-tax-acf` these broker rents, the
+real-property tax rate, and the DoD fit-out factor apply together.
+Field names and the document shape are unchanged from earlier
+`dce.ui_result.v1` documents; only the values and `model_version`
+differ, so rows from `2026.11.7-broker-rents` are stale.
 
 The headline deliveries, cost, catchment, and both DCF views are the base
 outcome, which is what `estimate(zip)` returns.

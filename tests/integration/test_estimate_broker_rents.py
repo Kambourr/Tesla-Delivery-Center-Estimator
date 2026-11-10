@@ -1,15 +1,17 @@
-"""Goldens for broker market rents (model version 2026.11.7-broker-rents).
+"""Goldens for broker market rents on 2026.11.8-broker-rents-commercial-tax-acf.
 
-Rent is the only input this change moves. Deliveries, wage, electricity,
-property tax, and the fit-out index come from the same seed as before.
+Broker rents (#18) and the commercial tax class plus DoD construction cost
+factor apply together. Deliveries and wage come from the same seed as main.
+"Before" is main (2026.11.7-broker-rents, BEA goods fit-out, fixtures-exempt
+tax not grossed up). "After" is this model.
 
-| ZIP | Rent rung | Before ($/SF/mo, $/delivery, NPV) | After |
+| ZIP | Rent rung | Before ($/delivery, NPV) | After ($/delivery, NPV) |
 |---|---|---|---|
-| 10001 | broker_county 36061, C&W Manhattan office, full-service gross / 1.15 | 3.361 ACS, $513, +$20.57M | 5.389, $606, +$17.30M |
-| 94402 | cbsa_raw 41884, Kidder Mathews Peninsula industrial | 2.14, $611, +$11.07M | unchanged |
-| 78701 | broker_cbsa 12420, C&W Austin office service/flex | 2.759 ACS, $921, +$1.22M | 1.2575, $698, +$3.64M |
-| 33139 | broker_cbsa 33124, C&W Miami-Dade office service | 1.822 ACS, $867, +$1.48M | 1.6742, $843, +$1.71M |
-| 82401 | acs_gross_rent, Worland WY has no CBSA and no broker row | 0.721, $46,485, -$7.48M | unchanged |
+| 10001 | broker_county 36061, C&W Manhattan office, full-service gross / 1.15 | $605.59, +$17.30M | $615.71, +$16.73M |
+| 94402 | cbsa_raw 41884, Kidder Mathews Peninsula industrial | $611.28, +$11.07M | $618.51, +$10.75M |
+| 78701 | broker_cbsa 12420, C&W Austin office service/flex | $697.98, +$3.64M | $683.46, +$3.92M |
+| 33139 | broker_cbsa 33124, C&W Miami-Dade office service | $843.07, +$1.71M | $820.62, +$2.10M |
+| 82401 | acs_gross_rent, Worland WY has no CBSA and no broker row | $46,484.54, -$7.48M | $47,359.39, -$7.69M |
 """
 
 from __future__ import annotations
@@ -28,8 +30,8 @@ GOLDEN = {
         "36061",
         False,
         8190.38,
-        605.59,
-        17_301_653.0,
+        615.71,
+        16_730_465.0,
         ("labor", "lease", "capex"),
     ),
     "94402": (
@@ -39,8 +41,8 @@ GOLDEN = {
         "41884",
         False,
         5565.19,
-        611.28,
-        11_069_085.0,
+        618.51,
+        10_754_365.0,
         ("labor", "lease", "capex"),
     ),
     "78701": (
@@ -50,8 +52,8 @@ GOLDEN = {
         "12420",
         False,
         2512.20,
-        697.98,
-        3_636_252.0,
+        683.46,
+        3_915_798.0,
         ("labor", "lease", "capex"),
     ),
     "33139": (
@@ -61,8 +63,8 @@ GOLDEN = {
         "33124",
         False,
         2272.49,
-        843.07,
-        1_713_836.0,
+        820.62,
+        2_104_644.0,
         ("labor", "lease", "capex"),
     ),
     "82401": (
@@ -72,15 +74,15 @@ GOLDEN = {
         "82401",
         True,
         31.61,
-        46_484.54,
-        -7_477_759.0,
+        47_359.39,
+        -7_689_572.0,
         ("labor", "capex", "lease"),
     ),
 }
 
 
-def test_model_version_is_the_broker_rent_stamp() -> None:
-    assert MODEL_VERSION == "2026.11.7-broker-rents"
+def test_model_version_is_the_combined_stamp() -> None:
+    assert MODEL_VERSION == "2026.11.8-broker-rents-commercial-tax-acf"
 
 
 @pytest.mark.parametrize("zip_code", sorted(GOLDEN))

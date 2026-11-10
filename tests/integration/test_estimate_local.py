@@ -91,7 +91,7 @@ def test_zip_without_its_own_rent_uses_a_marked_fallback() -> None:
 def test_manhattan_10001_uses_commercial_tax_and_the_dod_construction_factor() -> None:
     """Golden for 10001 on 2026.11.8-broker-rents-commercial-tax-acf.
 
-    Rent is still the ACS gross-rent fallback (another change owns rent).
+    Rent is the Manhattan broker row (county 36061), not the ACS fallback.
     """
     result = estimate("10001")
     inputs = {row.name: row for row in result.provenance}
@@ -108,13 +108,13 @@ def test_manhattan_10001_uses_commercial_tax_and_the_dod_construction_factor() -
     assert fitout.source == "dod_ufs_3_701_01_2026"
     assert fitout.geography_id == "36061"
     assert fitout.fallback is False
-    assert inputs["opex_load"].value == pytest.approx(0.18727809, abs=1e-7)
+    assert inputs["opex_load"].value == pytest.approx(0.17324895, abs=1e-7)
     assert result.estimated_annual_deliveries == pytest.approx(8190.4, abs=0.5)
-    assert result.cost_per_delivery == pytest.approx(523.45, abs=0.01)
+    assert result.cost_per_delivery == pytest.approx(615.71, abs=0.01)
     assert [driver.name for driver in result.drivers] == ["labor", "lease", "capex"]
     assert result.components["capex"] == pytest.approx(474_000.0, abs=1.0)
     assert result.dcf is not None
-    assert result.dcf.standalone.npv == pytest.approx(20.00e6, abs=0.01e6)
+    assert result.dcf.standalone.npv == pytest.approx(16.73e6, abs=0.01e6)
     # Year-0 capex is fit-out x 1.32 plus equipment.
     assert result.dcf.standalone.years[0].capex == pytest.approx(
         100.0 * 1.32 * 25_000.0 * 1.20 + 780_000.0, abs=1
@@ -123,10 +123,10 @@ def test_manhattan_10001_uses_commercial_tax_and_the_dod_construction_factor() -
 
 def test_golden_cost_per_delivery_for_the_five_report_zips() -> None:
     expected = {
-        "10001": (523.45, 20.00e6),
+        "10001": (615.71, 16.73e6),
         "94402": (618.51, 10.75e6),
-        "78701": (906.15, 1.50e6),
-        "33139": (844.85, 1.87e6),
+        "78701": (683.46, 3.92e6),
+        "33139": (820.62, 2.10e6),
         "82401": (47359.39, -7.69e6),
     }
     for zip_code, (cost, npv) in expected.items():

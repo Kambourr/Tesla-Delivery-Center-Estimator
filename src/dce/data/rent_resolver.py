@@ -9,26 +9,37 @@ LoopNet, Crexi, CoStar, CompStak, Reonomy, ATTOM, or Cherre.
 
 Fallback chain, first hit wins:
 
-1. Observed CBSA industrial seed, unadjusted. A residential ACS factor is
-   not applied on top of a broker comp for the same submarket. Confidence
-   high.
-2. County median of GSA ``rent_zip_obs`` (source ``gsa``). The frozen
+1. ``broker_county``: broker market-report asking rent for this ZIP's county
+   (``rent_market``, a borough or submarket such as Brooklyn or Nassau).
+2. ``cbsa_raw``: observed CBSA industrial seed (``rent_cbsa``, the Kidder
+   Mathews Peninsula row for 41884), unadjusted.
+3. ``broker_cbsa``: broker market-report asking rent for this ZIP's CBSA or
+   metro division (``rent_market``).
+4. County median of GSA ``rent_zip_obs`` (source ``gsa``). The frozen
    ``acs_rent_v1`` factor is applied here only, because this ZIP's CBSA
    has no industrial seed.
-3. State median of industrial seeds, only when at least three distinct CBSA
-   seeds in that state exist. One metro headline is not a state rent.
-4. National industrial row. The shipped seed has none.
-5. HUD SAFMR 2-bedroom.
-6. This ZCTA's ACS median gross rent.
-7. County median of ZCTA ACS gross rents, then the CBSA median.
-8. State median of ZCTA ACS gross rents.
-9. National median of ZCTA ACS gross rents.
+5. State median of ``rent_cbsa`` industrial seeds, only when at least three
+   distinct CBSA seeds in that state exist. One metro headline is not a
+   state rent. ``rent_market`` rows do not feed this rung, so a metro rent
+   never spreads to rural ZIPs in the same state.
+6. National industrial row. The shipped seed has none.
+7. HUD SAFMR 2-bedroom.
+8. This ZCTA's ACS median gross rent.
+9. County median of ZCTA ACS gross rents, then the CBSA median.
+10. State median of ZCTA ACS gross rents.
+11. National median of ZCTA ACS gross rents.
 
-Steps 5 through 9 are residential proxies. ``unit_sqft`` and
+Steps 1 to 3 are observed broker rents. A residential ACS factor is never
+applied on top of them. ``rent_market`` stores the annual NNN equivalent
+(``dce.data.rent_defaults.nnn_rent_psf_year``). Confidence is high for an
+industrial row and medium for ``office_showroom_proxy`` (Manhattan, where
+the reports track no industrial stock).
+
+Steps 7 through 11 are residential proxies. ``unit_sqft`` and
 ``commercial_residential_ratio`` convert a monthly rent to dollars per
 square foot. The shipped ratio is 1. Confidence ``low``.
 
-A Bay Area broker row is not applied outside its CBSA. A ZIP with no
+A broker row is not applied outside its county or CBSA. A ZIP with no
 crosswalk row still fails. A ZIP with a crosswalk row resolves as long as
 any ACS gross rent exists in the file.
 
@@ -47,6 +58,7 @@ from statistics import median
 from dce.storage.repository import (
     RentCacheRecord,
     RentCbsaRecord,
+    RentMarketRecord,
     RentModelRecord,
     SafmrRecord,
     ZctaAcsRecord,
@@ -58,6 +70,7 @@ from dce.storage.repository import (
     cbsas_for_state,
     get_latest_safmr,
     get_latest_zcta_acs,
+    get_rent_market,
     get_rent_model,
     get_zcta_centroid,
     latest_acs_year,
@@ -74,6 +87,7 @@ from dce.storage.repository import (
 RENT_MODEL_ID = "acs_rent_v1"
 _STATE_SEED_MINIMUM = 3
 _INDUSTRIAL = "industrial"
+_PROXY_TYPE = "office_showroom_proxy"
 
 
 @dataclass(frozen=True)
@@ -140,6 +154,10 @@ def resolve_rent(
     seed = _industrial(list_rent_cbsa(conn, cbsa)) if cbsa else None
     factor, clamped, adjusted_inputs = _factor(acs, centroid, references, coeffs)
 
+    county_market = get_rent_market(conn, "county", county.county_fips)
+    if county_market is not None:
+        return _store(conn, write_cache, _from_market(code, county_market, tier="broker_county"))
+
     if seed is not None:
         return _store(
             conn,
@@ -158,6 +176,10 @@ def resolve_rent(
                 components={"base_rent_psf_year": seed.rent_psf_year, "broker": seed.broker},
             ),
         )
+
+    cbsa_market = get_rent_market(conn, "cbsa", cbsa) if cbsa else None
+    if cbsa_market is not None:
+        return _store(conn, write_cache, _from_market(code, cbsa_market, tier="broker_cbsa"))
 
     gsa = _county_gsa(conn, county.county_fips)
     if gsa is not None:
@@ -343,6 +365,38 @@ def _acs_citation(coeffs: _Coeffs, year: int, scope: str, monthly: float, count:
         f"{'' if count == 1 else 's'}, converted with {coeffs.model_id} "
         f"unit_sqft {coeffs.unit_sqft:g} and commercial_residential_ratio "
         f"{coeffs.commercial_residential_ratio:g}. Residential proxy, confidence low."
+    )
+
+
+def _from_market(
+    zip_code: str, row: RentMarketRecord, *, tier: str
+) -> tuple[RentResolution, dict[str, object]]:
+    unit = "per month" if row.reported_unit == "usd_psf_month" else "per year"
+    basis = "full-service gross" if row.reported_basis == "full_service_gross" else "NNN"
+    return _from_base(
+        zip_code,
+        row.rent_psf_year,
+        property_type=row.property_type,
+        tier=tier,
+        confidence="medium" if row.property_type == _PROXY_TYPE else "high",
+        as_of=row.as_of,
+        citation=(
+            f"{row.source} {row.report}, {row.submarket} ({row.market}): "
+            f"${row.reported_rent:.2f} per square foot {unit}, {basis}, "
+            f"= ${row.rent_psf_year:.2f} per square foot per year NNN. {row.note} "
+            f"{row.url} Observed {row.property_type} asking rent for "
+            f"{row.geography_level} {row.geography_id}. Not scaled by residential ACS rent."
+        ),
+        components={
+            "base_rent_psf_year": row.rent_psf_year,
+            "broker": row.source,
+            "geography_level": row.geography_level,
+            "geography_id": row.geography_id,
+            "quarter": row.quarter,
+            "reported_basis": row.reported_basis,
+            "reported_rent": row.reported_rent,
+            "reported_unit": row.reported_unit,
+        },
     )
 
 

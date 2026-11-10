@@ -16,7 +16,7 @@ Every figure below is deterministic Python. The estimate, the scenario grid, the
 | Integration (`estimate`) | On main. Now reads each ZIP's local inputs |
 | M4 Scenarios + robustness | On main. High horizon is the 10-year lease |
 | M5 Map | On main as the pywebview + MapLibre desktop UI (#13) |
-| M6 Rent fallback + rates | Rent resolver is wired. Electricity, commercial property tax, and the fit-out index are local |
+| M6 Rent fallback + rates | Rent resolver is wired, with broker market rents for 29 CBSAs and 21 counties ahead of ACS. Electricity, commercial property tax, and the fit-out index are local |
 | M7 Desktop UI | On main (#13). Folium is not on the path |
 | M8 Polish | Not started |
 
@@ -71,6 +71,22 @@ Greenfield, MA 01301 is micropolitan CBSA 24640, so the wage is the national 49-
 The published standalone case uses 4,400 deliveries, which is the old nearest-center figure rounded. That reconstruction, at the old rent and the fallback wage, still matches the published +$9.7M / 66% / 1.7 years and incremental about −$2.8M. The live 94402 path does not. The higher OEWS wage, the Los Angeles property-tax slice inside NNN, and the San Francisco goods index move incremental NPV to about −$3.29M. Top drivers at 94402 are still labor, lease, and straight-line capex.
 
 The M4 low / base / high outcomes keep deliveries as a ratio of each ZIP's own volume, composed with the handover factor (the catchment is already at 1.10). The low case still uses the bad rent, wage, fee, 16.3% WACC, and 8-year horizon. The high horizon is 10 years, the lease.
+
+## Broker market rents (`2026.11.7-broker-rents`)
+
+Outside the Bay Area, rent used to fall back to ACS residential gross rent. `data/seed/rent_market.csv` now carries Cushman & Wakefield MarketBeat Q3 2026 asking rents for 29 CBSAs or metro divisions and 21 counties, ahead of the ACS rungs (`broker_county`, then Kidder `cbsa_raw`, then `broker_cbsa`). Rules are in `docs/DATA_SOURCES.md` §8. Only rent moves; wage, demand, electricity, tax, and fit-out are as before.
+
+| ZIP | Rent before → after ($/SF/month) | Rung after | $/delivery before → after | Standalone NPV before → after |
+|---|---|---|---|---|
+| 10001 | 3.361 ACS → 5.389 | `broker_county` 36061, Manhattan office overall $74.37 full-service gross ÷ 1.15 | $513 → $606 | +$20.57M → +$17.30M |
+| 94402 | 2.14 → 2.14 | `cbsa_raw` 41884, Kidder Mathews | $611 → $611 | +$11.07M → +$11.07M |
+| 78701 | 2.759 ACS → 1.258 | `broker_cbsa` 12420, Austin office service/flex $15.09 NNN | $921 → $698 | +$1.22M → +$3.64M |
+| 33139 | 1.822 ACS → 1.674 | `broker_cbsa` 33124, Miami-Dade office service $20.09 NNN | $867 → $843 | +$1.48M → +$1.71M |
+| 82401 | 0.721 ACS → 0.721 | `acs_gross_rent` (no CBSA, no broker row) | $46,485 → $46,485 | −$7.48M → −$7.48M |
+
+10001 still costs less per delivery than 94402 because its gravity catchment is 8,190 deliveries a year against 5,565. The Manhattan row is the county-wide office average; the Penn Station ($96.17) and Chelsea ($84.19) submarkets that hold 10001 are higher, but the resolver maps by county and CBSA, not by ZIP.
+
+Bay Area precompute sample on `2026.11.7-broker-rents`: 434 ok, 0 errors. Rent sources: 87 Kidder (`cbsa_raw` 41884), 122 East Bay (`broker_cbsa` 36084), 106 Silicon Valley (`broker_cbsa` 41940), 93 this ZCTA's ACS gross rent, 26 the county ACS median.
 
 ## Gravity gap on the old fixture (5,523 vs about 5,720)
 

@@ -14,7 +14,8 @@ from dce.storage.repository import get_zip_result_row
 
 
 def test_estimate_json_matches_across_runs_and_processes() -> None:
-    codes = ("94402", "78701")
+    # 94402 is the Kidder seed, 78701 a CBSA broker rent, 10001 a county broker rent.
+    codes = ("94402", "78701", "10001")
     first = {code: canonical_estimate_json(code) for code in codes}
     second = {code: canonical_estimate_json(code) for code in codes}
     assert first == second
@@ -25,7 +26,7 @@ def test_estimate_json_matches_across_runs_and_processes() -> None:
 
 
 def test_precompute_json_matches_inline_and_multiprocessing(tmp_path: Path) -> None:
-    codes = ("94402", "78701")
+    codes = ("94402", "78701", "10001")
     inline_a = tmp_path / "inline-a"
     inline_b = tmp_path / "inline-b"
     pooled = tmp_path / "pooled"

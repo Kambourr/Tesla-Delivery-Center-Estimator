@@ -48,9 +48,15 @@ def test_bundled_seed_keeps_94402_and_does_not_export_peninsula_rent(tmp_path: P
         assert local.rent.tier == "cbsa_raw"
         assert local.rent.rent_psf_year == pytest.approx(25.68)
         assert "Kidder" in local.rent.citation
+        assert counts.rent_market_rows == 50
         austin = resolve_rent("73301", conn)
+        worland = resolve_rent("82401", conn)
     finally:
         conn.close()
-    assert austin.property_type == "residential_proxy"
-    assert austin.tier == "acs_gross_rent"
-    assert austin.rent_psf_year != pytest.approx(25.68)
+    assert austin.tier == "broker_cbsa"
+    assert austin.property_type == "industrial_flex"
+    assert austin.rent_psf_year == pytest.approx(15.09)
+    assert "Cushman" in austin.citation
+    assert worland.property_type == "residential_proxy"
+    assert worland.tier == "acs_gross_rent"
+    assert worland.rent_psf_year != pytest.approx(25.68)

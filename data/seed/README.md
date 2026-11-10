@@ -33,6 +33,20 @@ Add files here only when a milestone curates them.
 - `coverage.json`: row counts from the build.
 - `rent_cbsa.csv` and `rent_model_coeffs.json`: the Kidder Mathews `41884`
   industrial headline and the shipped `acs_rent_v1` exponents.
+- `rent_market.csv`: broker market-report asking rents for 29 CBSAs or
+  metro divisions and 21 counties (NYC boroughs, Long Island, North and
+  Central New Jersey), all Cushman & Wakefield MarketBeat Q3 2026. Columns:
+  `geography_level` (`county` or `cbsa`), `geography_id`, `market`,
+  `submarket`, `property_type` (`industrial_flex`, `industrial_overall`, or
+  `office_showroom_proxy`), `rent_psf_year` (annual NNN), `reported_rent`,
+  `reported_unit` (`usd_psf_year` or `usd_psf_month`), `reported_basis`
+  (`nnn` or `full_service_gross`), `source`, `report`, `quarter`, `as_of`,
+  `url`, `note`. `rent_psf_year` = reported × 12 when monthly, ÷ 1.15 when
+  full-service gross; the reader rejects a row that does not match. The flex
+  column is used where the report publishes one for that geography,
+  otherwise the overall industrial rent. Manhattan uses the office overall
+  asking rent as a showroom proxy because the reports track no Manhattan
+  industrial stock. Rules and coverage: `docs/DATA_SOURCES.md` §8.
 - A HUD ZIP to CBSA crosswalk large enough for offline demo ZIPs, later a
   national extract if redistribution terms allow it. The live HUD fetch
   remains in `dce.data.ingest.hud_crosswalk` for a machine that has the token.
@@ -59,7 +73,7 @@ not download listing-site HTML into this folder.
 
 | Series | Where it comes from | How it is allowed in |
 |---|---|---|
-| Industrial asking rent | Public market reports from CBRE, Cushman & Wakefield, Colliers, and JLL | A person types the published headline $/SF and the report URL. No runtime scrape and no PDF dump |
+| Industrial asking rent | Public market reports from CBRE, Cushman & Wakefield, Colliers, JLL, Newmark, and Kidder Mathews (`rent_cbsa.csv`, `rent_market.csv`) | A person types the published headline $/SF, its unit and basis, and the report URL. No runtime scrape and no PDF dump |
 | ZIP to county, CBSA, and ZCTA | Census 2020 ZCTA-county relationship, July 2023 CBSA list 1, HRSA 2025 ZIP-to-ZCTA workbook | US government work. The HUD API remains available when `HUD_TOKEN` is set. It is not the shipped file |
 | ZIP adjustment | ACS income, density, and median home value (`B25077`) | US Census Bureau. Public domain |
 | Calibration check | GSA Lease Inventory (`Current Annual Rent` / rentable square feet) | GSA open file. Mostly office leases, so it calibrates; it is not industrial truth |

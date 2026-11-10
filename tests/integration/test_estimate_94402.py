@@ -133,8 +133,19 @@ def test_estimate_94402_matches_research_adjusted_for_gravity_volume(
     assert energy.fallback is False
     assert energy.value == pytest.approx(0.2875)
     assert tax.fallback is True
-    assert "Los Angeles" in tax.detail
+    assert tax.geography_level == "cbsa"
+    assert tax.geography_id == "41884"
+    assert tax.value == pytest.approx(0.01171)
+    assert "San Francisco" in tax.detail
+    assert "Los Angeles" not in tax.detail
     assert "not a studied county" in tax.detail
+    assert "Commercial class" in tax.detail
+    fitout_row = by_name["fitout_index"]
+    assert fitout_row.source == "dod_ufs_3_701_01_2026"
+    assert fitout_row.geography_level == "county"
+    assert fitout_row.geography_id == "06081"
+    assert fitout_row.fallback is False
+    assert fitout_row.value == pytest.approx(1.23)
     assert rent is not None and wage is not None
     opex = by_name["opex_load"].value
     fitout = by_name["fitout_index"].value

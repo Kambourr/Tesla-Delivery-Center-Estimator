@@ -88,16 +88,23 @@ OpenEI is a parser for a future tariff row. A tariff replaces the utility averag
 
 ### 7b. Commercial property tax
 
-`data/seed/property_tax_commercial.csv`. Lincoln Institute and Minnesota Center for Fiscal Excellence, 50-State Property Tax Comparison Study, taxes paid in 2024, published July 2025. The rate is the tax bill on a $1 million commercial building plus $200,000 of fixtures, as a fraction of that $1.2 million. The national row is the study's 53-city average, 1.755%. https://www.lincolninst.edu/publications/other/50-state-property-tax-comparison-study-2024/
+`data/seed/property_tax_commercial.csv`. Lincoln Institute and Minnesota Center for Fiscal Excellence, 50-State Property Tax Comparison Study, taxes paid in 2024, published July 2025. https://www.lincolninst.edu/publications/other/50-state-property-tax-comparison-study-2024/ (PDF: https://storage.pardot.com/153411/1752612066Gz0HJh4H/50_state_property_tax_comparison_for_2024.pdf, 112 pages, sha256 `b845fc72f646f332fa8312e7e54f3945cdf1daeb4f8a39e16561fd3d4a8ddecb`, retrieved 2026-11-09).
 
-The study PDF is not in git. The rates were transcribed from Appendix Tables 3a, 3b, and 3c. `lincolninst.edu` is not on the runtime allowlist.
+**Class.** Commercial, not homestead. Every row comes from Appendix Table 3a (largest city in each state), 3b (50 largest cities), or 3c (rural municipalities): the $1 million land-and-building parcel with $200,000 of fixtures. The homestead tables (2a–2h) are not used. New York City is 1.418% commercial (Table 3a and 3b, bill $17,014), against 1.249% homestead (Table 2a) and 0.477% homestead with assessment limits (Table 2b). The 1.418% is the commercial rate, not a homestead rate.
+
+**Rate on real property.** `effective_rate` is what the model applies. It is the tax on land and building per dollar of land and building, because the landlord's tax that NNN rent passes through is on the building. The study divides the whole bill by $1.2 million. Where fixtures are fully exempt (Table 4g: DE, HI, IL, IA, MA, MN, NH, NJ, NY, ND, OH, PA, SD; Montana, whose first $1 million of personal property is exempt; Vermont's rural Hartford), the bill is all on the $1 million of real property, so `effective_rate` is the $1 million bill / $1,000,000. New York City is $17,014, 1.7014%. Everywhere else the published rate is kept as the real-property rate. Where fixtures are taxed at a reduced rate, that is a small understatement. `commercial_rate` keeps the published figure, `commercial_tax_bill_1m` the bill.
+
+**Industrial.** `industrial_rate` is the study's industrial figure for the same place (Tables 4a, 4c, 4e: $1 million real property plus $1 million of machinery, inventory, and fixtures, divided by $2 million). It is in the provenance and is not applied. Its denominator is half personal property, and a delivery center's landlord pays on the building. New York City is 0.532% industrial.
+
+`scripts/build_local_cost_seeds.py --only property-tax --lincoln-text FILE` parses `pdftotext -layout` output of the PDF. It checks that each table has 53, 50, or 50 rows, that each industrial row matches the commercial row's city, that each fixture-exempt bill equals 1.2 × the published rate on $1 million, and that the 1.755% 53-city average and every previously transcribed rate still match. The PDF is not in git. `lincolninst.edu` is not on the runtime allowlist.
 
 Fallback, first hit wins:
 
 1. **County.** The ZIP's county is one of the studied cities or the studied rural municipality.
-2. **State rural.** The county is outside every metro and micro area (`cbsa` is empty) and is not itself a studied county. The rung is that state's rural place.
-3. **State urban.** Any other county. The rung is the largest city, except Illinois (Aurora, not Chicago) and New York (Buffalo, not New York City). Chicago and New York City are county rows.
-4. **National.** 1.755%.
+2. **CBSA.** The county is not studied but shares its CBSA or metropolitan division (then the parent CBSA) with a studied large city in the same state. Several matches are averaged. San Mateo County (division 41884) uses San Francisco, 1.171%. Before this change it used Los Angeles, 1.200%. Marin (division 42034) averages San Francisco and Oakland. New York City and Chicago never stand in for a neighbour, because the study treats their systems as unlike the rest of their states, so Westchester and Nassau use Buffalo. Rural municipalities never stand in for a metro. Bergen County, NJ uses Newark.
+3. **State rural.** The county is outside every metro and micro area (`cbsa` is empty) and is not itself a studied county. The rung is that state's rural place.
+4. **State urban.** Any other county. The rung is the largest city, except Illinois (Aurora, not Chicago) and New York (Buffalo, not New York City).
+5. **National.** The mean of the 53 Table 3a cities on the real-property basis, 1.862%. The published 53-city average, 1.755%, is `commercial_rate`.
 
 `property_tax.included_in_nnn` stays true. The local rate does not add a second tax line. It shifts `opex_load`:
 
@@ -107,11 +114,24 @@ Fallback, first hit wins:
 
 ### 9. Build / fit-out cost index
 
-RSMeans and ENR city cost indexes are proprietary and are not copied. Fit-out uses the BEA 2024 goods regional price parity divided by the U.S. goods parity (99.567), so a national ZIP stays at 1 and the $100 per square foot assumption stays the national baseline. `data/seed/bea_rpp_2024.csv`. Released 2026-02-19. https://www.bea.gov/data/prices-inflation/regional-price-parities-state-and-metro-area
+Fit-out uses a construction-cost location factor: the DoD MILCON area cost factor (ACF), UFS 3-701-01 *DoD Facilities Pricing Guide*, 6 June 2026, Table 4-1 CONUS. Data tables workbook https://legacy.wbdg.org/FFC/DOD/UFC/ufs_3_701_01_2026_Data_Tables.xlsx (sha256 `3bf160445a24eb53ff015301f6f3d8f7ade6710b8e1c9ed351ea8e203b8ff28a`), document https://legacy.wbdg.org/FFC/DOD/UFC/ufs_3_701_01_06_2026.pdf, index page https://www.wbdg.org/dod/ufc/ufc-3-701-01. Retrieved 2026-11-09. Source date of the tables 2025-10-01. Approved for public release, distribution unlimited (US government work).
 
-`bea.gov` is a curator host. It is not on the runtime allowlist.
+The Tri-Service ACF prices 8 labor crafts, 18 materials, and 4 equipment items (weights 63/35/2), adjusts for weather, seismic, climate, labor availability, overhead and profit, logistics, and productivity, and is normalized so the 96 DoD base cities (two per contiguous state) average 1.00. The fit-out assumption, $100 per square foot, is a national figure, so it is multiplied by the ACF directly.
 
-The all-items parity is stored and not applied. Housing rents dominate it, and rent is already its own input. The utilities parity is not applied either, because electricity is an EIA price. A metropolitan division uses the parent CBSA (the same map as OEWS: `41884` → `41860`, `35614` → `35620`, `33124` → `33100`). An empty CBSA uses the state. Equipment stays the national catalog price. Only fit-out is indexed.
+`data/seed/construction_cost_factor.csv`, built by `scripts/build_local_cost_seeds.py --only construction-cost --dod-xlsx FILE`. Columns `level, geography_id, state, name, acf, count, as_of, source, citation`. The workbook lists 15,549 DoD sites. A site's county comes from its state and county name, or from its ZIP when the name is missing or matches two counties. 14 sites matched neither and are skipped. A county row is the lower median of its sites (1,987 counties). A CBSA row (metropolitan division and parent CBSA) and a state row are the lower medians of their county rows, so one large installation does not set a whole state. CBSA rows are kept only where some county has no row of its own (192). The lower median keeps every stored value a published DoD value.
+
+| Place | DoD ACF | BEA goods index (old) |
+|---|---|---|
+| Manhattan (New York County) | 1.32 | 1.107 |
+| San Francisco County | 1.32 | 1.089 |
+| San Mateo County (94402) | 1.23 | 1.089 |
+| Miami-Dade County | 0.87 | 1.040 |
+| Travis County (Austin) | 0.82 | 0.942 |
+| Washakie County, WY (Worland) | 1.05 | 0.958 |
+
+Fallback, first hit wins: county, then CBSA (`GeoContext.cbsa`, then the parent CBSA of a division), then state, then the BEA 2024 goods regional price parity over the U.S. goods parity (metro, then state; `data/seed/bea_rpp_2024.csv`, released 2026-02-19, https://www.bea.gov/data/prices-inflation/regional-price-parities-state-and-metro-area), then 1.00. The DoD table covers every state and DC, so BEA is reached only for places such as Puerto Rico, and BEA has no Puerto Rico row either, so those ZIPs stay at 1.00. The BEA index is still resolved and quoted in the `fitout_index` provenance detail.
+
+The DoD states that the MILCON ACF is for construction cost only and should not adjust detailed commercial unit-price estimates. Here it scales one national $/SF fit-out allowance, which is a programming-level use. Equipment stays the national catalog price. Only fit-out is indexed. RSMeans and ENR city cost indexes are proprietary and are not copied. RLB, Cumming, and Turner publish a few dozen cities each, not counties, so they are not the seed. `wbdg.org` is a curator host, not a runtime host.
 
 ### 9b. What stays national
 
@@ -124,14 +144,14 @@ These inputs are still one number for every ZIP. A public regional series was no
 | Other opex | 8% of lease + labor | The base is already local once rent and wages are local. Scaling it again by a price parity would count the same difference twice. |
 | State income tax and depreciation | California 8.84%, California nonconformity | The DCF is Tesla's consolidated return, not a site-level return. |
 | Overtime multiplier | 1.5 | FLSA, not a California-only rule. |
-| Equipment capex | assumptions catalog | No public equipment price index. Fit-out carries the regional index. |
+| Equipment capex | assumptions catalog | No public equipment price index. Fit-out carries the DoD construction area cost factor. |
 | Building size, kWh per square foot, peak kW, staffing, WACC | assumptions file | Operating assumptions, not a Bay Area price. |
 | Insurance and CAM | inside the 15% NNN load | The tax slice of that load moves with section 7b. No separate public insurance index. |
 | Delivery volume outside California | Cox/KBB residual, by ZIP | `estimate` allocates the national Tesla total minus California. It does not hold every ZIP at 4,500. |
 | Wage | OEWS SOC 49-3023 | The metro mean when the parent CBSA publishes it, otherwise the national row. The delivery-role mix is not substituted for that series. |
 | Rent | `resolve_rent` ladder | An observed industrial seed is used as published. The ACS factor is not applied on top of it. 94402 stays the Kidder Mathews $2.14. |
 
-`MODEL_VERSION` is `2026.11.5-local-costs` (`dce.precompute.version`). A precomputed row is stale when its stored model version or inputs hash differs. The hash covers the electricity, property-tax, and price-index seeds. `assumptions_version` stays `2026.11.2`. The golden cost fixtures do not move, because `build_cost_inputs` keeps the assumptions values when the new arguments are omitted.
+`MODEL_VERSION` is `2026.11.8-broker-rents-commercial-tax-acf` (`dce.precompute.version`). A precomputed row is stale when its stored model version or inputs hash differs. The hash covers the broker rent, electricity, property-tax, construction-cost, and price-index seeds. This version combines broker rents (§8) with the commercial-class tax on real property (§7b) and the DoD construction cost factor (§9); rows stored on `2026.11.7-broker-rents` or earlier are stale. `assumptions_version` stays `2026.11.2`. The golden cost fixtures do not move, because `build_cost_inputs` keeps the assumptions values when the new arguments are omitted.
 
 ### 8. Automatic commercial rent (ZERO manual input)
 
@@ -186,7 +206,7 @@ Market Report Q3 2026
 That rate is used as published for every ZIP in `41884`, including
 `94402`, and it keeps precedence over any CBSA broker row.
 
-`rent_market.csv` (model `2026.11.7-broker-rents`) adds 50 broker rows:
+`rent_market.csv` (added in model `2026.11.7-broker-rents`, current model `2026.11.8-broker-rents-commercial-tax-acf`) adds 50 broker rows:
 29 CBSAs or metro divisions and 21 counties, all Cushman & Wakefield
 MarketBeat Q3 2026 (as_of 2026-09-30). Each row has `source`, `report`,
 `quarter`, `url`, the figure as printed (`reported_rent`, `reported_unit`,
@@ -308,7 +328,7 @@ Downstream code may filter on `confidence` (for example, keep `high` and `medium
 
 Accessed **2026-11-09**. Counts are `data/seed/coverage.json`. The Python API is `docs/contracts/zip_data.md`. Rebuild with `make zip-inputs` and `make zcta-boundaries`. Those targets are not part of `make check`. Tests use fixtures and the committed extracts. They do not download.
 
-The runtime allowlist is unchanged: `census.gov`, `bls.gov`, `huduser.gov`, `eia.gov`, `openei.org`, `energy.ca.gov`, `data.ca.gov`, `pge.com`. `data.hrsa.gov`, `bea.gov`, and `lincolninst.edu` are curator hosts only. They are not added to `dce.data.ingest.http`. `estimate` reads the committed CSVs.
+The runtime allowlist is unchanged: `census.gov`, `bls.gov`, `huduser.gov`, `eia.gov`, `openei.org`, `energy.ca.gov`, `data.ca.gov`, `pge.com`. `data.hrsa.gov`, `bea.gov`, `lincolninst.edu`, and `wbdg.org` are curator hosts only. They are not added to `dce.data.ingest.http`. `estimate` reads the committed CSVs.
 
 | Input | File in `data/seed/` | Source | URL | Licence |
 |---|---|---|---|---|
@@ -319,8 +339,9 @@ The runtime allowlist is unchanged: `census.gov`, `bls.gov`, `huduser.gov`, `eia
 | Metro wages | `oews_metro_2025.csv` (403 rows) | BLS OEWS via `https://api.bls.gov/publicAPI/v2/timeseries/data/` (v1 when `BLS_API_KEY` is unset). May 2025. SOC `49-3023` mean and median for 392 of 393 metropolitan parent CBSAs. Guayama, PR (`25020`) returned no annual series. Delivery SOCs for the nation (`00000`) and for `41860`. The `www.bls.gov` bulk zip answered HTTP 403 from this environment, so the seed is the API extract. `parse_oews_bulk_csv` can read a curator CSV later | https://www.bls.gov/oes/tables.htm | Public domain. `as_of` `2025-05-01`. All 37 divisions map to the parent CBSA before the lookup |
 | Industrial rent | `rent_cbsa.csv`, `rent_model_coeffs.json` | One cited Kidder Mathews headline. Coefficients are the shipped `acs_rent_v1` defaults, not a GSA fit | https://kidder.com/market-reports/peninsula-industrial-market-report/ | Headline figure and citation only. No PDF in git |
 | Commercial electricity | `electricity_commercial.csv`, `county_utility.csv` | EIA-861 2024 utility averages, EIA Table 5.6.A August 2026 state and US prices, PG&E B-10 for utility 14328 | https://www.eia.gov/electricity/data/eia861/ and https://www.eia.gov/electricity/monthly/xls/table_5_06_a.xlsx | US government work, plus the published PG&E schedule. `as_of` 2024-12-31 (861), 2026-08-31 (EPM), 2026-03-01 (B-10) |
-| Commercial property tax | `property_tax_commercial.csv` | Lincoln Institute / MCFE 50-State study, taxes paid in 2024, $1 million building + $200,000 fixtures | https://www.lincolninst.edu/publications/other/50-state-property-tax-comparison-study-2024/ | Transcribed rates and a citation. The PDF is not in git. `as_of` 2024-12-31 |
-| Goods price parity | `bea_rpp_2024.csv` | BEA Regional Price Parities, 2024, goods and all-items. Fit-out uses goods / U.S. goods | https://www.bea.gov/data/prices-inflation/regional-price-parities-state-and-metro-area | US government work. `as_of` 2024-12-31. Released 2026-02-19 |
+| Commercial property tax | `property_tax_commercial.csv` | Lincoln Institute / MCFE 50-State study, taxes paid in 2024, commercial class (Tables 3a–3c, $1 million building + $200,000 fixtures) on real property; industrial (Tables 4a, 4c, 4e) for reference | https://www.lincolninst.edu/publications/other/50-state-property-tax-comparison-study-2024/ | Rates parsed from the PDF text, with a citation. The PDF is not in git. `as_of` 2024-12-31 |
+| Construction cost factor | `construction_cost_factor.csv` | DoD UFS 3-701-01 (6 June 2026) Table 4-1 CONUS MILCON area cost factor, by county, CBSA, and state. Fit-out index | https://legacy.wbdg.org/FFC/DOD/UFC/ufs_3_701_01_2026_Data_Tables.xlsx | US government work, approved for public release. `as_of` 2025-10-01 |
+| Goods price parity | `bea_rpp_2024.csv` | BEA Regional Price Parities, 2024, goods and all-items. Fit-out fallback only (goods / U.S. goods) | https://www.bea.gov/data/prices-inflation/regional-price-parities-state-and-metro-area | US government work. `as_of` 2024-12-31. Released 2026-02-19 |
 | California ZEV sales | `zev_zip_sales.csv`, `zev_county_sales.csv` | CEC New ZEV Sales workbook, newest year in the file (2026): 7,953 ZIP rows, 4,082 county rows | https://www.energy.ca.gov/files/zev-and-infrastructure-stats-data (file used: https://www.energy.ca.gov/filebrowser/download/10036?fid=10036) | California Energy Commission open data. Outside California, `ev_proxy` is `acs_national_fallback`. No invented state Tesla total |
 | HUD ZIP API | not the shipped crosswalk | `https://www.huduser.gov/hudapi/public/usps` type 2 and type 3. The docs page returned an HTTP 202 WAF challenge on this date, so the parser follows the published `data.results[].geoid` / `tot_ratio` / `state` shape and was not verified live | https://www.huduser.gov/portal/datasets/usps_crosswalk.html | US government work. Needs `HUD_TOKEN`. Missing token raises before any socket |
 

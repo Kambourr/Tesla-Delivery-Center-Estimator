@@ -14,8 +14,8 @@ from dce.storage.repository import get_zip_result_row
 
 
 def test_estimate_json_matches_across_runs_and_processes() -> None:
-    # 94402 is the Kidder seed, 78701 a CBSA broker rent, 10001 a county broker rent.
-    codes = ("94402", "78701", "10001")
+    # 94402 Kidder seed, 78701 CBSA broker rent, 10001 county broker rent, 82401 no broker row.
+    codes = ("94402", "78701", "10001", "82401")
     first = {code: canonical_estimate_json(code) for code in codes}
     second = {code: canonical_estimate_json(code) for code in codes}
     assert first == second
@@ -68,3 +68,31 @@ def _payloads(directory: Path, codes: tuple[str, ...]) -> dict[str, str]:
         return found
     finally:
         conn.close()
+
+
+def test_local_cost_ladders_are_stable_across_processes() -> None:
+    codes = ("10001", "94402", "78701", "33139", "82401", "10601", "07601")
+    first = [_local_cost_key(code) for code in codes]
+    assert first == [_local_cost_key(code) for code in codes]
+    context = multiprocessing.get_context("spawn")
+    with context.Pool(2) as pool:
+        remote = pool.map(_local_cost_key, list(codes))
+    assert remote == first
+
+
+def _local_cost_key(code: str) -> tuple[str, str, float, str, str, float]:
+    from dce.data.construction_cost import resolve_construction_cost
+    from dce.data.property_tax import resolve_property_tax
+    from dce.geo.resolve import resolve_zip
+
+    geo = resolve_zip(code)
+    tax = resolve_property_tax(geo)
+    cost = resolve_construction_cost(geo)
+    return (
+        tax.tier,
+        tax.place,
+        tax.effective_rate,
+        cost.tier,
+        cost.geography_id,
+        cost.fitout_index,
+    )

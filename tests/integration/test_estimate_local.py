@@ -86,3 +86,51 @@ def test_zip_without_its_own_rent_uses_a_marked_fallback() -> None:
     assert rent.value is not None and rent.value > 0
     assert str(rent.source).startswith("acs_gross_rent")
     assert result.cost_per_delivery > 0
+
+
+def test_manhattan_10001_uses_commercial_tax_and_the_dod_construction_factor() -> None:
+    """Golden for 10001 on 2026.11.8-broker-rents-commercial-tax-acf.
+
+    Rent is the Manhattan broker row (county 36061), not the ACS fallback.
+    """
+    result = estimate("10001")
+    inputs = {row.name: row for row in result.provenance}
+    tax = inputs["property_tax_rate"]
+    assert tax.value == pytest.approx(0.017014)
+    assert tax.source == "lincoln_mcfe_2024"
+    assert tax.geography_level == "county"
+    assert tax.geography_id == "36061"
+    assert tax.fallback is False
+    assert "Commercial class" in tax.detail
+    assert "not the homestead rate" in tax.detail
+    fitout = inputs["fitout_index"]
+    assert fitout.value == pytest.approx(1.32)
+    assert fitout.source == "dod_ufs_3_701_01_2026"
+    assert fitout.geography_id == "36061"
+    assert fitout.fallback is False
+    assert inputs["opex_load"].value == pytest.approx(0.17324895, abs=1e-7)
+    assert result.estimated_annual_deliveries == pytest.approx(8190.4, abs=0.5)
+    assert result.cost_per_delivery == pytest.approx(615.71, abs=0.01)
+    assert [driver.name for driver in result.drivers] == ["labor", "lease", "capex"]
+    assert result.components["capex"] == pytest.approx(474_000.0, abs=1.0)
+    assert result.dcf is not None
+    assert result.dcf.standalone.npv == pytest.approx(16.73e6, abs=0.01e6)
+    # Year-0 capex is fit-out x 1.32 plus equipment.
+    assert result.dcf.standalone.years[0].capex == pytest.approx(
+        100.0 * 1.32 * 25_000.0 * 1.20 + 780_000.0, abs=1
+    )
+
+
+def test_golden_cost_per_delivery_for_the_five_report_zips() -> None:
+    expected = {
+        "10001": (615.71, 16.73e6),
+        "94402": (618.51, 10.75e6),
+        "78701": (683.46, 3.92e6),
+        "33139": (820.62, 2.10e6),
+        "82401": (47359.39, -7.69e6),
+    }
+    for zip_code, (cost, npv) in expected.items():
+        result = estimate(zip_code)
+        assert result.cost_per_delivery == pytest.approx(cost, abs=0.01), zip_code
+        assert result.dcf is not None
+        assert result.dcf.standalone.npv == pytest.approx(npv, abs=0.01e6), zip_code

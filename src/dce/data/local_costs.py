@@ -1,5 +1,9 @@
 """Local electricity, property tax, and fit-out index for one ZIP.
 
+The fit-out index is the DoD construction area cost factor
+(:mod:`dce.data.construction_cost`). The BEA goods price parity is only its
+fallback.
+
 Rent and wages stay on ``load_zip_local``. This module does not open
 SQLite and does not use the network. ``estimate`` reads the bundled CSVs.
 """
@@ -8,8 +12,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from dce.data.construction_cost import ConstructionCostResolution, resolve_construction_cost
 from dce.data.electricity import ElectricityResolution, resolve_electricity
-from dce.data.price_index import PriceIndexResolution, resolve_price_index
 from dce.data.property_tax import PropertyTaxResolution, resolve_property_tax
 from dce.model.assumptions import ModelAssumptions
 from dce.model.costs import nnn_opex_load
@@ -26,7 +30,7 @@ class LocalPrices:
 
     electricity: ElectricityResolution
     property_tax: PropertyTaxResolution
-    price_index: PriceIndexResolution
+    construction: ConstructionCostResolution
     opex_load: float
     fitout_index: float
     status_quo_rent_psf_month: float
@@ -38,7 +42,7 @@ def resolve_local_prices(
     """Return electricity, the NNN load, the fit-out index, and status-quo rent."""
     electricity = resolve_electricity(geo)
     tax = resolve_property_tax(geo)
-    index = resolve_price_index(geo)
+    construction = resolve_construction_cost(geo)
     if assumptions.property_tax.included_in_nnn:
         load = nnn_opex_load(
             assumptions.facility.opex_load,
@@ -52,9 +56,9 @@ def resolve_local_prices(
     return LocalPrices(
         electricity=electricity,
         property_tax=tax,
-        price_index=index,
+        construction=construction,
         opex_load=load,
-        fitout_index=index.fitout_index,
+        fitout_index=construction.fitout_index,
         status_quo_rent_psf_month=_status_quo(assumptions, rent_psf_month),
     )
 

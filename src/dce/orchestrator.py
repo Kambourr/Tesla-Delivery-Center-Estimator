@@ -720,12 +720,16 @@ def _tax_row(local: ZipLocalData, tax: PropertyTaxResolution) -> InputProvenance
             f"Fixtures are taxed here, so the published {tax.commercial_rate * 100.0:.3f}% is "
             "used as the rate on real property."
         )
+    tables = tax.source_table.split(";")
+    commercial_tables = ", ".join(t for t in tables if t.startswith("3")) or "3a"
+    industrial_tables = ", ".join(t for t in tables if t.startswith("4"))
     industrial = (
         ""
         if tax.industrial_rate is None
         else (
-            f" Industrial rate for comparison {tax.industrial_rate * 100.0:.3f}% (manufacturing "
-            "parcel, half machinery and inventory); not applied."
+            f" Industrial rate for comparison {tax.industrial_rate * 100.0:.3f}% (Appendix "
+            f"Table {industrial_tables or '4a'}, manufacturing parcel, half machinery and "
+            "inventory); not applied."
         )
     )
     return _number_row(
@@ -737,7 +741,7 @@ def _tax_row(local: ZipLocalData, tax: PropertyTaxResolution) -> InputProvenance
         geo_id,
         fallback,
         (
-            f"{tax.citation} Commercial class, Appendix Tables {tax.source_table.replace(';', ', ')}, "
+            f"{tax.citation} Commercial class, Appendix Table {commercial_tables}, "
             f"$1 million land and building plus $200,000 of fixtures; not the homestead rate. "
             f"Place {tax.place}, {percent:.3f}%. {basis} {why}{industrial}"
         ),

@@ -89,7 +89,7 @@ def test_zip_without_its_own_rent_uses_a_marked_fallback() -> None:
 
 
 def test_manhattan_10001_uses_commercial_tax_and_the_dod_construction_factor() -> None:
-    """Golden for 10001 on 2026.11.6-commercial-tax-acf.
+    """Golden for 10001 on 2026.11.8-broker-rents-commercial-tax-acf.
 
     Rent is still the ACS gross-rent fallback (another change owns rent).
     """

@@ -88,7 +88,7 @@ Outside the Bay Area, rent used to fall back to ACS residential gross rent. `dat
 
 Bay Area precompute sample on `2026.11.7-broker-rents`: 434 ok, 0 errors. Rent sources: 87 Kidder (`cbsa_raw` 41884), 122 East Bay (`broker_cbsa` 36084), 106 Silicon Valley (`broker_cbsa` 41940), 93 this ZCTA's ACS gross rent, 26 the county ACS median.
 
-## Commercial tax class and construction cost factor (`2026.11.6-commercial-tax-acf`)
+## Commercial tax class and construction cost factor (`2026.11.8-broker-rents-commercial-tax-acf`)
 
 Property tax was already the Lincoln commercial class. New York City's 1.418% is Table 3a commercial, not homestead (1.249%). The rate is now taken on land and building, which raises it where fixtures are exempt: New York City 1.701%. San Mateo borrows San Francisco (same metro division, 1.171%) instead of Los Angeles (1.200%). Fit-out uses the DoD MILCON area cost factor, with BEA goods only as a fallback.
 

@@ -151,7 +151,7 @@ These inputs are still one number for every ZIP. A public regional series was no
 | Wage | OEWS SOC 49-3023 | The metro mean when the parent CBSA publishes it, otherwise the national row. The delivery-role mix is not substituted for that series. |
 | Rent | `resolve_rent` ladder | An observed industrial seed is used as published. The ACS factor is not applied on top of it. 94402 stays the Kidder Mathews $2.14. |
 
-`MODEL_VERSION` is `2026.11.6-commercial-tax-acf` (`dce.precompute.version`). A precomputed row is stale when its stored model version or inputs hash differs. The hash covers the electricity, property-tax, construction-cost, and price-index seeds. `assumptions_version` stays `2026.11.2`. The golden cost fixtures do not move, because `build_cost_inputs` keeps the assumptions values when the new arguments are omitted.
+`MODEL_VERSION` is `2026.11.8-broker-rents-commercial-tax-acf` (`dce.precompute.version`). A precomputed row is stale when its stored model version or inputs hash differs. The hash covers the electricity, property-tax, construction-cost, and price-index seeds. `assumptions_version` stays `2026.11.2`. The golden cost fixtures do not move, because `build_cost_inputs` keeps the assumptions values when the new arguments are omitted.
 
 ### 8. Automatic commercial rent (ZERO manual input)
 

@@ -22,12 +22,13 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
+from dce.app.results import COMPUTED_AT
 from dce.config import DB_FILENAME, user_data_dir
 from dce.data.national_demand import ZipPlace
-from dce.orchestrator import warm_bundle
+from dce.orchestrator import close_bundle, warm_bundle
 from dce.precompute.payload import BAY_AREA_COUNTIES, canonical_json, payload_for_zip
 from dce.precompute.version import MODEL_VERSION, inputs_hash
-from dce.storage.connection import get_connection, open_readonly
+from dce.storage.connection import finish_results_database, get_connection, open_readonly
 from dce.storage.repository import (
     ZipResultRecord,
     count_zip_results,
@@ -95,6 +96,8 @@ def precompute(
     rate = computed / elapsed if elapsed > 0.0 and computed else 0.0
     resolvable = len(bundle.demand.places)
     projected = resolvable / rate if rate > 0.0 else None
+    close_bundle(directory)
+    finish_results_database(conn)
     conn.close()
     return PrecomputeReport(
         requested=len(selected),
@@ -121,7 +124,7 @@ def get_zip_result(zip_code: str, *, data_dir: Path | None = None) -> dict[str, 
         conn.close()
     if row is None:
         return None
-    return _with_current(row.payload_json, row.model_version, row.inputs_hash)
+    return _with_current(row)
 
 
 def get_zip_results(
@@ -133,10 +136,7 @@ def get_zip_results(
         rows = get_zip_result_rows(conn, [code.strip() for code in zip_codes])
     finally:
         conn.close()
-    found = {
-        row.zip_code: _with_current(row.payload_json, row.model_version, row.inputs_hash)
-        for row in rows
-    }
+    found = {row.zip_code: _with_current(row) for row in rows}
     return {code.strip(): found[code.strip()] for code in zip_codes if code.strip() in found}
 
 
@@ -282,7 +282,7 @@ def _record_from_payload(code: str, payload: str, elapsed_ms: float) -> ZipResul
         status=status if status in {"ok", "error"} else "error",
         reason=None if reason is None else str(reason),
         payload_json=payload if isinstance(payload, str) else json.dumps(parsed),
-        computed_at=str(parsed.get("computed_at", "")),
+        computed_at=str(parsed.get("computed_at") or COMPUTED_AT),
         elapsed_ms=elapsed_ms,
     )
 
@@ -318,12 +318,16 @@ def _workers(requested: int | None, pending: int) -> int:
     return max(1, min(count, pending))
 
 
-def _with_current(payload: str, model_version: str, digest: str) -> dict[str, object]:
-    parsed = json.loads(payload)
+def _with_current(row: ZipResultRecord) -> dict[str, object]:
+    parsed = json.loads(row.payload_json)
     if not isinstance(parsed, dict):
         return {"status": "error", "reason": "Stored payload was not an object."}
     body = {str(key): value for key, value in parsed.items()}
-    body["current"] = model_version == MODEL_VERSION and digest == inputs_hash()
+    # These three live in columns so the JSON does not repeat them.
+    body["model_version"] = row.model_version
+    body["inputs_hash"] = row.inputs_hash
+    body["computed_at"] = row.computed_at
+    body["current"] = row.model_version == MODEL_VERSION and row.inputs_hash == inputs_hash()
     return body
 
 

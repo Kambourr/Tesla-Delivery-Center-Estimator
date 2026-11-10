@@ -29,6 +29,27 @@ def test_app_bundle_runs_the_full_precompute() -> None:
     assert "--app-bundle" in makefile
 
 
+def test_build_script_uses_the_venv_and_signs_the_bundle() -> None:
+    script = (ROOT / "scripts" / "build_macos.sh").read_text(encoding="utf-8")
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    assert ".venv/bin/python" in script
+    assert "chflags nohidden" in script
+    assert "PYTHONPATH" in script
+    assert "ditto --norsrc --noextattr --noacl" in script
+    assert "mktemp -d" in script
+    assert "codesign --force --deep -s -" in script
+    assert "codesign --verify --deep --strict" in script
+    assert "com.apple.file-provider-domain-id" in script
+    assert "Applications/DeliveryCenterEstimator.app" in script
+    assert 'BIN="${INSTALLED}/Contents/MacOS/DeliveryCenterEstimator"' in script
+    assert "tippecanoe is required" in script
+    assert "brew install tippecanoe" in script
+    assert "brew install tippecanoe" in readme
+    assert "com.apple.file-provider-domain-id" in readme
+    assert "~/Applications/DeliveryCenterEstimator.app" in readme
+    assert "File Provider" in readme
+
+
 def test_build_script_refuses_to_start_off_apple_silicon() -> None:
     if platform.system() == "Darwin" and platform.machine() == "arm64":
         pytest.skip("This machine would start a real build.")

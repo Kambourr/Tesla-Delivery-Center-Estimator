@@ -23,6 +23,8 @@ This is the offline app. It does not pass `--sample` or `--limit`.
 3. `dce precompute --data-dir data/results` for every resolvable US ZIP.
    The job is resumable. A second run leaves fresh rows in place.
 4. Checkpoint the SQLite file so the bundle is one database, not a WAL pair.
+   The precompute has already vacuumed it with 512-byte pages. A nationwide
+   file is about 249 MB (41,034 `ok` rows), and the `.app` is about 330 MB.
 5. PyInstaller (`packaging/dce_macos.spec`) writes
    `dist/DeliveryCenterEstimator.app`.
 
@@ -39,9 +41,21 @@ make app-bundle
 ```
 
 The script installs the `packaging` extra again so a clean shell still has
-PyInstaller. Gatekeeper: right-click `dist/DeliveryCenterEstimator.app` and
-choose Open the first time. The app is not notarized and this repo does not
-create a release.
+PyInstaller. When `PYTHON` is unset it uses `.venv/bin/python` if that file
+is executable, and otherwise `python3`. It clears the macOS hidden flag on
+the venv's `.pth` files and puts `src` on `PYTHONPATH`, because Python 3.14
+skips a hidden `.pth` and then cannot import the editable install. After
+PyInstaller it copies the bundle with `ditto --norsrc --noextattr --noacl`
+into a `mktemp` directory under `$TMPDIR`, signs that copy ad hoc
+(`codesign --force --deep -s -`), and checks it with
+`codesign --verify --deep --strict`. The signed bundle is copied to `dist/`
+and to `~/Applications/DeliveryCenterEstimator.app`. A checkout on iCloud
+Desktop is a File Provider path: macOS puts
+`com.apple.file-provider-domain-id` and `com.apple.fileprovider.detached`
+back on `dist/`, so strict verify is not run there. The `~/Applications`
+copy is outside iCloud, strict verify is run there, and `--smoke` runs that
+copy. Gatekeeper: right-click the app and choose Open the first time. The
+app is not notarized and this repo does not create a release.
 
 ## What is inside the app
 

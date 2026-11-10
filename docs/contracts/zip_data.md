@@ -224,7 +224,7 @@ one property `zcta` (the ZCTA code, which is the ZIP to pass to
 `load_zip_local`). Every polygon is kept (`--no-feature-limit`). Coordinates
 are EPSG:4326. The source is the 2020 cartographic ZCTA file at 1:500,000,
 Douglas-Peucker simplified by 0.001 degrees (about 111 meters) with topology
-preserved. The same sizes are in `data/geo/boundary_build.json`.
+preserved. `data/geo/boundary_build.json` is the committed record of those sizes. `scripts/build_zcta_boundaries.py` does not rewrite it unless `--record` is passed.
 
 `data/geo/zcta_bay_area.geojson` is the committed fixture (452,598 bytes,
 300 ZCTAs): the ZCTAs whose dominant county is one of Alameda, Contra Costa,

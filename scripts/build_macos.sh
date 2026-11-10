@@ -29,8 +29,32 @@ if [[ "$(uname -m)" != "arm64" ]]; then
   exit 1
 fi
 
-PYTHON="${PYTHON:-python3}"
+if [[ "${APP_BUNDLE}" == "1" ]] && ! command -v tippecanoe >/dev/null 2>&1; then
+  echo "tippecanoe is required to build nationwide ZIP tiles. Install it with: brew install tippecanoe" >&2
+  exit 1
+fi
+
+if [[ -z "${PYTHON:-}" ]]; then
+  if [[ -x .venv/bin/python ]]; then
+    PYTHON=".venv/bin/python"
+  else
+    PYTHON="python3"
+  fi
+fi
 "${PYTHON}" -m pip install -e ".[packaging]"
+
+# Python 3.14 skips .pth files marked UF_HIDDEN. An editable install on a
+# Desktop checkout can come up that way, and then `python -m dce` cannot
+# import the package. Clear the flag, and put src on PYTHONPATH as well.
+SITE="$("${PYTHON}" -c 'import sysconfig; print(sysconfig.get_path("purelib"))')"
+if [[ -d "${SITE}" ]]; then
+  shopt -s nullglob
+  for pth in "${SITE}"/*.pth; do
+    chflags nohidden "${pth}"
+  done
+  shopt -u nullglob
+fi
+export PYTHONPATH="${PWD}/src${PYTHONPATH:+:${PYTHONPATH}}"
 RESULTS_DIR="data/results"
 RESULTS_DB="${RESULTS_DIR}/dce.sqlite"
 
@@ -83,21 +107,78 @@ PY
   export DCE_PRECOMPUTE_FINISHED="${PRECOMPUTE_FINISHED}"
 fi
 
+set +e
 "${PYTHON}" -m PyInstaller --noconfirm --clean \
   --workpath build/pyinstaller \
   --distpath dist \
   packaging/dce_macos.spec
+pyinstaller_status=$?
+set -e
 
 APP="dist/DeliveryCenterEstimator.app"
+INSTALLED="${HOME}/Applications/DeliveryCenterEstimator.app"
+# iCloud Desktop is a File Provider domain. It puts
+# com.apple.file-provider-domain-id and com.apple.fileprovider.detached back
+# onto the bundle immediately, so codesign --verify --deep --strict fails
+# there with "resource fork, Finder information, or similar detritus not
+# allowed". Sign a copy under $TMPDIR, where that verify passes, then copy
+# the signed bundle out.
+signed_ok=0
+has_file_provider_xattr() {
+  local path="$1"
+  local attr
+  for attr in com.apple.file-provider-domain-id com.apple.fileprovider.detached; do
+    if xattr -p "${attr}" "${path}" >/dev/null 2>&1; then
+      return 0
+    fi
+  done
+  return 1
+}
+repo_on_file_provider() {
+  local path="${PWD}"
+  while [[ -n "${path}" && "${path}" != "/" ]]; do
+    if has_file_provider_xattr "${path}"; then
+      return 0
+    fi
+    path="$(dirname "${path}")"
+  done
+  return 1
+}
+if [[ -d "${APP}" ]]; then
+  sign_root="$(mktemp -d "${TMPDIR:-/tmp}/dce-sign.XXXXXX")"
+  signed_tmp="${sign_root}/DeliveryCenterEstimator.app"
+  ditto --norsrc --noextattr --noacl "${APP}" "${signed_tmp}"
+  codesign --force --deep -s - "${signed_tmp}"
+  codesign --verify --deep --strict "${signed_tmp}"
+  signed_ok=1
+  rm -rf "${APP}"
+  ditto "${signed_tmp}" "${APP}"
+  mkdir -p "${HOME}/Applications"
+  rm -rf "${INSTALLED}"
+  ditto "${signed_tmp}" "${INSTALLED}"
+  codesign --verify --deep --strict "${INSTALLED}"
+  rm -rf "${sign_root}"
+  if repo_on_file_provider || has_file_provider_xattr "${APP}" \
+    || has_file_provider_xattr "${APP}/Contents/MacOS/DeliveryCenterEstimator"; then
+    echo "Checked out on a File Provider path. Strict codesign verify passed under \$TMPDIR and at ${INSTALLED}. Not verifying ${APP}."
+  else
+    codesign --verify --deep --strict "${APP}"
+  fi
+fi
+if [[ "${pyinstaller_status}" -ne 0 && "${signed_ok}" -ne 1 ]]; then
+  echo "PyInstaller exited ${pyinstaller_status}." >&2
+  exit "${pyinstaller_status}"
+fi
 echo "Built ${APP}"
+echo "Installed ${INSTALLED}"
 echo "Gatekeeper: right-click the app and choose Open the first time."
 
 if [[ "${APP_BUNDLE}" == "1" ]]; then
   mkdir -p dist
   SMOKE_JSON="dist/smoke.json"
-  BIN="${APP}/Contents/MacOS/DeliveryCenterEstimator"
+  BIN="${INSTALLED}/Contents/MacOS/DeliveryCenterEstimator"
   DCE_SMOKE_OUT="${PWD}/${SMOKE_JSON}" "${BIN}" --smoke
-  DCE_APP_PATH="${APP}" \
+  DCE_APP_PATH="${INSTALLED}" \
     DCE_RESULTS_DB="${RESULTS_DB}" \
     DCE_SMOKE_JSON="${SMOKE_JSON}" \
     "${PYTHON}" - <<'PY'

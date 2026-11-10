@@ -42,7 +42,8 @@ again.
 `zcta_acs_2024.csv`, `zcta_centroid_2024.csv`, `zip_crosswalk.csv`,
 `oews_metro_2025.csv`, `rent_cbsa.csv`, `rent_market.csv`, `rent_model_coeffs.json`,
 `electricity_commercial.csv`, `county_utility.csv`,
-`property_tax_commercial.csv`, `bea_rpp_2024.csv`.
+`property_tax_commercial.csv`, `bea_rpp_2024.csv`,
+`construction_cost_factor.csv`.
 
 ## Read API
 
@@ -91,6 +92,14 @@ number before scenario shocks, or `null` when the field is missing.
 `mean_commute`, `zip_origin_deliveries`, `handover_factor`,
 `demand_annualization`, `catchment_deliveries`.
 
+`property_tax_rate` has source `lincoln_mcfe_2024`: the commercial-class
+rate on real property, at `county`, `cbsa` (a studied city in the same
+metro and state), `state`, or `national`. `fitout_index` has source
+`dod_ufs_3_701_01_2026` (DoD construction area cost factor) at `county`,
+`cbsa`, `state`, or `national`, or `bea_rpp_goods_2024` when the DoD table
+has no row for the place. Field names and the document shape are
+unchanged from earlier `dce.ui_result.v1` documents.
+
 The headline deliveries, cost, catchment, and both DCF views are the base
 outcome, which is what `estimate(zip)` returns.
 
@@ -107,7 +116,7 @@ has no deliveries, so cost per delivery is undefined.
   "zip_code": "96799",
   "status": "error",
   "reason": "EstimateDataError: ZIP 96799 has no deliveries inside the 60-mile catchment, so cost per delivery is undefined.",
-  "model_version": "2026.11.7-broker-rents",
+  "model_version": "2026.11.8-broker-rents-commercial-tax-acf",
   "inputs_hash": "<sha256>",
   "computed_at": "2026-11-09T00:00:00+00:00"
 }

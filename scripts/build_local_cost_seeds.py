@@ -1,4 +1,4 @@
-"""Build the committed electricity, property-tax, and price-index seeds.
+"""Build the committed electricity, property-tax, price-index, and construction-cost seeds.
 
 Runtime ``estimate`` reads the CSVs this script writes. It does not download
 them. Re-run the script only when refreshing the public files in ``--cache``.
@@ -7,11 +7,17 @@ Inputs, all public:
 
 - EIA Electric Power Monthly table 5.6.A (commercial cents/kWh by state).
 - EIA-861 2024 sales to ultimate customers and service territories.
-- BEA Regional Price Parities, 2024 (SARPP and MARPP).
+- BEA Regional Price Parities, 2024 (SARPP and MARPP). Fit-out fallback only.
 - Lincoln Institute / Minnesota Center for Fiscal Excellence, 50-State
-  Property Tax Comparison Study, taxes paid in 2024. The commercial rates
-  below are the $1 million property plus $200,000 of fixtures, transcribed
-  from Appendix Tables 3a, 3b, and 3c. The PDF is not stored in git.
+  Property Tax Comparison Study, taxes paid in 2024 (July 2025). The script
+  reads ``pdftotext -layout`` output of the study PDF (``--lincoln-text``)
+  and parses Appendix Tables 3a, 3b, and 3c (commercial: $1 million land and
+  building plus $200,000 of fixtures) and 4a, 4c, and 4e (industrial: $1
+  million real property plus $1 million of personal property). The PDF is
+  not stored in git.
+- DoD UFS 3-701-01 Facilities Pricing Guide, 6 June 2026, data tables
+  workbook, sheet ``Table 4-1 CONUS`` (MILCON area cost factors, source date
+  2025-10-01). ``--dod-xlsx``.
 
 PG&E Schedule B-10 is applied later by the resolver for utility 14328.
 This script still stores that utility's EIA-861 average so the ladder has
@@ -23,10 +29,12 @@ from __future__ import annotations
 import argparse
 import csv
 import re
+import statistics
 import sys
 import unicodedata
 import zipfile
-from collections import defaultdict
+from collections import Counter, defaultdict
+from dataclasses import dataclass
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -61,10 +69,14 @@ BEA_CITATION = (
 TAX_AS_OF = "2024-12-31"
 TAX_CITATION = (
     "Lincoln Institute and Minnesota Center for Fiscal Excellence, 50-State "
-    "Property Tax Comparison Study, taxes paid in 2024, $1 million commercial "
-    "property plus $200,000 fixtures. "
+    "Property Tax Comparison Study, taxes paid in 2024 (July 2025). "
     "https://www.lincolninst.edu/publications/other/50-state-property-tax-comparison-study-2024/"
 )
+ACF_AS_OF = "2025-10-01"
+ACF_SOURCE = "dod_ufs_3_701_01_2026"
+ACF_SHEET = "Table 4-1 CONUS"
+ACF_CITATION = "DoD UFS 3-701-01 (6 June 2026) Table 4-1 CONUS, MILCON area cost factor"
+ACF_URL = "https://legacy.wbdg.org/FFC/DOD/UFC/ufs_3_701_01_2026_Data_Tables.xlsx"
 
 # Postal abbreviations. EIA table 5.6.A uses these names. Census divisions are skipped.
 STATE_NAMES = {
@@ -176,117 +188,35 @@ FIPS_TO_POSTAL = {
     "56000": "WY",
 }
 
-# Commercial effective rates, percent, $1 million building + $200,000 fixtures.
-# state_urban is the largest city, except Illinois (Aurora, not Chicago) and
-# New York (Buffalo, not New York City), matching the study's note that those
-# two cities are not the rest of the state. state_rural is Appendix Table 3c.
-# District of Columbia has no rural analogue; the rural rung repeats the city.
-STATE_URBAN_PERCENT = {
-    "AL": 1.442,
-    "AK": 1.426,
-    "AZ": 1.620,
-    "AR": 1.366,
-    "CA": 1.200,
-    "CO": 2.106,
-    "CT": 2.309,
-    "DE": 0.846,
-    "DC": 1.129,
-    "FL": 1.635,
-    "GA": 1.505,
-    "HI": 1.052,
-    "ID": 0.751,
-    "IL": 2.608,
-    "IN": 2.550,
-    "IA": 2.695,
-    "KS": 2.387,
-    "KY": 1.283,
-    "LA": 1.714,
-    "ME": 1.376,
-    "MD": 2.823,
-    "MA": 2.106,
-    "MI": 3.996,
-    "MN": 2.355,
-    "MS": 2.745,
-    "MO": 2.750,
-    "MT": 0.786,
-    "NE": 1.838,
-    "NV": 1.131,
-    "NH": 1.232,
-    "NJ": 1.770,
-    "NM": 1.685,
-    "NY": 1.640,
-    "NC": 0.711,
-    "ND": 1.121,
-    "OH": 1.909,
-    "OK": 1.420,
-    "OR": 2.593,
-    "PA": 1.977,
-    "RI": 3.070,
-    "SC": 1.937,
-    "SD": 1.187,
-    "TN": 0.937,
-    "TX": 1.997,
-    "UT": 0.928,
-    "VT": 2.261,
-    "VA": 0.873,
-    "WA": 0.785,
-    "WV": 1.856,
-    "WI": 1.959,
-    "WY": 0.599,
-}
-STATE_RURAL_PERCENT = {
-    "AL": 0.795,
-    "AK": 1.043,
-    "AZ": 0.811,
-    "AR": 0.819,
-    "CA": 1.065,
-    "CO": 2.414,
-    "CT": 0.983,
-    "DE": 0.362,
-    "DC": 1.129,
-    "FL": 2.006,
-    "GA": 1.672,
-    "HI": 0.675,
-    "ID": 0.668,
-    "IL": 2.525,
-    "IN": 2.838,
-    "IA": 2.827,
-    "KS": 3.808,
-    "KY": 1.168,
-    "LA": 1.314,
-    "ME": 1.958,
-    "MD": 2.023,
-    "MA": 1.938,
-    "MI": 2.711,
-    "MN": 2.255,
-    "MS": 2.064,
-    "MO": 2.444,
-    "MT": 0.957,
-    "NE": 2.033,
-    "NV": 1.257,
-    "NH": 1.592,
-    "NJ": 1.981,
-    "NM": 1.088,
-    "NY": 2.383,
-    "NC": 0.913,
-    "ND": 1.370,
-    "OH": 1.425,
-    "OK": 1.007,
-    "OR": 1.136,
-    "PA": 1.870,
-    "RI": 1.404,
-    "SC": 2.985,
-    "SD": 1.433,
-    "TN": 0.939,
-    "TX": 2.066,
-    "UT": 0.964,
-    "VT": 2.372,
-    "VA": 0.868,
-    "WA": 0.862,
-    "WV": 1.171,
-    "WI": 1.723,
-    "WY": 0.743,
-}
+# Lincoln study rules.
+#
+# state_urban is the largest city (Appendix Table 3a), except Illinois
+# (Aurora, not Chicago) and New York (Buffalo, not New York City): the study
+# says those two cities' systems differ from the rest of the state. The same
+# two cities never stand in for a neighbouring county (metro_proxy false).
+# state_rural is Appendix Table 3c. DC has no rural analogue; its rural rung
+# repeats the city.
+STATE_URBAN_OVERRIDE = {"IL": "Aurora", "NY": "Buffalo"}
+NO_METRO_PROXY = {("IL", "Chicago"), ("NY", "New York City")}
+# Appendix Table 4g, "Fixtures: Full Exemption" (15 cities in 13 states, plus
+# the second IL and NY cities). Montana's first $1 million of personal property
+# is exempt (Table 4g note), which covers the $200,000 of fixtures on the $1
+# million parcel. Vermont's rural municipality, Hartford, fully exempts
+# fixtures (Table 4g rural note); Burlington does not. Where fixtures are
+# exempt, the commercial tax bill falls on the $1 million of real property
+# only, so the rate on real property is that bill / $1 million. Elsewhere the
+# published rate on $1.2 million is kept.
+FIXTURES_EXEMPT_STATES = {
+    "DE", "HI", "IL", "IA", "MA", "MN", "MT", "NH", "NJ", "NY", "ND", "OH", "PA", "SD"
+}  # fmt: skip
+FIXTURES_EXEMPT_RURAL = {"VT"}
+LINCOLN_COUNTS = {"3a": 53, "3b": 50, "3c": 50}
+LINCOLN_INDUSTRIAL = {"3a": "4a", "3b": "4c", "3c": "4e"}
+LINCOLN_NATIONAL_COMMERCIAL_PERCENT = 1.755  # Table 3a average, 53 cities, $1 million
+LINCOLN_NATIONAL_INDUSTRIAL_PERCENT = 1.250  # Table 4a average, 53 cities, $1 million
+# Leads that pdftotext wraps across lines.
+LINCOLN_LEAD_FIXUPS = {"New Lancaster": ("NH", "Lancaster")}
+LINCOLN_CITY_ALIASES = {"Maurice River Twp": "Maurice River Township"}
 # Studied places keyed by the Census county name in zip_crosswalk.csv.
 # When two studied cities share a county, the larger city is the one kept
 # (Phoenix not Mesa, Los Angeles not Long Beach, Fort Worth not Arlington).
@@ -419,17 +349,45 @@ COUNTY_PLACES: tuple[tuple[str, str, str, float], ...] = (
     ("WY", "Laramie County", "Cheyenne", 0.599),
     ("WY", "Washakie County", "Worland", 0.743),
 )
-NATIONAL_COMMERCIAL_PERCENT = 1.755  # study average, 53 largest cities, $1 million
+
+
+SEEDS = ("electricity", "property-tax", "price-index", "construction-cost")
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--cache", type=Path, default=Path("/tmp/dce-public"))
+    parser.add_argument(
+        "--lincoln-text",
+        type=Path,
+        default=None,
+        help="pdftotext -layout output of the Lincoln 2024 study PDF. "
+        "Default: <cache>/lincoln_50_state_2024_layout.txt",
+    )
+    parser.add_argument(
+        "--dod-xlsx",
+        type=Path,
+        default=None,
+        help="UFS 3-701-01 2026 data tables workbook. "
+        "Default: <cache>/ufs_3_701_01_2026_Data_Tables.xlsx",
+    )
+    parser.add_argument(
+        "--only",
+        choices=SEEDS,
+        action="append",
+        help="Write only this seed. Repeat for more than one. Default: all.",
+    )
     args = parser.parse_args()
     cache: Path = args.cache
-    write_electricity(cache)
-    write_property_tax()
-    write_rpp(cache)
+    only = set(args.only or SEEDS)
+    if "electricity" in only:
+        write_electricity(cache)
+    if "property-tax" in only:
+        write_property_tax(args.lincoln_text or cache / "lincoln_50_state_2024_layout.txt")
+    if "price-index" in only:
+        write_rpp(cache)
+    if "construction-cost" in only:
+        write_construction_cost(args.dod_xlsx or cache / "ufs_3_701_01_2026_Data_Tables.xlsx")
     print("wrote seeds under", SEED)
 
 
@@ -527,39 +485,346 @@ def write_electricity(cache: Path) -> None:
         print(f"  {label} {fips}: {hit}")
 
 
-def write_property_tax() -> None:
+@dataclass(frozen=True)
+class LincolnRow:
+    """One $1 million parcel row of a Lincoln appendix table."""
+
+    table: str
+    state: str
+    city: str
+    percent: float
+    bill: int
+
+
+_LINCOLN_HEAD = re.compile(r"^\s*Appendix Table (\d[a-h]):")
+_LINCOLN_CELL = re.compile(r"(\d+\.\d{3})%\s+([\d,]+)")
+
+
+def lincoln_tables(text: str) -> dict[str, list[LincolnRow]]:
+    """Parse the $1 million columns of Appendix Tables 3a-3c and 4a, 4c, 4e.
+
+    Each data line has three ``rate% bill`` cells: $100,000, $1 million, and
+    $25 million. The middle one is kept. Industrial rows are matched to the
+    commercial table by position (both tables list the same places in the
+    same order) and the matched city is checked against the industrial lead.
+    """
+    lines = text.splitlines()
+    starts: dict[str, int] = {}
+    for index, line in enumerate(lines):
+        match = _LINCOLN_HEAD.match(line)
+        if match and match.group(1) not in starts:
+            starts[match.group(1)] = index
+    raw: dict[str, list[tuple[str, float, int]]] = {}
+    for table in (*LINCOLN_COUNTS, *LINCOLN_INDUSTRIAL.values()):
+        if table not in starts:
+            raise SystemExit(f"Lincoln text has no Appendix Table {table}")
+        begin = starts[table]
+        end = min((at for at in starts.values() if at > begin), default=len(lines))
+        found: list[tuple[str, float, int]] = []
+        for line in lines[begin:end]:
+            cells = _LINCOLN_CELL.findall(line)
+            if len(cells) < 3 or "AVERAGE" in line.upper():
+                continue
+            lead = " ".join(line[: line.index(cells[0][0] + "%")].split())
+            found.append((lead, float(cells[1][0]), int(cells[1][1].replace(",", ""))))
+        raw[table] = found
+    tables: dict[str, list[LincolnRow]] = {}
+    names = {**STATE_NAMES, "DC": "DC"}
+    for table, expected in LINCOLN_COUNTS.items():
+        if len(raw[table]) != expected:
+            raise SystemExit(f"Table {table}: {len(raw[table])} rows, expected {expected}")
+        parsed: list[LincolnRow] = []
+        for lead, percent, bill in raw[table]:
+            state, city = _lincoln_place(lead, names)
+            parsed.append(LincolnRow(table, state, city, percent, bill))
+        tables[table] = parsed
+        industrial = LINCOLN_INDUSTRIAL[table]
+        if len(raw[industrial]) != expected:
+            raise SystemExit(
+                f"Table {industrial}: {len(raw[industrial])} rows, expected {expected}"
+            )
+        matched: list[LincolnRow] = []
+        for place, (lead, percent, bill) in zip(parsed, raw[industrial], strict=True):
+            last = lead.replace("*", "").split()[-1] if lead else ""
+            if last not in place.city.split() and last not in place.city:
+                raise SystemExit(f"Table {industrial} row {lead!r} is not {place.city}")
+            matched.append(LincolnRow(industrial, place.state, place.city, percent, bill))
+        tables[industrial] = matched
+    return tables
+
+
+def _lincoln_place(lead: str, names: dict[str, str]) -> tuple[str, str]:
+    if lead in LINCOLN_LEAD_FIXUPS:
+        return LINCOLN_LEAD_FIXUPS[lead]
+    for name in sorted(names, key=len, reverse=True):
+        if lead.startswith(name + " "):
+            city = lead[len(name) :].replace("*", "").strip()
+            return names[name], LINCOLN_CITY_ALIASES.get(city, city)
+    raise SystemExit(f"Lincoln row lead {lead!r} has no state")
+
+
+def write_property_tax(lincoln_text: Path) -> None:
+    tables = lincoln_tables(lincoln_text.read_text(encoding="utf-8"))
+    industrial: dict[tuple[str, str, str], LincolnRow] = {}
+    for table, partner in LINCOLN_INDUSTRIAL.items():
+        for commercial_row, industrial_row in zip(tables[table], tables[partner], strict=True):
+            industrial[(table, commercial_row.state, commercial_row.city)] = industrial_row
     counties = _crosswalk_counties()
-    by_name: dict[tuple[str, str], str] = {}
-    for fips, (state, name) in counties.items():
-        by_name[(state, name)] = fips
+    county_cbsa = _crosswalk_county_cbsa()
+    by_name = {(state, name): fips for fips, (state, name) in counties.items()}
+
+    urban: dict[str, LincolnRow] = {}
+    for row in tables["3a"]:
+        if (row.state, row.city) in NO_METRO_PROXY:
+            continue
+        if STATE_URBAN_OVERRIDE.get(row.state, row.city) == row.city:
+            urban[row.state] = row
+    rural = {row.state: row for row in tables["3c"]}
+    rural.setdefault("DC", urban["DC"])
+    lookup: dict[tuple[str, str], LincolnRow] = {}
+    for table in ("3b", "3a", "3c"):
+        for row in tables[table]:
+            lookup[(row.state, row.city)] = row
+
+    effective_3a = [_real_rate(row) for row in tables["3a"]]
+    published_3a = statistics.fmean(row.percent for row in tables["3a"])
+    if abs(published_3a - LINCOLN_NATIONAL_COMMERCIAL_PERCENT) > 0.001:
+        raise SystemExit(f"Table 3a mean {published_3a:.4f}% is not the study average")
     rows: list[dict[str, str]] = [
-        _tax("national", "US", "", "53-city average", NATIONAL_COMMERCIAL_PERCENT)
+        {
+            "level": "national",
+            "state": "US",
+            "county_fips": "",
+            "cbsa": "",
+            "place": "53-city average",
+            "effective_rate": f"{statistics.fmean(effective_3a):.6f}",
+            "commercial_rate": f"{LINCOLN_NATIONAL_COMMERCIAL_PERCENT / 100.0:.5f}",
+            "commercial_tax_bill_1m": "",
+            "industrial_rate": f"{LINCOLN_NATIONAL_INDUSTRIAL_PERCENT / 100.0:.5f}",
+            "fixtures_exempt": "",
+            "metro_proxy": "false",
+            "source_table": "3a;4a",
+            "as_of": TAX_AS_OF,
+            "citation": TAX_CITATION,
+        }
     ]
-    urban_place = {
-        state: place
-        for state, _county, place, percent in COUNTY_PLACES
-        if STATE_URBAN_PERCENT[state] == percent
-    }
-    rural_place = {
-        state: place
-        for state, _county, place, percent in COUNTY_PLACES
-        if STATE_RURAL_PERCENT[state] == percent
-    }
-    for postal, percent in sorted(STATE_URBAN_PERCENT.items()):
-        rows.append(_tax("state_urban", postal, "", urban_place[postal], percent))
-    for postal, percent in sorted(STATE_RURAL_PERCENT.items()):
-        rows.append(_tax("state_rural", postal, "", rural_place[postal], percent))
+    for postal in sorted(urban):
+        rows.append(_tax_row("state_urban", "", "", urban[postal], industrial, proxy=False))
+    for postal in sorted(rural):
+        rows.append(_tax_row("state_rural", "", "", rural[postal], industrial, proxy=False))
     for state, county_name, place, percent in COUNTY_PLACES:
         fips = by_name.get((state, county_name))
         if fips is None:
             raise SystemExit(f"County not in the crosswalk: {state} {county_name}")
-        rows.append(_tax("county", state, fips, place, percent))
+        row = lookup.get((state, place))
+        if row is None:
+            raise SystemExit(f"Studied place not in Tables 3a-3c: {state} {place}")
+        if abs(row.percent - percent) > 0.0005:
+            raise SystemExit(f"{place}: table {row.percent}% vs transcribed {percent}%")
+        proxy = row.table != "3c" and (state, place) not in NO_METRO_PROXY
+        rows.append(
+            _tax_row("county", fips, county_cbsa.get(fips, ""), row, industrial, proxy=proxy)
+        )
     _write_csv(
         SEED / "property_tax_commercial.csv",
-        ("level", "state", "county_fips", "place", "effective_rate", "as_of", "citation"),
+        (
+            "level",
+            "state",
+            "county_fips",
+            "cbsa",
+            "place",
+            "effective_rate",
+            "commercial_rate",
+            "commercial_tax_bill_1m",
+            "industrial_rate",
+            "fixtures_exempt",
+            "metro_proxy",
+            "source_table",
+            "as_of",
+            "citation",
+        ),
         rows,
     )
     print(f"property tax: {len(rows)} rows")
+
+
+def _fixtures_exempt(row: LincolnRow) -> bool:
+    if row.state in FIXTURES_EXEMPT_STATES:
+        return True
+    return row.table == "3c" and row.state in FIXTURES_EXEMPT_RURAL
+
+
+def _real_rate(row: LincolnRow) -> float:
+    """Tax on land and building per dollar of land and building."""
+    if not _fixtures_exempt(row):
+        return row.percent / 100.0
+    rate = row.bill / 1_000_000.0
+    if abs(rate - 1.2 * row.percent / 100.0) > 0.00002:
+        raise SystemExit(f"{row.city}: bill {row.bill} is not 1.2 x {row.percent}% of $1 million")
+    return rate
+
+
+def _tax_row(
+    level: str,
+    fips: str,
+    cbsa: str,
+    row: LincolnRow,
+    industrial: dict[tuple[str, str, str], LincolnRow],
+    *,
+    proxy: bool,
+) -> dict[str, str]:
+    partner = industrial[(row.table, row.state, row.city)]
+    return {
+        "level": level,
+        "state": row.state,
+        "county_fips": fips,
+        "cbsa": cbsa,
+        "place": row.city,
+        "effective_rate": f"{_real_rate(row):.6f}",
+        "commercial_rate": f"{row.percent / 100.0:.5f}",
+        "commercial_tax_bill_1m": str(row.bill),
+        "industrial_rate": f"{partner.percent / 100.0:.5f}",
+        "fixtures_exempt": "true" if _fixtures_exempt(row) else "false",
+        "metro_proxy": "true" if proxy else "false",
+        "source_table": f"{row.table};{partner.table}",
+        "as_of": TAX_AS_OF,
+        "citation": TAX_CITATION,
+    }
+
+
+def write_construction_cost(dod_xlsx: Path) -> None:
+    """County, CBSA, and state MILCON area cost factors from UFS 3-701-01.
+
+    The workbook lists DoD sites. A county's factor is the lower median of
+    its sites' factors (sites in one county almost always share one value).
+    A CBSA or state factor is the lower median of its counties' factors, so
+    a large installation does not outweigh the rest of the area. The lower
+    median keeps every stored value one the DoD published. The DoD scale is
+    1.00 at the average of its 96 base cities.
+    """
+    from dce.data.ingest.bls_oews import oews_area_for_cbsa
+
+    rows = read_xlsx_rows(dod_xlsx.read_bytes(), ACF_SHEET)
+    header = [cell.strip() for cell in rows[0]]
+    try:
+        at = {name: header.index(name) for name in ("Country", "State", "County", "Zip")}
+        at["acf"] = header.index("AREA COST FACTOR")
+    except ValueError as exc:
+        raise SystemExit(f"{ACF_SHEET} header changed: {header}") from exc
+    counties = _crosswalk_counties()
+    by_key: dict[tuple[str, str], list[str]] = defaultdict(list)
+    for fips, (state, name) in counties.items():
+        by_key[(state, _norm_county(name))].append(fips)
+    zip_county = _crosswalk_zip_county()
+    postal_of = {name.lower(): postal for name, postal in STATE_NAMES.items()}
+    sites: dict[str, list[float]] = defaultdict(list)
+    skipped = 0
+    for row in rows[1:]:
+        cells = row + [""] * (len(header) - len(row))
+        if cells[at["Country"]].strip() != "United States":
+            continue
+        postal = postal_of.get(cells[at["State"]].strip().lower())
+        try:
+            acf = float(cells[at["acf"]])
+        except ValueError:
+            skipped += 1
+            continue
+        if postal is None or acf <= 0.0:
+            skipped += 1
+            continue
+        named = by_key.get((postal, _norm_county(cells[at["County"]])), [])
+        fips = named[0] if len(named) == 1 else zip_county.get(cells[at["Zip"]].strip()[:5], "")
+        if not fips or counties.get(fips, ("", ""))[0] != postal:
+            skipped += 1
+            continue
+        sites[fips].append(acf)
+    county_acf = {fips: statistics.median_low(values) for fips, values in sites.items()}
+
+    county_cbsa = _crosswalk_county_cbsa()
+    cbsa_names = _crosswalk_cbsa_names()
+    by_cbsa: dict[str, list[float]] = defaultdict(list)
+    by_state: dict[str, list[float]] = defaultdict(list)
+    cbsa_states: dict[str, set[str]] = defaultdict(set)
+    divisions: dict[str, set[str]] = defaultdict(set)
+    uncovered: set[str] = set()
+    for fips, code in county_cbsa.items():
+        if not code:
+            continue
+        codes = {code, oews_area_for_cbsa(code)}
+        if fips not in county_acf:
+            uncovered |= codes
+        if fips not in counties:
+            continue
+        for key in codes:
+            cbsa_states[key].add(counties[fips][0])
+            if key != code:
+                divisions[key].add(code)
+            if fips in county_acf:
+                by_cbsa[key].append(county_acf[fips])
+    for fips, acf in county_acf.items():
+        by_state[counties[fips][0]].append(acf)
+    # A CBSA row is only read for a county with no row of its own.
+    by_cbsa = {code: values for code, values in by_cbsa.items() if code in uncovered}
+
+    out: list[dict[str, str]] = [
+        _acf_row("national", "US", "US", "DoD 96-base-city average", 1.0, 96, full=True)
+    ]
+    for postal in sorted(by_state):
+        values = by_state[postal]
+        name = next(k for k, v in STATE_NAMES.items() if v == postal)
+        out.append(
+            _acf_row("state", postal, postal, name, statistics.median_low(values), len(values))
+        )
+    for code in sorted(by_cbsa):
+        values = by_cbsa[code]
+        name = cbsa_names.get(code) or "CBSA with divisions " + ", ".join(sorted(divisions[code]))
+        state = "-".join(sorted(cbsa_states[code]))
+        out.append(_acf_row("cbsa", code, state, name, statistics.median_low(values), len(values)))
+    for fips in sorted(county_acf):
+        state, name = counties[fips]
+        out.append(_acf_row("county", fips, state, name, county_acf[fips], len(sites[fips])))
+    _write_csv(
+        SEED / "construction_cost_factor.csv",
+        (
+            "level",
+            "geography_id",
+            "state",
+            "name",
+            "acf",
+            "count",
+            "as_of",
+            "source",
+            "citation",
+        ),
+        out,
+    )
+    print(
+        f"construction cost: {len(county_acf)} counties, {len(by_cbsa)} CBSAs, "
+        f"{len(by_state)} states, {skipped} sites skipped"
+    )
+
+
+def _acf_row(
+    level: str,
+    geography_id: str,
+    state: str,
+    name: str,
+    acf: float,
+    count: int,
+    *,
+    full: bool = False,
+) -> dict[str, str]:
+    return {
+        "level": level,
+        "geography_id": geography_id,
+        "state": state,
+        "name": name,
+        "acf": f"{acf:.2f}",
+        "count": str(count),
+        "as_of": ACF_AS_OF,
+        "source": ACF_SOURCE,
+        "citation": f"{ACF_CITATION}. {ACF_URL}" if full else ACF_CITATION,
+    }
 
 
 def write_rpp(cache: Path) -> None:
@@ -626,18 +891,6 @@ def _rate(
         "as_of": as_of,
         "source": source,
         "citation": citation,
-    }
-
-
-def _tax(level: str, state: str, fips: str, place: str, percent: float) -> dict[str, str]:
-    return {
-        "level": level,
-        "state": state,
-        "county_fips": fips,
-        "place": place,
-        "effective_rate": f"{percent / 100.0:.5f}",
-        "as_of": TAX_AS_OF,
-        "citation": TAX_CITATION,
     }
 
 
@@ -720,6 +973,42 @@ def _crosswalk_counties() -> dict[str, tuple[str, str]]:
         for row in csv.DictReader(handle):
             found[row["county_fips"]] = (row["state"], row["county_name"])
     return found
+
+
+def _crosswalk_county_cbsa() -> dict[str, str]:
+    """Return county FIPS -> the CBSA or metro division most of its ZIPs use."""
+    votes: dict[str, Counter[str]] = defaultdict(Counter)
+    with CROSSWALK.open(newline="", encoding="utf-8") as handle:
+        for row in csv.DictReader(handle):
+            votes[row["county_fips"]][row["cbsa"].strip()] += 1
+    return {
+        fips: min(counter.items(), key=lambda item: (-item[1], item[0]))[0]
+        for fips, counter in votes.items()
+    }
+
+
+def _crosswalk_cbsa_names() -> dict[str, str]:
+    found: dict[str, str] = {}
+    with CROSSWALK.open(newline="", encoding="utf-8") as handle:
+        for row in csv.DictReader(handle):
+            if row["cbsa"].strip():
+                found.setdefault(row["cbsa"].strip(), row["cbsa_name"].strip())
+    return found
+
+
+def _crosswalk_zip_county() -> dict[str, str]:
+    """Return ZIP -> the county with the largest address share."""
+    best: dict[str, tuple[float, str]] = {}
+    with CROSSWALK.open(newline="", encoding="utf-8") as handle:
+        for row in csv.DictReader(handle):
+            try:
+                ratio = float(row["tot_ratio"] or 0.0)
+            except ValueError:
+                ratio = 0.0
+            held = best.get(row["zip"])
+            if held is None or ratio > held[0]:
+                best[row["zip"]] = (ratio, row["county_fips"])
+    return {code: fips for code, (_ratio, fips) in best.items()}
 
 
 def _assign_counties(

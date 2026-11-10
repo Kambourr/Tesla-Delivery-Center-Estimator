@@ -88,6 +88,20 @@ Outside the Bay Area, rent used to fall back to ACS residential gross rent. `dat
 
 Bay Area precompute sample on `2026.11.7-broker-rents`: 434 ok, 0 errors. Rent sources: 87 Kidder (`cbsa_raw` 41884), 122 East Bay (`broker_cbsa` 36084), 106 Silicon Valley (`broker_cbsa` 41940), 93 this ZCTA's ACS gross rent, 26 the county ACS median.
 
+## Commercial tax class and construction cost factor (`2026.11.6-commercial-tax-acf`)
+
+Property tax was already the Lincoln commercial class. New York City's 1.418% is Table 3a commercial, not homestead (1.249%). The rate is now taken on land and building, which raises it where fixtures are exempt: New York City 1.701%. San Mateo borrows San Francisco (same metro division, 1.171%) instead of Los Angeles (1.200%). Fit-out uses the DoD MILCON area cost factor, with BEA goods only as a fallback.
+
+| ZIP | Cost per delivery, before → after | Standalone NPV, before → after | Tax rate | Fit-out index |
+|---|---|---|---|---|
+| 10001 | $513.32 → $523.45 | +$20.57M → +$20.00M | 1.418% → 1.701% | 1.107 → 1.32 |
+| 94402 | $611.28 → $618.51 | +$11.07M → +$10.75M | 1.200% → 1.171% | 1.089 → 1.23 |
+| 78701 | $920.68 → $906.15 | +$1.22M → +$1.50M | 1.808% | 0.942 → 0.82 |
+| 33139 | $867.30 → $844.85 | +$1.48M → +$1.87M | 1.803% | 1.040 → 0.87 |
+| 82401 | $46,484.54 → $47,359.39 | −$7.48M → −$7.69M | 0.743% | 0.958 → 1.05 |
+
+Deliveries do not change. 10001 is still below 94402. Its rent is the ACS gross-rent fallback ($3.36 per square foot per month), and it has 8,190 deliveries against 5,565. Rent is outside this change.
+
 ## Gravity gap on the old fixture (5,523 vs about 5,720)
 
 The geo unit test still locks this fixture: raw BEV times 49,704 / 94,131, nine Bay Area delivery centers. `estimate` does not. It uses the nationwide 2026 seed. The gap below is why that old fixture was not patched to 5,720.

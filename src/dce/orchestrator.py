@@ -24,8 +24,10 @@ times the base handover factor 1.10. Other states split the Cox/KBB 2025
 US Tesla total, minus the 2025 California CEC total, by ACS households and
 income. Electricity is the utility tariff, then the EIA-861 utility average,
 then the state price, then the U.S. price. PG&E territory keeps
-Schedule B-10. Commercial property tax shifts the NNN load. Fit-out
-uses the BEA goods price parity. Every resolved input is on
+Schedule B-10. The commercial (not homestead) property-tax rate on real
+property shifts the NNN load. Fit-out uses the DoD MILCON construction area
+cost factor, with the BEA goods price parity only as its fallback. Every
+resolved input is on
 ``EstimateResult.provenance``.
 
 There is no network call and no prompt. ``overrides`` may carry
@@ -44,6 +46,11 @@ import yaml
 
 from dce.config import assumptions_path, user_data_dir
 from dce.data.catchment_demand import delivery_center_sites
+from dce.data.construction_cost import (
+    ACF_URL,
+    BEA_SOURCE,
+    ConstructionCostResolution,
+)
 from dce.data.electricity import ElectricityResolution
 from dce.data.ingest.bls_oews import OEWS_SOC_AUTO_TECH
 from dce.data.ingest.zev_sales import INCOME_ELASTICITY, INCOME_REFERENCE
@@ -545,20 +552,7 @@ def _provenance(
             "NNN load after replacing the 1.1% reference tax with the local effective rate. "
             "Insurance and CAM stay inside the 15% base.",
         ),
-        _number_row(
-            "fitout_index",
-            prices.fitout_index,
-            "index",
-            "bea_rpp_goods_2024",
-            prices.price_index.tier if prices.price_index.tier != "metro" else "cbsa",
-            prices.price_index.geography_id,
-            prices.price_index.tier != "metro",
-            (
-                f"BEA 2024 goods RPP {prices.price_index.rpp_goods:.3f} for "
-                f"{prices.price_index.name}, divided by the U.S. goods RPP. "
-                f"{prices.price_index.citation}"
-            ),
-        ),
+        _fitout_row(prices.construction),
         _number_row(
             "status_quo_rent_psf_month",
             prices.status_quo_rent_psf_month,
@@ -635,9 +629,53 @@ def _power_rows(
     )
 
 
+def _fitout_row(cost: ConstructionCostResolution) -> InputProvenance:
+    level = {
+        "county": "county",
+        "cbsa": "cbsa",
+        "state": "state",
+        "bea_metro": "cbsa",
+        "bea_state": "state",
+    }.get(cost.tier, "national")
+    if cost.source == BEA_SOURCE:
+        detail = (
+            f"The DoD area cost factor table has no row for this place, so the "
+            f"fallback is the BEA 2024 goods RPP {cost.bea.rpp_goods:.3f} for "
+            f"{cost.bea.name}, divided by the U.S. goods RPP. {cost.citation}"
+        )
+    else:
+        if cost.tier == "county":
+            basis = f"{cost.name}: lower median of {cost.count} DoD site factors."
+        elif cost.tier == "national":
+            basis = "No county, CBSA, or state factor, so the DoD base 1.00 is used."
+        else:
+            basis = (
+                f"ZIP {cost.zip_code}'s county has no DoD sites; {cost.name} is the lower "
+                f"median of {cost.count} county factors."
+            )
+        detail = (
+            f"{cost.citation}, as_of {cost.as_of}. {ACF_URL}. Construction area cost "
+            f"factor {cost.fitout_index:.2f}, 1.00 = DoD 96-base-city average. {basis} "
+            "Scales fit-out only. The BEA goods price parity is only a fallback "
+            f"({cost.bea.fitout_index:.3f} here)."
+        )
+    return _number_row(
+        "fitout_index",
+        cost.fitout_index,
+        "index",
+        cost.source,
+        level,
+        cost.geography_id,
+        cost.fallback,
+        detail,
+    )
+
+
 def _tax_geography(local: ZipLocalData, tax: PropertyTaxResolution) -> tuple[str, str, bool]:
     if tax.tier == "county":
         return "county", tax.county_fips or local.geo.county_fips, False
+    if tax.tier == "cbsa":
+        return "cbsa", tax.cbsa, True
     if tax.tier == "national":
         return "national", "US", True
     return "state", local.geo.state, True
@@ -651,6 +689,12 @@ def _tax_row(local: ZipLocalData, tax: PropertyTaxResolution) -> InputProvenance
             f"{tax.place} is the Lincoln Institute studied place in county {geo_id}. "
             "The study publishes that city, not a separate rate for every city in the county."
         )
+    elif tax.tier == "cbsa":
+        why = (
+            f"County {local.geo.county_fips} is not a studied county. {tax.place} is the "
+            f"studied large city in the same metro area ({geo_id}) and state. New York City "
+            "and Chicago are never borrowed this way, and rural places never stand in for a metro."
+        )
     elif tax.tier == "state_rural":
         why = (
             f"County {local.geo.county_fips} is outside every metro and is not a studied county. "
@@ -658,13 +702,32 @@ def _tax_row(local: ZipLocalData, tax: PropertyTaxResolution) -> InputProvenance
         )
     elif tax.tier == "state_urban":
         why = (
-            f"County {local.geo.county_fips} is not a studied county. "
-            f"{local.geo.state}'s urban rate is {tax.place}, the largest city in the study. "
-            "Illinois uses Aurora rather than Chicago, and New York uses Buffalo rather than "
-            "New York City, because those two cities are their own county rows."
+            f"County {local.geo.county_fips} is not a studied county and shares no metro area "
+            f"with one. {local.geo.state}'s urban rate is {tax.place}, the largest city in the "
+            "study. Illinois uses Aurora rather than Chicago, and New York uses Buffalo rather "
+            "than New York City, because those two cities are their own county rows."
         )
     else:
-        why = "The state has no studied row. The 53-city average is used."
+        why = "The state has no studied row. The mean of the 53 Table 3a cities is used."
+    if tax.fixtures_exempt:
+        basis = (
+            f"Fixtures are exempt here, so the whole bill is on the $1 million of land and "
+            f"building: the rate on real property is {percent:.3f}% against the published "
+            f"{tax.commercial_rate * 100.0:.3f}% on $1.2 million."
+        )
+    else:
+        basis = (
+            f"Fixtures are taxed here, so the published {tax.commercial_rate * 100.0:.3f}% is "
+            "used as the rate on real property."
+        )
+    industrial = (
+        ""
+        if tax.industrial_rate is None
+        else (
+            f" Industrial rate for comparison {tax.industrial_rate * 100.0:.3f}% (manufacturing "
+            "parcel, half machinery and inventory); not applied."
+        )
+    )
     return _number_row(
         "property_tax_rate",
         tax.effective_rate,
@@ -674,8 +737,9 @@ def _tax_row(local: ZipLocalData, tax: PropertyTaxResolution) -> InputProvenance
         geo_id,
         fallback,
         (
-            f"{tax.citation} Place {tax.place}, {percent:.3f}%. {why} "
-            "The rate is the tax on a $1 million commercial building plus $200,000 of fixtures."
+            f"{tax.citation} Commercial class, Appendix Tables {tax.source_table.replace(';', ', ')}, "
+            f"$1 million land and building plus $200,000 of fixtures; not the homestead rate. "
+            f"Place {tax.place}, {percent:.3f}%. {basis} {why}{industrial}"
         ),
     )
 
